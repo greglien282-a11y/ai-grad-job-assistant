@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -62,12 +62,15 @@ class ExperienceFact(Record, Base):
         UniqueConstraint("id", "session_id", name="uq_fact_session"),
         CheckConstraint("status IN ('pending', 'user_confirmed', 'evidence_supported', 'rejected')", name="ck_fact_status"),
         CheckConstraint("length(trim(statement)) > 0", name="ck_fact_statement"),
+        CheckConstraint("version > 0", name="ck_fact_version"),
         CheckConstraint("status != 'evidence_supported' OR evidence_id IS NOT NULL", name="ck_fact_evidence"),
         ForeignKeyConstraint(["evidence_id", "id", "session_id"], ["fact_evidence.id", "fact_evidence.fact_id", "fact_evidence.session_id"], name="fk_fact_current_evidence", use_alter=True),
     )
     project_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     session_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     statement: Mapped[str] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    __mapper_args__ = {"version_id_col": version}
     status: Mapped[str] = mapped_column(String(24), default=FactStatus.PENDING)
     evidence_id: Mapped[UUID | None] = mapped_column(Uuid)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
