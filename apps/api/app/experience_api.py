@@ -3,12 +3,13 @@ from functools import lru_cache
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import facts, schemas
+from app import idempotency as idem
 from app.db import build_engine, session_factory
 from app.models import ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactStatus, utcnow
 
@@ -60,11 +61,65 @@ def session_view(db: Session, record: ExperienceSession) -> schemas.SessionView:
     )
 
 
+def operation_key(request, kind, scope, token=None, *, required=False):
+    values = request.headers.getlist('idempotency-key')
+    if not values and not required:
+        return None, token
+    if len(values) != 1:
+        raise idem.IdempotencyError(422, 'idempotency_key_invalid')
+    credentials = request.headers.getlist('authorization')
+    if len(credentials) != 1 or not credentials[0].lower().startswith('bearer '):
+        raise idem.IdempotencyError(401, 'idempotency_credential_invalid')
+    supplied = credentials[0][7:]
+    return idem.parse(values[0], supplied, kind, scope), supplied
+
+
+def creation_receipt(db, row, key, token, response, tag=None):
+    idem.match_receipt(row, key)
+    sid = row.session_id
+    try:
+        session = facts.authorize(db, sid, token, lock=True)
+    except PermissionError:
+        current = idem.existing(db, key)
+        if current:
+            idem.match_receipt(current, key)
+        raise idem.IdempotencyError(401, 'idempotency_credential_invalid') from None
+    key.fresh()
+    row = idem.existing(db, key)
+    if row is None:
+        raise idem.IdempotencyError(410, 'idempotency_result_unavailable')
+    idem.match_receipt(row, key, tag)
+    if db.get(ExperienceProject, row.project_id) is None or db.get(ConversationTurn, row.initial_turn_id) is None:
+        raise idem.IdempotencyError(410, 'idempotency_result_unavailable')
+    response.headers['Idempotency-Replayed'] = 'true'
+    return schemas.CreatedSession(session_id=sid, project_id=row.project_id,
+                                  initial_turn_id=row.initial_turn_id, status=session.status, access_token=token)
+
+
 @router.post("/sessions", response_model=schemas.CreatedSession, status_code=201)
-def create_session(body: schemas.CreateSession, db: Database):
-    project, turn, token = facts.create_experience(db, body.raw_input)
+def create_session(body: schemas.CreateSession, db: Database, request: Request, response: Response):
+    key, token = operation_key(request, 'create_session', 'global')
+    if key:
+        idem.lock(db, key)
+        row = idem.existing(db, key)
+        if row:
+            return creation_receipt(db, row, key, token, response, idem.request_tag(key, token, body.model_dump(mode='json')))
+    project, turn, token = facts.create_experience(db, body.raw_input, token=token if key else None)
+    if key:
+        idem.remember(db, key, token, body.model_dump(mode='json'), session_id=project.session_id,
+                      project_id=project.id, initial_turn_id=turn.id)
     return schemas.CreatedSession(session_id=project.session_id, project_id=project.id,
                                   initial_turn_id=turn.id, status="active", access_token=token)
+
+
+@router.get('/session-creations/recovery', response_model=schemas.CreatedSession)
+def recover_creation(db: Database, request: Request, response: Response):
+    key, token = operation_key(request, 'create_session', 'global', required=True)
+    idem.lock(db, key)
+    row = idem.existing(db, key)
+    if row is None:
+        raise idem.IdempotencyError(404, 'idempotency_creation_not_found')
+    return creation_receipt(db, row, key, token, response)
 
 
 @router.get("/sessions/{session_id}", response_model=schemas.SessionView)
@@ -75,13 +130,49 @@ def read_session(session_id: UUID, token: Token, db: Database):
 
 
 @router.post("/sessions/{session_id}/turns", response_model=schemas.TurnView, status_code=201)
-def create_turn(session_id: UUID, body: schemas.AddTurn, token: Token, db: Database):
-    return schemas.TurnView.model_validate(facts.add_turn(db, session_id, token, body.content))
+def create_turn(session_id: UUID, body: schemas.AddTurn, token: Token, db: Database, request: Request, response: Response):
+    key, _ = operation_key(request, 'add_turn', f'session:{session_id}', token)
+    if key:
+        idem.lock(db, key)
+        facts.authorize(db, session_id, token, lock=True)
+        key.fresh()
+        row = idem.existing(db, key)
+        if row:
+            idem.match_receipt(row, key, idem.request_tag(key, token, body.model_dump(mode='json')))
+            turn = db.get(ConversationTurn, row.turn_id)
+            if turn is None:
+                raise idem.IdempotencyError(410, 'idempotency_result_unavailable')
+            response.headers['Idempotency-Replayed'] = 'true'
+            return schemas.TurnView.model_validate(turn)
+    turn = facts.add_turn(db, session_id, token, body.content)
+    if key:
+        idem.remember(db, key, token, body.model_dump(mode='json'), session_id=session_id, target_id=session_id, turn_id=turn.id)
+    return schemas.TurnView.model_validate(turn)
 
 
 @router.post("/projects/{project_id}/facts", response_model=schemas.FactView, status_code=201)
-def create_fact(project_id: UUID, body: schemas.AddFact, token: Token, db: Database):
-    return fact_view(db, facts.add_fact(db, project_id, token, body.statement, body.source_turn_ids))
+def create_fact(project_id: UUID, body: schemas.AddFact, token: Token, db: Database, request: Request, response: Response):
+    key, _ = operation_key(request, 'add_fact', f'project:{project_id}', token)
+    project = db.get(ExperienceProject, project_id) if not key else None
+    if key:
+        idem.lock(db, key)
+        project = db.get(ExperienceProject, project_id)
+        if project is None:
+            raise PermissionError('Resource unavailable')
+        facts.authorize(db, project.session_id, token, lock=True)
+        key.fresh()
+        row = idem.existing(db, key)
+        if row:
+            idem.match_receipt(row, key, idem.request_tag(key, token, body.model_dump(mode='json')))
+            fact = db.get(ExperienceFact, row.fact_id)
+            if fact is None:
+                raise idem.IdempotencyError(410, 'idempotency_result_unavailable')
+            response.headers['Idempotency-Replayed'] = 'true'
+            return fact_view(db, fact)
+    fact = facts.add_fact(db, project_id, token, body.statement, body.source_turn_ids)
+    if key:
+        idem.remember(db, key, token, body.model_dump(mode='json'), session_id=fact.session_id, target_id=project_id, fact_id=fact.id)
+    return fact_view(db, fact)
 
 
 @router.patch("/facts/{fact_id}", response_model=schemas.FactView)
@@ -116,6 +207,7 @@ def export_session(session_id: UUID, token: Token, db: Database, response: Respo
 @router.delete("/sessions/{session_id}", status_code=204)
 def delete_session(session_id: UUID, token: Token, db: Database):
     record = facts.authorize(db, session_id, token, lock=True)
+    idem.erase_receipts(db, session_id)
     db.delete(record)
     db.flush()
     return Response(status_code=204)

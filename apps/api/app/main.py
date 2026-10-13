@@ -13,6 +13,7 @@ from starlette.exceptions import HTTPException
 from app.experience_api import router
 from app.facts import StateConflict, VersionConflict
 from app.http_security import RequestBoundary, error_response
+from app.idempotency import IdempotencyError
 
 
 class HealthResponse(BaseModel):
@@ -35,10 +36,16 @@ app.add_middleware(
     allow_origins=configured_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type", "Accept"],
-    expose_headers=["Content-Disposition"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Idempotency-Key"],
+    expose_headers=["Content-Disposition", "Idempotency-Replayed"],
 )
 app.include_router(router)
+
+
+@app.exception_handler(IdempotencyError)
+async def idempotency_error(request, exc):
+    headers = {'Retry-After': '1'} if exc.code == 'idempotency_busy' else None
+    return error_response(exc.status, exc.code, 'Operation recovery requires review', headers)
 
 
 @app.exception_handler(HTTPException)
@@ -83,6 +90,8 @@ async def integrity_error(request, exc):
 
 @app.exception_handler(SQLAlchemyError)
 async def database_error(request, exc):
+    if getattr(getattr(exc, 'orig', None), 'sqlstate', None) == '55P03':
+        return error_response(503, 'idempotency_busy', 'Operation recovery requires review', {'Retry-After': '1'})
     return error_response(503, "database_unavailable", "Database unavailable; retry later")
 
 

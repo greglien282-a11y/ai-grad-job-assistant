@@ -31,9 +31,9 @@ def token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def create_experience(db: Session, raw_input: str) -> tuple[ExperienceProject, ConversationTurn, str]:
+def create_experience(db: Session, raw_input: str, *, token: str | None = None) -> tuple[ExperienceProject, ConversationTurn, str]:
     required_text(raw_input)
-    token = secrets.token_urlsafe(32)
+    token = token or secrets.token_urlsafe(32)
     session = ExperienceSession(access_token_hash=token_hash(token))
     db.add(session)
     db.flush()

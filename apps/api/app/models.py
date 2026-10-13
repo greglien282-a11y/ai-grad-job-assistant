@@ -114,3 +114,22 @@ class FactChange(Record, Base):
     actor: Mapped[str] = mapped_column(String(16))
     before: Mapped[dict | None] = mapped_column(JSONB)
     after: Mapped[dict] = mapped_column(JSONB)
+
+
+class IdempotencyOperation(Base):
+    __tablename__ = "idempotency_operations"
+    __table_args__ = (
+        CheckConstraint("state IN ('completed','deleted')", name="ck_operation_state"),
+        CheckConstraint("(state='deleted' AND operation IS NULL AND session_id IS NULL AND target_id IS NULL AND request_tag IS NULL AND project_id IS NULL AND initial_turn_id IS NULL AND turn_id IS NULL AND fact_id IS NULL) OR (state='completed' AND session_id IS NOT NULL AND request_tag IS NOT NULL AND ((operation='create_session' AND project_id IS NOT NULL AND initial_turn_id IS NOT NULL) OR (operation='add_turn' AND target_id IS NOT NULL AND turn_id IS NOT NULL) OR (operation='add_fact' AND target_id IS NOT NULL AND fact_id IS NOT NULL)))", name="ck_operation_receipt"),
+    )
+    key_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    state: Mapped[str] = mapped_column(String(16))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    operation: Mapped[str | None] = mapped_column(String(24))
+    session_id: Mapped[UUID | None] = mapped_column(ForeignKey("experience_sessions.id"), index=True)
+    target_id: Mapped[UUID | None] = mapped_column(Uuid)
+    request_tag: Mapped[str | None] = mapped_column(String(64))
+    project_id: Mapped[UUID | None] = mapped_column(Uuid)
+    initial_turn_id: Mapped[UUID | None] = mapped_column(Uuid)
+    turn_id: Mapped[UUID | None] = mapped_column(Uuid)
+    fact_id: Mapped[UUID | None] = mapped_column(Uuid)
