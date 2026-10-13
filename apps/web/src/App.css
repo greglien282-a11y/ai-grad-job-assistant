@@ -7,6 +7,8 @@ button:hover:not(:disabled) { background: #c2b8ff; }
 button:disabled { opacity: .42; cursor: not-allowed; }
 button.secondary { background: #ffffff08; border-color: #ffffff30; color: #d5daed; }
 button.danger { color: #f4b7ba; border-color: #d9878a70; background: #be677516; }
+button.secondary:hover:not(:disabled) { background: #ffffff18; }
+button.danger:hover:not(:disabled) { background: #be677538; }
 button:focus-visible, summary:focus-visible, a:focus-visible { outline: 3px solid #c3b4ff; outline-offset: 4px; }
 .page { min-height: 100vh; background: radial-gradient(ellipse at 10% 4%, #4c438356, transparent 40%), radial-gradient(ellipse at 95% 65%, #17687830, transparent 45%), #111525; }
 .header { max-width: 1400px; margin: auto; display: flex; justify-content: space-between; align-items: center; padding: 27px clamp(20px,5vw,70px); gap: 16px; border-bottom: 1px solid #ffffff0c; }
