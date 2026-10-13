@@ -5,7 +5,7 @@ before writes to serialize edits and ending a session. History is append-only he
 """
 import hashlib
 import secrets
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -56,16 +56,34 @@ def add_turn(db: Session, session_id: UUID, token: str, content: str) -> Convers
     return turn
 
 
-def snapshot(db: Session, fact: ExperienceFact) -> dict:
+def snapshot(db: Session, fact: ExperienceFact, *, edit: FactChange | None = None) -> dict:
+    """Current provenance for future API serialization, distinct from origin.
+
+    FactSource always preserves the original extraction links. Once edited,
+    only the latest user edit is the current statement's source. Confirmation
+    changes trust status, never restores the original turn as supporting evidence.
+    """
     sources = db.scalars(select(FactSource.turn_id).where(FactSource.fact_id == fact.id)).all()
+    original_sources = sorted(str(item) for item in sources)
+    if edit is None:
+        edit = db.scalar(select(FactChange).where(
+            FactChange.fact_id == fact.id, FactChange.action == "edited",
+        ).order_by(FactChange.created_at.desc(), FactChange.id.desc()).limit(1))
     return {"statement": fact.statement, "status": str(fact.status),
-            "source_turn_ids": sorted(str(item) for item in sources),
+            "original_source_turn_ids": original_sources,
+            "source_kind": "user_edit" if edit else "conversation_turns",
+            "source_turn_ids": [] if edit else original_sources,
+            "source_change_id": str(edit.id) if edit else None,
             "evidence_id": str(fact.evidence_id) if fact.evidence_id else None}
 
 
 def record_change(db: Session, fact: ExperienceFact, action: str, before: dict | None, actor: str = "user") -> None:
-    db.add(FactChange(fact_id=fact.id, session_id=fact.session_id,
-                      action=action, actor=actor, before=before, after=snapshot(db, fact)))
+    change = FactChange(id=uuid4(), fact_id=fact.id, session_id=fact.session_id,
+                        action=action, actor=actor, before=before)
+    # The edit's ID is known before insert, so its snapshot can cite itself.
+    change.after = snapshot(db, fact, edit=change if action == "edited" else None)
+    db.add(change)
+    db.flush()
 
 
 def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_turn_ids: list[UUID]) -> ExperienceFact:

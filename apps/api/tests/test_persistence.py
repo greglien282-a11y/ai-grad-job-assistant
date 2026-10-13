@@ -9,8 +9,9 @@ from alembic.config import Config
 from sqlalchemy import create_engine, delete, inspect, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import NullPool
 
-from app.facts import add_fact, add_turn, authorize, change_fact, create_experience, eligible_facts, end_session
+from app.facts import add_fact, add_turn, authorize, change_fact, create_experience, eligible_facts, end_session, snapshot
 from app.models import Base, ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactSource, FactStatus
 
 
@@ -76,8 +77,81 @@ def test_commit_reload_edit_and_history(migrated_connection):
         changes = db.scalars(select(FactChange).where(FactChange.fact_id == fact.id).order_by(FactChange.created_at)).all()
         assert len(changes) == 3
         assert changes[-1].before["status"] == "user_confirmed"
-        assert changes[-1].after["source_turn_ids"] == [str(ids[1])]
+        assert changes[-1].after["source_turn_ids"] == []
+        assert changes[-1].after["original_source_turn_ids"] == [str(ids[1])]
+        assert changes[-1].after["source_change_id"] == str(changes[-1].id)
         assert changes[-1].created_at.tzinfo is not None
+
+
+def test_edited_fact_provenance_survives_confirmation_and_new_connection(migrated_connection):
+    connection, _ = migrated_connection
+    schema = connection.scalar(text("SELECT current_schema()"))
+    connection.commit()
+    with Session(connection) as db, db.begin():
+        project, turn, token = create_experience(db, "Synthetic A: worked on image classification.")
+        fact = add_fact(db, project.id, token, "Worked on image classification", [turn.id])
+        original = snapshot(db, fact)
+        assert original["source_kind"] == "conversation_turns"
+        assert original["source_turn_ids"] == [str(turn.id)]
+        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, statement="Synthetic B: handled deployment")
+        edited = snapshot(db, fact)
+        assert edited["status"] == "pending"
+        assert edited["source_kind"] == "user_edit"
+        assert edited["source_turn_ids"] == []
+        edit_id = edited["source_change_id"]
+        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        project_id, fact_id, turn_id = project.id, fact.id, turn.id
+
+    # Force a separate physical connection, with its own explicit search_path.
+    reader = create_engine(os.environ["TEST_DATABASE_URL"], poolclass=NullPool, hide_parameters=True)
+    try:
+        with reader.connect() as other:
+            assert other.connection.driver_connection is not connection.connection.driver_connection
+            other.execute(text(f'SET search_path TO "{schema}"'))
+            other.commit()
+            with Session(other) as db, db.begin():
+                fact = eligible_facts(db, project_id, token)[0]
+                current = snapshot(db, fact)
+                assert fact.id == fact_id and fact.statement == "Synthetic B: handled deployment"
+                assert current["status"] == "user_confirmed"
+                assert current["source_kind"] == "user_edit"
+                assert current["source_change_id"] == edit_id
+                assert current["source_turn_ids"] == []
+                assert current["original_source_turn_ids"] == [str(turn_id)]
+                assert db.get(ConversationTurn, turn_id).content == "Synthetic A: worked on image classification."
+                assert db.get(ExperienceProject, project_id).raw_input == "Synthetic A: worked on image classification."
+                assert db.scalar(select(FactSource.turn_id).where(FactSource.fact_id == fact_id)) == turn_id
+                history = db.scalars(select(FactChange).where(FactChange.fact_id == fact_id).order_by(FactChange.created_at, FactChange.id)).all()
+                assert [item.action for item in history] == ["created", "status_changed", "edited", "status_changed"]
+                assert history[0].after["statement"] == "Worked on image classification"
+                assert history[2].actor == "user" and str(history[2].id) == edit_id
+                assert history[2].before == history[1].after
+                assert history[2].after["statement"] == fact.statement
+                assert history[3].before == history[2].after
+                assert history[3].after == current
+                assert all(item.created_at.tzinfo for item in history)
+    finally:
+        reader.dispose()
+
+
+def test_repeated_edits_replace_current_source_without_losing_history(migrated_connection):
+    connection, _ = migrated_connection
+    with Session(connection) as db, db.begin():
+        _, turn, token, fact = seed(db)
+        change_fact(db, fact.id, token, statement="Synthetic B: handled deployment")
+        first_edit = snapshot(db, fact)
+        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, statement="Built a task tracker")
+        second_edit = snapshot(db, fact)
+        assert second_edit["source_change_id"] != first_edit["source_change_id"]
+        assert second_edit["source_kind"] == "user_edit"
+        assert second_edit["source_turn_ids"] == []
+        assert second_edit["original_source_turn_ids"] == [str(turn.id)]
+        edits = db.scalars(select(FactChange).where(FactChange.fact_id == fact.id, FactChange.action == "edited").order_by(FactChange.created_at, FactChange.id)).all()
+        assert len(edits) == 2
+        assert edits[1].before["source_change_id"] == str(edits[0].id)
+        assert edits[0].after == first_edit
 
 
 def test_evidence_retained_after_edit(migrated_connection):
