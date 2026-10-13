@@ -1,0 +1,48 @@
+name: Pathwise application checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'compose.yaml'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'compose.yaml'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: FastAPI / pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q
+
+  web:
+    name: React / TypeScript build and tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run test
+      - run: npm run build

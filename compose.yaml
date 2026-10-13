@@ -1,0 +1,22 @@
+# Optional PostgreSQL for M1-1 (not required for M1-0).
+# For local development only. Replace the example password in .env.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pathwise_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-pathwise_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-for-local-development}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pathwise_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pathwise_dev} -d ${POSTGRES_DB:-pathwise_dev}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pathwise_postgres:

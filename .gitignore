@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+# Node / React
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+# Environment and private configuration
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+# Editor and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
