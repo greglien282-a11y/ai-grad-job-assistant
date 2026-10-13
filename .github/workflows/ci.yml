@@ -43,6 +43,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      # npm 10.9.x has intermittently failed dependency resolution with "edgesOut".
+      - name: Use current npm
+        run: npm install --global npm@11
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - run: npm run test
       - run: npm run build
