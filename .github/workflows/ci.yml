@@ -66,6 +66,6 @@ jobs:
       - name: Use current npm
         run: npm install --global npm@11
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - run: npm run test
       - run: npm run build
