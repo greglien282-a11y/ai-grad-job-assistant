@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "node e2e/launch.mjs",
+    "e2e:preflight": "node e2e/launch.mjs --preflight",
+    "e2e:manual": "node e2e/launch.mjs --manual",
+    "test:e2e:types": "tsc -p tsconfig.e2e.json --noEmit"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -15,9 +19,11 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
