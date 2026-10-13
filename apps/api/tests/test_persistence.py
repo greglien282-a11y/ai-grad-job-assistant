@@ -1,11 +1,9 @@
 """Real PostgreSQL only. Each test owns a randomly named, disposable schema."""
 import os
-from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import create_engine, delete, inspect, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -14,34 +12,6 @@ from sqlalchemy.pool import NullPool
 from app.facts import add_fact, add_turn, authorize, change_fact, create_experience, eligible_facts, end_session, snapshot
 from app.models import Base, ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactSource, FactStatus
 
-
-@pytest.fixture
-def migrated_connection():
-    url = os.getenv("TEST_DATABASE_URL")
-    if not url:
-        if os.getenv("CI"):
-            pytest.fail("CI requires TEST_DATABASE_URL; integration tests must not skip")
-        pytest.skip("TEST_DATABASE_URL not set; PostgreSQL integration test")
-    engine = create_engine(url, hide_parameters=True)
-    if engine.dialect.name != "postgresql":
-        pytest.fail("PostgreSQL required")
-    schema = "test_" + uuid4().hex
-    with engine.connect() as connection:
-        connection.execute(text(f'CREATE SCHEMA "{schema}"'))
-        connection.execute(text(f'SET search_path TO "{schema}"'))
-        connection.commit()
-        cfg = Config(str(Path(__file__).parents[1] / "alembic.ini"))
-        cfg.attributes["connection"] = connection
-        try:
-            command.upgrade(cfg, "head")
-            connection.commit()
-            yield connection, cfg
-        finally:
-            connection.rollback()
-            connection.execute(text("SET search_path TO public"))
-            connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
-            connection.commit()
-    engine.dispose()
 
 
 def seed(db):
@@ -59,18 +29,32 @@ def test_empty_database_migration_roundtrip(migrated_connection):
     command.upgrade(cfg, "head")
 
 
+def test_version_migration_preserves_existing_confirmed_fact(migrated_connection):
+    connection, cfg = migrated_connection
+    command.downgrade(cfg, "0001_experience_library")
+    sid, pid, fid = uuid4(), uuid4(), uuid4()
+    connection.execute(text("INSERT INTO experience_sessions (id,access_token_hash,status,created_at,updated_at) VALUES (:sid,:hash,'active',now(),now())"), {"sid": sid, "hash": "0" * 64})
+    connection.execute(text("INSERT INTO experience_projects (id,session_id,raw_input,created_at) VALUES (:pid,:sid,'Synthetic old input',now())"), {"pid": pid, "sid": sid})
+    connection.execute(text("INSERT INTO experience_facts (id,project_id,session_id,statement,status,created_at,updated_at) VALUES (:fid,:pid,:sid,'Synthetic existing claim','user_confirmed',now(),now())"), {"fid": fid, "pid": pid, "sid": sid})
+    connection.commit()
+    command.upgrade(cfg, "head")
+    row = connection.execute(text("SELECT version,statement,status FROM experience_facts WHERE id=:fid"), {"fid": fid}).one()
+    assert tuple(row) == (1, "Synthetic existing claim", "user_confirmed")
+    command.check(cfg)
+
+
 def test_commit_reload_edit_and_history(migrated_connection):
     connection, _ = migrated_connection
     with Session(connection) as db, db.begin():
         project, turn, token, fact = seed(db)
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
         assert eligible_facts(db, project.id, token) == [fact]
         ids = project.id, turn.id, fact.id
     with Session(connection) as db, db.begin():
         project = db.get(ExperienceProject, ids[0])
         fact = db.get(ExperienceFact, ids[2])
         assert fact.status == FactStatus.USER_CONFIRMED
-        change_fact(db, fact.id, token, statement="Built the tracker UI")
+        change_fact(db, fact.id, token, expected_version=fact.version, statement="Built the tracker UI")
         assert fact.status == FactStatus.PENDING
         assert eligible_facts(db, project.id, token) == []
         assert project.raw_input == db.get(ConversationTurn, ids[1]).content
@@ -93,14 +77,14 @@ def test_edited_fact_provenance_survives_confirmation_and_new_connection(migrate
         original = snapshot(db, fact)
         assert original["source_kind"] == "conversation_turns"
         assert original["source_turn_ids"] == [str(turn.id)]
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
-        change_fact(db, fact.id, token, statement="Synthetic B: handled deployment")
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, statement="Synthetic B: handled deployment")
         edited = snapshot(db, fact)
         assert edited["status"] == "pending"
         assert edited["source_kind"] == "user_edit"
         assert edited["source_turn_ids"] == []
         edit_id = edited["source_change_id"]
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
         project_id, fact_id, turn_id = project.id, fact.id, turn.id
 
     # Force a separate physical connection, with its own explicit search_path.
@@ -139,10 +123,10 @@ def test_repeated_edits_replace_current_source_without_losing_history(migrated_c
     connection, _ = migrated_connection
     with Session(connection) as db, db.begin():
         _, turn, token, fact = seed(db)
-        change_fact(db, fact.id, token, statement="Synthetic B: handled deployment")
+        change_fact(db, fact.id, token, expected_version=fact.version, statement="Synthetic B: handled deployment")
         first_edit = snapshot(db, fact)
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
-        change_fact(db, fact.id, token, statement="Built a task tracker")
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, statement="Built a task tracker")
         second_edit = snapshot(db, fact)
         assert second_edit["source_change_id"] != first_edit["source_change_id"]
         assert second_edit["source_kind"] == "user_edit"
@@ -158,13 +142,13 @@ def test_evidence_retained_after_edit(migrated_connection):
     connection, _ = migrated_connection
     with Session(connection) as db, db.begin():
         _, _, token, fact = seed(db)
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
         with pytest.raises(ValueError):
-            change_fact(db, fact.id, token, status=FactStatus.EVIDENCE_SUPPORTED)
-        change_fact(db, fact.id, token, status=FactStatus.EVIDENCE_SUPPORTED,
+            change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.EVIDENCE_SUPPORTED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.EVIDENCE_SUPPORTED,
                     material_reference="synthetic-report:section-2", basis="User compared statement with the synthetic report.")
         evidence_id = fact.evidence_id
-        change_fact(db, fact.id, token, statement="Built part of the tracker UI")
+        change_fact(db, fact.id, token, expected_version=fact.version, statement="Built part of the tracker UI")
         assert fact.evidence_id is None and fact.status == FactStatus.PENDING
         assert db.get(FactEvidence, evidence_id).reviewer == "user"
         edit = db.scalar(select(FactChange).where(FactChange.action == "edited"))
@@ -177,13 +161,13 @@ def test_invalid_transitions_rejection_and_closed_session(migrated_connection):
         project, _, token, fact = seed(db)
         assert eligible_facts(db, project.id, token) == []
         with pytest.raises(ValueError):
-            change_fact(db, fact.id, token, status=FactStatus.EVIDENCE_SUPPORTED, material_reference="report", basis="basis")
+            change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.EVIDENCE_SUPPORTED, material_reference="report", basis="basis")
         with pytest.raises(ValueError):
-            change_fact(db, fact.id, token, statement="Changed", status=FactStatus.USER_CONFIRMED)
-        change_fact(db, fact.id, token, status=FactStatus.REJECTED)
+            change_fact(db, fact.id, token, expected_version=fact.version, statement="Changed", status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.REJECTED)
         assert eligible_facts(db, project.id, token) == []
         with pytest.raises(ValueError):
-            change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
+            change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
         end_session(db, project.session_id, token)
         with pytest.raises(ValueError):
             add_turn(db, project.session_id, token, "Synthetic follow-up")
@@ -198,7 +182,7 @@ def test_access_and_source_scope(migrated_connection):
         assert token != other_token
         assert db.get(ExperienceSession, project.session_id).access_token_hash != token
         with pytest.raises(PermissionError):
-            change_fact(db, fact.id, other_token, status=FactStatus.USER_CONFIRMED)
+            change_fact(db, fact.id, other_token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
         with pytest.raises(PermissionError):
             authorize(db, other.session_id, token)
         with pytest.raises(ValueError):
@@ -223,8 +207,8 @@ def test_db_constraints_and_session_cascade(migrated_connection):
         with pytest.raises(IntegrityError), db.begin_nested():
             fact.status = FactStatus.EVIDENCE_SUPPORTED
             db.flush()
-        change_fact(db, fact.id, token, status=FactStatus.USER_CONFIRMED)
-        change_fact(db, fact.id, token, status=FactStatus.EVIDENCE_SUPPORTED, material_reference="synthetic-report", basis="human reviewed")
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.USER_CONFIRMED)
+        change_fact(db, fact.id, token, expected_version=fact.version, status=FactStatus.EVIDENCE_SUPPORTED, material_reference="synthetic-report", basis="human reviewed")
         db.execute(delete(ExperienceSession).where(ExperienceSession.id == project.session_id))
         db.expire_all()
         for model in (ExperienceProject, ConversationTurn, ExperienceFact, FactSource, FactEvidence, FactChange):

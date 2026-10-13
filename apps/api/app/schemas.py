@@ -1,0 +1,143 @@
+"""Public contracts; credential storage fields are deliberately absent."""
+from datetime import datetime
+from typing import Annotated, Literal
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+
+from app.models import FactStatus
+
+TextInput = Annotated[str, StringConstraints(min_length=1, max_length=10000)]
+Version = Annotated[int, Field(strict=True, gt=0, le=2147483647)]
+
+
+class Input(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("*", mode="after")
+    @classmethod
+    def nonblank(cls, value):
+        if isinstance(value, str) and not value.strip():
+            raise ValueError("Blank text is not allowed")
+        return value
+
+
+class CreateSession(Input):
+    raw_input: TextInput
+
+
+class AddTurn(Input):
+    content: TextInput
+
+
+class AddFact(Input):
+    statement: TextInput
+    source_turn_ids: list[UUID] = Field(min_length=1, max_length=32)
+
+
+class EditFact(Input):
+    action: Literal["edit"]
+    expected_version: Version
+    statement: TextInput
+
+
+class ConfirmFact(Input):
+    action: Literal["confirm"]
+    expected_version: Version
+
+
+class RejectFact(Input):
+    action: Literal["reject"]
+    expected_version: Version
+
+
+class VerifyFact(Input):
+    action: Literal["verify_material"]
+    expected_version: Version
+    material_reference: TextInput
+    basis: TextInput
+
+
+FactMutation = Annotated[EditFact | ConfirmFact | RejectFact | VerifyFact, Field(discriminator="action")]
+
+
+class Output(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreatedSession(Output):
+    session_id: UUID
+    project_id: UUID
+    initial_turn_id: UUID
+    status: Literal["active"]
+    access_token: str
+
+
+class ProjectView(Output):
+    id: UUID
+    session_id: UUID
+    raw_input: str
+    title: str | None
+    created_at: datetime
+
+
+class TurnView(Output):
+    id: UUID
+    session_id: UUID
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime
+
+
+class FactView(Output):
+    id: UUID
+    project_id: UUID
+    session_id: UUID
+    statement: str
+    status: FactStatus
+    version: int
+    created_at: datetime
+    updated_at: datetime
+    original_source_turn_ids: list[UUID]
+    source_kind: Literal["conversation_turns", "user_edit"]
+    source_turn_ids: list[UUID]
+    source_change_id: UUID | None
+    evidence_id: UUID | None
+
+
+class EvidenceView(Output):
+    id: UUID
+    fact_id: UUID
+    material_reference: str
+    basis: str
+    reviewer: Literal["user"]
+    created_at: datetime
+    verification_label: str = "用户提供材料并自行核实"
+
+
+class ChangeView(Output):
+    id: UUID
+    fact_id: UUID
+    action: str
+    actor: Literal["user", "system"]
+    before: dict | None
+    after: dict
+    created_at: datetime
+
+
+class SessionView(Output):
+    id: UUID
+    status: Literal["active", "ended"]
+    created_at: datetime
+    updated_at: datetime
+    projects: list[ProjectView]
+    turns: list[TurnView]
+    facts: list[FactView]
+    evidence: list[EvidenceView]
+    history: list[ChangeView]
+
+
+class SessionExport(Output):
+    format_version: Literal[1] = 1
+    exported_at: datetime
+    data: SessionView

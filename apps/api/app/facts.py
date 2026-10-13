@@ -13,6 +13,14 @@ from sqlalchemy.orm import Session
 from app.models import ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactSource, FactStatus, utcnow
 
 
+class VersionConflict(Exception):
+    """The caller is attempting to change an obsolete fact version."""
+
+
+class StateConflict(ValueError):
+    """The operation conflicts with the current resource state."""
+
+
 def required_text(value: str) -> str:
     if not value.strip() or len(value) > 10000:
         raise ValueError("Text must contain 1–10000 characters")
@@ -36,21 +44,22 @@ def create_experience(db: Session, raw_input: str) -> tuple[ExperienceProject, C
     return project, turn, token
 
 
-def authorize(db: Session, session_id: UUID, token: str, *, write: bool = False) -> ExperienceSession:
+def authorize(db: Session, session_id: UUID, token: str, *, write: bool = False, lock: bool = False) -> ExperienceSession:
     query = select(ExperienceSession).where(ExperienceSession.id == session_id)
-    if write:
+    if write or lock:
         query = query.with_for_update()
-    session = db.scalar(query)
+    session = db.scalar(query.execution_options(populate_existing=True))
     if session is None or not secrets.compare_digest(session.access_token_hash, token_hash(token)):
         raise PermissionError("Session unavailable")
     if write and session.status != "active":
-        raise ValueError("Session has ended")
+        raise StateConflict("Session has ended")
     return session
 
 
 def add_turn(db: Session, session_id: UUID, token: str, content: str) -> ConversationTurn:
-    authorize(db, session_id, token, write=True)
+    session = authorize(db, session_id, token, write=True)
     turn = ConversationTurn(session_id=session_id, role="user", content=required_text(content))
+    session.updated_at = utcnow()
     db.add(turn)
     db.flush()
     return turn
@@ -68,8 +77,10 @@ def snapshot(db: Session, fact: ExperienceFact, *, edit: FactChange | None = Non
     if edit is None:
         edit = db.scalar(select(FactChange).where(
             FactChange.fact_id == fact.id, FactChange.action == "edited",
-        ).order_by(FactChange.created_at.desc(), FactChange.id.desc()).limit(1))
+        ).order_by(FactChange.after["version"].as_integer().desc().nulls_last(),
+                   FactChange.created_at.desc(), FactChange.id.desc()).limit(1))
     return {"statement": fact.statement, "status": str(fact.status),
+            "version": fact.version,
             "original_source_turn_ids": original_sources,
             "source_kind": "user_edit" if edit else "conversation_turns",
             "source_turn_ids": [] if edit else original_sources,
@@ -90,7 +101,7 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
     project = db.get(ExperienceProject, project_id)
     if project is None:
         raise PermissionError("Session unavailable")
-    authorize(db, project.session_id, token, write=True)
+    session = authorize(db, project.session_id, token, write=True)
     required_text(statement)
     if not source_turn_ids or len(set(source_turn_ids)) != len(source_turn_ids):
         raise ValueError("Supply distinct user source turns")
@@ -99,6 +110,7 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
         if turn is None or turn.session_id != project.session_id or turn.role != "user":
             raise ValueError("Source must be a user turn in this session")
     fact = ExperienceFact(project_id=project.id, session_id=project.session_id, statement=statement)
+    session.updated_at = utcnow()
     db.add(fact)
     db.flush()
     db.add_all([FactSource(fact_id=fact.id, turn_id=item, session_id=project.session_id) for item in source_turn_ids])
@@ -109,20 +121,22 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
 
 def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None = None,
                 status: FactStatus | None = None, material_reference: str | None = None,
-                basis: str | None = None) -> ExperienceFact:
+                basis: str | None = None, expected_version: int) -> ExperienceFact:
     fact = db.get(ExperienceFact, fact_id)
     if fact is None:
         raise PermissionError("Session unavailable")
-    authorize(db, fact.session_id, token, write=True)
+    session = authorize(db, fact.session_id, token, write=True)
     # Reload after acquiring the parent lock: another transaction may have edited it.
     db.refresh(fact)
+    if fact.version != expected_version:
+        raise VersionConflict("Fact version has changed")
     before = snapshot(db, fact)
     if statement is not None:
         required_text(statement)
         if status is not None or material_reference is not None or basis is not None:
             raise ValueError("Edit and confirmation must be separate operations")
         if statement == fact.statement:
-            raise ValueError("Statement is unchanged")
+            raise StateConflict("Statement is unchanged")
         fact.statement, fact.status, fact.evidence_id = statement, FactStatus.PENDING, None
         action = "edited"
     else:
@@ -136,7 +150,7 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
             FactStatus.REJECTED: set(),
         }
         if status not in allowed[FactStatus(fact.status)]:
-            raise ValueError("Illegal fact status transition")
+            raise StateConflict("Illegal fact status transition")
         if status == FactStatus.EVIDENCE_SUPPORTED:
             if material_reference is None or basis is None:
                 raise ValueError("Material reference and human verification basis required")
@@ -150,6 +164,7 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
         fact.status = status
         action = "status_changed"
     fact.updated_at = utcnow()
+    session.updated_at = fact.updated_at
     db.flush()
     record_change(db, fact, action, before)
     return fact
