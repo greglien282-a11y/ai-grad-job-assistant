@@ -20,7 +20,7 @@ export function FactCard({ fact, index, session, disabled, onMutate }: {
   return <article className="card fact-card" aria-label={`事实 ${index}`}>
     <div className="fact-top"><span className="fact-number">{String(index).padStart(2, '0')}</span><span className={`pill ${fact.status}`}>{statusLabels[fact.status]}</span><small>版本 {fact.version}</small></div>
     <h3 className="statement">{fact.statement}</h3>
-    <div className="fact-actions"><button className="secondary" disabled={disabled} onClick={() => { setDraft(fact.statement); setEditVersion(fact.version); setEditing(true); setVerifying(false) }}>编辑陈述</button>
+    <div className="fact-actions"><button className="secondary" disabled={disabled || editing} onClick={() => { if (editing) return; setDraft(fact.statement); setEditVersion(fact.version); setEditing(true); setVerifying(false) }}>编辑陈述</button>
       <button disabled={disabled || fact.status !== 'pending' || editing} onClick={() => void onMutate({ action: 'confirm', expected_version: fact.version })}>确认事实</button>
       <button className="secondary" disabled={disabled || fact.status === 'rejected' || editing} onClick={() => void onMutate({ action: 'reject', expected_version: fact.version })}>拒绝事实</button>
       <button className="secondary" disabled={disabled || fact.status !== 'user_confirmed' || editing} onClick={() => { setVerifyVersion(fact.version); setVerifying(true) }}>材料核实</button></div>

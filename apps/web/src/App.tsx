@@ -15,6 +15,7 @@ export default function App({ api = createExperienceApi(), download = downloadJs
   const [statement, setStatement] = useState('')
   const pendingTurn = useRef<{ content: string; id: string } | null>(null)
   const [deletePrompt, setDeletePrompt] = useState(false)
+  const [endPrompt, setEndPrompt] = useState(false)
   const [needsReload, setNeedsReload] = useState(false)
 
   useEffect(() => {
@@ -68,7 +69,21 @@ export default function App({ api = createExperienceApi(), download = downloadJs
     if (!credentials) return
     await apiRef.current.mutate(credentials, fact.id, body); await afterWrite()
   }
+  async function endSession() {
+    if (!credentials || !session || needsReload || session.status !== 'active') return
+    setSession(await apiRef.current.end(credentials))
+    setEndPrompt(false)
+    setNotice('会话已结束，仍可查看、导出或删除。')
+  }
+  async function deleteSession() {
+    if (!credentials || !session || needsReload) return
+    await apiRef.current.remove(credentials)
+    try { sessionStorage.removeItem(SESSION_KEY) } catch { /* Storage may be disabled. */ }
+    setSession(null); setCredentials(null); setDeletePrompt(false); setEndPrompt(false)
+    setStatement(''); pendingTurn.current = null; setNotice('会话及其资料已删除。')
+  }
   const readonly = session?.status === 'ended'
+  const managementBlocked = busy || needsReload || !session
   const confirmed = session?.facts.filter(f => ['user_confirmed', 'evidence_supported'].includes(f.status)).length ?? 0
   return <div className="page">
     <header className="header"><a className="brand" href="#"><span className="brand-symbol">✦</span>启程 <span className="brand-en">Pathwise</span></a><span className="stage">真实经历库 · 开发版</span></header>
@@ -82,9 +97,10 @@ export default function App({ api = createExperienceApi(), download = downloadJs
         <div className="session-bar"><div><span className={`pill ${readonly ? '' : 'green'}`}>{readonly ? '已结束 · 只读' : '整理中'}</span><span className="session-summary">{confirmed} / {session?.facts.length ?? 0} 条已确认</span></div><div className="button-row">
           <button className="secondary" disabled={busy} onClick={() => void run(() => refresh())}>重新读取</button>
           <button className="secondary" disabled={busy || !session} onClick={() => void run(async () => { const value = await apiRef.current.export(credentials); download(value, `pathwise-${credentials.sessionId}.json`); setNotice('已导出完整会话资料。请妥善保管下载文件。') })}>导出资料</button>
-          <button className="secondary" disabled={busy || !session || readonly} onClick={() => void run(async () => { setSession(await apiRef.current.end(credentials)); setNotice('会话已结束，仍可查看、导出或删除。') })}>结束会话</button>
-          <button className="danger" disabled={busy} onClick={() => setDeletePrompt(true)}>删除会话</button></div></div>
-        {deletePrompt && <section className="delete-panel" aria-label="删除确认"><h2>永久删除这次会话？</h2><p>原始自述、事实、材料依据和历史记录将一起删除，无法恢复。建议先导出。</p><div className="button-row"><button className="danger" disabled={busy} onClick={() => void run(async () => { await apiRef.current.remove(credentials); try { sessionStorage.removeItem(SESSION_KEY) } catch { /* Storage may be disabled. */ } setSession(null); setCredentials(null); setDeletePrompt(false); setStatement(''); pendingTurn.current = null; setNotice('会话及其资料已删除。') })}>确认永久删除</button><button className="secondary" disabled={busy} onClick={() => setDeletePrompt(false)}>取消删除</button></div></section>}
+          <button className="secondary" disabled={managementBlocked || readonly} onClick={() => { setDeletePrompt(false); setEndPrompt(true) }}>结束会话</button>
+          <button className="danger" disabled={managementBlocked} onClick={() => { setEndPrompt(false); setDeletePrompt(true) }}>删除会话</button></div></div>
+        {endPrompt && <section className="card" aria-label="结束确认"><h2>确认结束这次会话？</h2><p>结束后会话只读，无法重新开启或继续新增、编辑事实。仍可查看、导出或删除资料。</p><div className="button-row"><button disabled={managementBlocked || readonly} onClick={() => void run(endSession)}>确认结束会话</button><button className="secondary" disabled={busy} onClick={() => setEndPrompt(false)}>取消结束</button></div></section>}
+        {deletePrompt && <section className="delete-panel" aria-label="删除确认"><h2>永久删除这次会话？</h2><p>原始自述、事实、材料依据和历史记录将一起删除，无法恢复。建议先导出。</p><div className="button-row"><button className="danger" disabled={managementBlocked} onClick={() => void run(deleteSession)}>确认永久删除</button><button className="secondary" disabled={busy} onClick={() => setDeletePrompt(false)}>取消删除</button></div></section>}
         {!session ? <section className="card"><h2>正在恢复你的会话</h2><p>资料从服务端读取。连接失败时可重新读取；如凭证失效，可清除本页暂存重新开始。</p><button className="secondary" disabled={busy} onClick={() => { try { sessionStorage.removeItem(SESSION_KEY) } catch { /* Storage may be disabled. */ } setCredentials(null); setError(''); setNotice('已清除本页凭证；没有删除服务端资料。') }}>清除本页凭证</button></section> : <div className="workspace-grid">
           <aside className="context-column"><section className="card"><p className="eyebrow">原始自述</p><h2>经历的起点</h2>{session.projects.map(p => <p className="original" key={p.id}>{p.raw_input}</p>)}<small>原始内容保留在这里，事实编辑另记来源。</small></section>
             <section className="card"><h2>补充一条事实</h2><p>写你亲手做过的事。每条补充会先记录为用户自述，再进入待确认列表。</p><form onSubmit={e => { e.preventDefault(); void run(add) }}><label htmlFor="statement">新的事实陈述</label><textarea id="statement" value={statement} onChange={e => setStatement(e.target.value)} maxLength={10000} required disabled={busy || readonly || needsReload} placeholder="例如：我负责任务列表页面，以及筛选交互。" /><button disabled={busy || readonly || needsReload || !statement.trim() || !session.projects.length}>新增待确认事实</button></form>{readonly && <small>已结束的会话不能新增或编辑。</small>}</section>
