@@ -37,7 +37,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "Accept", "Idempotency-Key"],
-    expose_headers=["Content-Disposition", "Idempotency-Replayed"],
+    expose_headers=["Content-Disposition", "Idempotency-Replayed", "Retry-After"],
 )
 app.include_router(router)
 

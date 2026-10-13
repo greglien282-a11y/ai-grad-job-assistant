@@ -300,3 +300,16 @@ def test_cleanup_preserves_business_and_reports_failure(api,monkeypatch,capsys):
         cli.main()
     message=str(caught.value)
     assert 'monitoring required' in message and 'SYNTHETIC_PRIVATE_CONNECTION' not in message
+
+
+def test_cross_origin_key_and_retry_after_are_accessible_without_credential_echo(api):
+    client,_=api
+    preflight=client.options(ROOT+'/sessions',headers={'Origin':'http://localhost:5173','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,idempotency-key,content-type'})
+    assert preflight.status_code==200
+    h,token=headers(); h['Origin']='http://localhost:5173'
+    response=client.get(ROOT+'/session-creations/recovery',headers=h)
+    assert response.status_code==404
+    exposed={value.strip().lower() for value in response.headers['access-control-expose-headers'].split(',')}
+    assert {'idempotency-replayed','retry-after'}.issubset(exposed)
+    leaked=token in response.text or h['Idempotency-Key'] in response.text
+    assert not leaked
