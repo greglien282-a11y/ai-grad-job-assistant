@@ -1,5 +1,8 @@
 # Pathwise API (M1-0)
 
+M1-1A adds PostgreSQL persistence services and versioned migrations. Business HTTP
+endpoints are deferred to M1-1B. See [persistence setup and rules](../../docs/M1_1A_PERSISTENCE.md).
+
 Requires Python 3.11+.
 
 ```bash

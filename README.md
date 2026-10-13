@@ -69,6 +69,8 @@ flowchart TD
 
 ## 仓库导览
 
+- [M1-1A 经历事实库持久化基础](docs/M1_1A_PERSISTENCE.md)（业务接口与工作台待后续阶段）
+
 - [产品愿景与目标用户](docs/PRODUCT_VISION.md)
 - [公开版产品需求摘要](docs/PRODUCT_BRIEF.md)
 - [典型用户流程](docs/USER_JOURNEY.md)

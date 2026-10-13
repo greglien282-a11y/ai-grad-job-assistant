@@ -75,6 +75,9 @@ ai-grad-job-assistant/
 
 ## 4. 真实经历数据模型（MVP-1）
 
+M1-1A 的实际持久化设计与运行步骤见 [M1_1A_PERSISTENCE.md](M1_1A_PERSISTENCE.md)。
+事实来源使用关联表，材料核实记录和事实变更历史独立保存；本阶段不实现简历草稿表或业务 HTTP 接口。
+
 | 对象 | 核心字段 | 作用 |
 |---|---|---|
 | `experience_sessions` | `id`, `status`, `created_at`, `updated_at` | 一次经历挖掘会话，可结束和继续 |
