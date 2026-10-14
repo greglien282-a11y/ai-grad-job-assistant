@@ -1,0 +1,13 @@
+{
+  "synthetic": true,
+  "kind": "create_session",
+  "scope": "global",
+  "issued": 1770000000,
+  "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "token": "Hx4dHBsaGRgXFhUUExIREA8ODQwLCgkIBwYFBAMCAQA",
+  "key": "v1.1770000000.AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8.XS5hG6UdhhKstDtJW7aL2JBlZSsW9Rftc5DhAq1ZCCE",
+  "body": {
+    "raw_input": "Synthetic 中文 🚀\nline two"
+  },
+  "bodyTag": "c447bcb876783929ec4d15531386de2284be890dd5e648c7843ce5d42f91395c"
+}

@@ -1,6 +1,6 @@
-# M1-1B-3 幂等修复合同提案 v2（待批准，尚未实施）
+# M1-1B-3 幂等修复合同提案 v2（已批准，历史设计记录）
 
-2026-10-13，根据 [PR #5 第一轮完整 Review](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/5#pullrequestreview-5505112934) 修订。本文件是拟议合同，不代表批准或已实现；PR #5 继续 Draft，Issue #1 保持 open。
+2026-10-13，根据 [PR #5 第一轮完整 Review](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/5#pullrequestreview-5505112934) 修订。合同随后通过设计审查，并由 PR #6 实现、合并至 main `e7e872c`；本文件保留设计时的技术合同与历史问题，当前测试结果见 [验收说明](M1_1B_3_E2E.md)。PR #5 继续 Draft，Issue #1 保持 open。
 
 ## 1. 已复现问题与设计取舍
 

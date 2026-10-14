@@ -49,6 +49,7 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - run: python -m alembic upgrade head
       - run: python -m alembic check
+      - run: python -m app.cleanup_idempotency
       - run: python -m pytest -q -ra
 
   web:
@@ -105,7 +106,7 @@ jobs:
       - run: python -m pip install -r ../api/requirements.txt
       - run: npm install --global npm@11
       - run: npm ci --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium --only-shell
       - run: python e2e/ci_database.py
       - run: npm run e2e:preflight
       - run: npm run test:e2e:types

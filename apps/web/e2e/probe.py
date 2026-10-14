@@ -23,9 +23,11 @@ def main():
         if db.scalar(text('SELECT current_schema()')) != schema:
             raise ValueError('Schema mismatch')
         if sys.argv[1] == 'preflight':
-            assert db.scalar(text('SELECT version_num FROM alembic_version')) == '0002_fact_version'
+            assert db.scalar(text('SELECT version_num FROM alembic_version')) == '0003_idempotency'
             return
         if sys.argv[1] == 'reset':
+            # Only this validated run-owned schema; remove live receipt FKs first.
+            db.execute(text('DELETE FROM idempotency_operations'))
             db.execute(text('DELETE FROM experience_sessions'))
             db.commit()
             return
