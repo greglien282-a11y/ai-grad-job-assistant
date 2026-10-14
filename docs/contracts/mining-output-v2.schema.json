@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "AtomicCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "citation": {
+          "$ref": "#/$defs/AtomicCitation"
+        }
+      },
+      "required": [
+        "citation"
+      ],
+      "title": "AtomicCandidate",
+      "type": "object"
+    },
+    "AtomicCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "turn_id",
+        "quote",
+        "start",
+        "end"
+      ],
+      "title": "AtomicCitation",
+      "type": "object"
+    },
+    "SuggestedQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "contribution",
+            "detail",
+            "uncertainty",
+            "verification",
+            "correction"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "source_turn_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "title": "Source Turn Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "purpose",
+        "source_turn_ids"
+      ],
+      "title": "SuggestedQuestion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 2,
+      "default": 2,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/AtomicCandidate"
+      },
+      "maxItems": 5,
+      "title": "Candidates",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/SuggestedQuestion"
+      },
+      "maxItems": 2,
+      "title": "Questions",
+      "type": "array"
+    },
+    "stop": {
+      "default": false,
+      "title": "Stop",
+      "type": "boolean"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "enough_information",
+            "user_uncertain",
+            "no_new_information"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stop Reason"
+    },
+    "tokens_in": {
+      "default": 0,
+      "maximum": 12000,
+      "minimum": 0,
+      "title": "Tokens In",
+      "type": "integer"
+    },
+    "tokens_out": {
+      "default": 0,
+      "maximum": 1200,
+      "minimum": 0,
+      "title": "Tokens Out",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "candidates",
+    "questions"
+  ],
+  "title": "MiningOutputV2",
+  "type": "object"
+}

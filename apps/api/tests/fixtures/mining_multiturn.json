@@ -1,0 +1,8 @@
+[
+  {"name":"ambiguous_course","turns":["合成：做过一个课程项目，有些细节不清楚。","我实现了列表筛选。","我没有负责部署。"],"facts":[0,1,2]},
+  {"name":"team_scope","turns":["团队完成了课程演示。","我编写了列表页面。"],"facts":[0,1]},
+  {"name":"forgot_detail","turns":["合成课程项目。","我记不清采用的技术。"],"facts":[0,0]},
+  {"name":"negative","turns":["我没有负责部署。","我没有做性能测试。"],"facts":[1,2]},
+  {"name":"unicode","turns":["我实现了 🚀 列表筛选。","我制作了演示页面。"],"facts":[1,2]},
+  {"name":"hypothesis","turns":["如果再做一次，我计划部署到服务器。","我负责列表页面。"],"facts":[0,1]}
+]
