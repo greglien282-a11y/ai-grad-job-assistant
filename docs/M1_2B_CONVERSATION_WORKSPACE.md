@@ -74,7 +74,7 @@ failed/unknown/stale 的已保存回答需二次确认重新整理，复用原�
 
 浏览器检查创建→初始整理→两题选择→回答关系→确认/编辑/再确认/材料→复制→刷新→停止/结束/删除；另外覆盖问题动作、创建及回答丢响应、网络未到达后的原键重试、版本冲突+失败读取+打开面板、移动切换、200% 缩放可用宽度。SQL probe 直接核对运行、user turns、question ID/version 关联及删除。trace/HAR/video/私有服务日志默认不上传，CI 只增加合成 UI 截图。
 
-本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 51 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；Edge 23 项真实 E2E 全通过（原 16 + 新增 7，零重试）。三张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
+本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 52 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；Edge 23 项真实 E2E 全通过（原 16 + 新增 7，零重试）。三张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
 
 ![桌面对话与事实审核](assets/m1-2b/desktop.png)
 
@@ -85,3 +85,5 @@ failed/unknown/stale 的已保存回答需二次确认重新整理，复用原�
 ## 尚未完成
 
 真实模型、历史上下文快照/脱敏/预算、真正自适应追问、语义拆分/专业改写、正式简历/PDF、账号/长期跨设备恢复均未交付。Scripted 仍会重复固定问题；原文完整提取可能生成较长复合候选。M1-2C 必须先审查历史上下文与费用授权，不是替换类即可上线。本轮不更改完整 PRD、prototype/Pages，也不提前做 M1-2C。
+
+CI 剪贴板说明：首次 Chromium 作业在复制成功提示处失败（22/23），本机 Edge 可用。E2E 现仅为临时测试 origin 明确授予 clipboard-read/write 权限，通过真实浏览器剪贴板读回布尔比对，未 mock 成功、未放宽断言。另有组件测试验证权限拒绝时只提示手工复制，不谎称成功。最终 CI 以 PR 最新提交为准。

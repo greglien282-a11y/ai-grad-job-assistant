@@ -20,7 +20,9 @@ async function forward(route: Route) {
   catch { throw new Error('Isolated upstream failed; private headers suppressed') }
 }
 
-test('discovery full real UI / HTTP / PostgreSQL flow and desktop evidence', async ({ page }, info) => {
+test('discovery full real UI / HTTP / PostgreSQL flow and desktop evidence', async ({ page, context }, info) => {
+  // Grant only the disposable test origin; exercise the real clipboard, no mock.
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:15173' })
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
   await expect(page.getByRole('region', { name: '三个首页入口' })).toBeVisible()
@@ -56,6 +58,8 @@ test('discovery full real UI / HTTP / PostgreSQL flow and desktop evidence', asy
   await page.getByRole('button', { name: '复制经历文本' }).click()
   await expect(page.getByText('已复制确认后的经历文本。')).toBeVisible()
   const confirmed = (await apiRead(page)).facts.find((f: { id: string }) => f.id === probe().facts[1].id)
+  const clipboardMatches = await page.evaluate(expected => navigator.clipboard.readText().then(text => text === expected), confirmed.statement)
+  expect(clipboardMatches).toBe(true)
   expect(confirmed.source_kind).toBe('user_edit')
   expect(confirmed.source_turn_ids).toHaveLength(0)
   await page.reload()

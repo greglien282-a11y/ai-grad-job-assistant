@@ -80,6 +80,13 @@ describe('scripted conversation with recorded FastAPI contracts', () => {
     expect(copy).toHaveBeenCalledWith(fixtures.confirmedSummary.text)
     expect(screen.getByText('技术备份（JSON，非正式简历）')).toBeInTheDocument()
   })
+  it('clipboard denial explains manual copying without claiming success', async () => {
+    const x = setup('confirmed');await waitReady()
+    x.copy.mockRejectedValueOnce(new DOMException('Denied', 'NotAllowedError'))
+    await userEvent.click(screen.getByRole('button', { name: '复制经历文本' }))
+    await screen.findByText('剪贴板不可用，请选中上方文字手动复制。')
+    expect(screen.queryByText('已复制确认后的经历文本。')).not.toBeInTheDocument()
+  })
   it('lost committed response invokes only a GET recovery, not a second POST', async () => {
     const { fetcher, loseResponse } = setup()
     await waitReady();loseResponse()
