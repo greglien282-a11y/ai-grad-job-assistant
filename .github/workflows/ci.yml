@@ -5,11 +5,15 @@ on:
     branches: [main]
     paths:
       - 'apps/**'
+      - 'scripts/check_m12c2_contracts.py'
+      - 'docs/evaluation/**'
       - 'compose.yaml'
       - '.github/workflows/ci.yml'
   pull_request:
     paths:
       - 'apps/**'
+      - 'scripts/check_m12c2_contracts.py'
+      - 'docs/evaluation/**'
       - 'compose.yaml'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
@@ -51,6 +55,8 @@ jobs:
       - run: python -m alembic check
       - run: python -m app.cleanup_idempotency
       - run: python -m pytest -q -ra
+      - name: Offline model preparation contracts (no network or keys)
+        run: python ../../scripts/check_m12c2_contracts.py
 
   web:
     name: React / TypeScript build and tests

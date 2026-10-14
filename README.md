@@ -104,3 +104,5 @@ flowchart TD
 欢迎通过 Issue 交流产品需求和真实求职痛点；**请勿上传包含个人信息的真实简历、联系方式、招聘网站登录信息或 API Key**。
 
 M1-2C-1 的多轮上下文与合成 v2 输出合同见 [技术说明](docs/M1_2C_1_CONTEXT_CONTRACT.md)。真实模型未启用，旧 Scripted/UI 合同保持兼容。
+
+M1-2C-2 当前仅提交 [真实接入准备与合成评测设计](docs/M1_2C_2_ADAPTER_EVAL_DESIGN.md)，真实开关关闭、费用授权为零；30 元是待批准草案。

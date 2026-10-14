@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "AtomicCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "citation": {
+          "$ref": "#/$defs/AtomicCitation"
+        }
+      },
+      "required": [
+        "citation"
+      ],
+      "type": "object"
+    },
+    "AtomicCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "turn_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 500,
+          "minLength": 1,
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "turn_id",
+        "quote",
+        "start",
+        "end"
+      ],
+      "type": "object"
+    },
+    "SuggestedQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "maxLength": 500,
+          "minLength": 1,
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "contribution",
+            "detail",
+            "uncertainty",
+            "verification",
+            "correction"
+          ],
+          "type": "string"
+        },
+        "source_turn_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "purpose",
+        "source_turn_ids"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 2,
+      "type": "integer"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/AtomicCandidate"
+      },
+      "maxItems": 5,
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/SuggestedQuestion"
+      },
+      "maxItems": 2,
+      "type": "array"
+    },
+    "stop": {
+      "type": "boolean"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "enough_information",
+            "user_uncertain",
+            "no_new_information"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "candidates",
+    "questions",
+    "stop",
+    "stop_reason"
+  ],
+  "type": "object"
+}
