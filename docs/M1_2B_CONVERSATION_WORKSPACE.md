@@ -96,7 +96,7 @@ failed/unknown/stale 的已保存回答需二次确认重新整理，复用原�
 
 浏览器检查创建→初始整理→两题选择→回答关系→确认/编辑/再确认/材料→复制→刷新→停止/结束/删除；另外覆盖问题动作、创建及回答丢响应、网络未到达后的原键重试、版本冲突+失败读取+打开面板、移动切换、200% 缩放可用宽度。SQL probe 直接核对运行、user turns、question ID/version 关联及删除。trace/HAR/video/私有服务日志默认不上传，CI 只增加合成 UI 截图。
 
-本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 62 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；前轮 Edge 27 项全通过；本轮新增 3 项成果验收，完整 30 项与新截图结果待运行记录。原四张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
+本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 62 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；前轮 Edge 27 项全通过；本轮完整 CI Chromium 30 项通过（原 16 + 对话 7 + 恢复 4 + 独立成果 3），零重试。本机 Edge 新一轮因人工预览占用 15173/18000 被启动器拒绝，未复用预览或清空其资料，不能记为本轮 Edge 已通过。原四张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
 
 ![独立三入口首页](assets/m1-2b/home.png)
 
@@ -105,6 +105,14 @@ failed/unknown/stale 的已保存回答需二次确认重新整理，复用原�
 ![390px 对话视图](assets/m1-2b/mobile.png)
 
 ![200% 缩放单栏](assets/m1-2b/zoom.png)
+
+### 独立成果页合成截图
+
+以下两张为 CI `38554575500`、代码提交 `4ac73bb` 的真实 Chromium/React/FastAPI/PostgreSQL 流程输出，经查看核验。只含合成正文，未上传 trace/HAR 或私有日志。该 CI 的 PostgreSQL 121、React 62、Chromium 30 及构建/迁移检查均通过。
+
+![独立成果页桌面](assets/m1-2b/summary-desktop.png)
+
+![独立成果页 390px](assets/m1-2b/summary-mobile.png)
 
 ## 尚未完成
 
