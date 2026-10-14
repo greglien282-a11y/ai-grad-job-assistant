@@ -14,6 +14,8 @@ from app.experience_api import router
 from app.facts import StateConflict, VersionConflict
 from app.http_security import RequestBoundary, error_response
 from app.idempotency import IdempotencyError
+from app.mining_api import router as mining_router
+from app.mining import MiningError
 
 
 class HealthResponse(BaseModel):
@@ -40,6 +42,13 @@ app.add_middleware(
     expose_headers=["Content-Disposition", "Idempotency-Replayed", "Retry-After"],
 )
 app.include_router(router)
+app.include_router(mining_router)
+
+
+@app.exception_handler(MiningError)
+async def mining_error(request, exc):
+    headers = {'Retry-After': '1'} if exc.status == 429 else None
+    return error_response(exc.status, exc.code, 'Mining operation requires review', headers)
 
 
 @app.exception_handler(IdempotencyError)
