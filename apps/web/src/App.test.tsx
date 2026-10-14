@@ -23,7 +23,7 @@ function setup(initial: Stage | null = 'pending') {
     if (path.endsWith('/export')) return json(fixtures.exported)
     if (method === 'GET') return json(fixtures[state])
     if (method === 'DELETE') return new Response(null, { status: 204 })
-    if (path.endsWith('/sessions')) return json(fixtures.created, 201)
+    if (path.endsWith('/sessions')) return json({ ...fixtures.created, access_token: (init?.headers as Record<string, string>).Authorization.slice(7) }, 201)
     if (path.endsWith('/turns')) return json(fixtures.turn, 201)
     if (path.endsWith('/end')) { state = 'ended'; return json(fixtures.ended) }
     if (method === 'POST') {
@@ -50,13 +50,14 @@ describe('experience workspace with recorded FastAPI contracts', () => {
     await userEvent.type(screen.getByLabelText('原始经历'), fixtures.empty.projects[0].raw_input)
     await userEvent.click(screen.getByRole('button', { name: /创建经历会话/ }))
     await screen.findByRole('heading', { name: '你的事实清单' })
-    expect(JSON.parse(sessionStorage.getItem(SESSION_KEY)!)).toEqual(credentials)
+    const createdCredential = { sessionId: credentials.sessionId, token: (fetcher.mock.calls[0][1]?.headers as Record<string, string>).Authorization.slice(7) }
+    expect(JSON.parse(sessionStorage.getItem(SESSION_KEY)!)).toEqual(createdCredential)
     expect(sessionStorage.length).toBe(1)
     expect(localStorage.length).toBe(0)
     expect(fetcher.mock.calls[0][1]?.body).toBe(JSON.stringify({ raw_input: fixtures.empty.projects[0].raw_input }))
     const read = fetcher.mock.calls.find(([, init]) => init?.method === 'GET')!
-    expect(read[0]).not.toContain(credentials.token)
-    expect(read[1]?.headers).toMatchObject({ Authorization: `Bearer ${credentials.token}` })
+    expect(read[0]).not.toContain(createdCredential.token)
+    expect(read[1]?.headers).toMatchObject({ Authorization: `Bearer ${createdCredential.token}` })
   })
 
   it('adds a user source turn first and reuses it if fact creation fails', async () => {

@@ -69,7 +69,7 @@ class CreatedSession(Output):
     session_id: UUID
     project_id: UUID
     initial_turn_id: UUID
-    status: Literal["active"]
+    status: Literal["active", "ended"]
     access_token: str
 
 

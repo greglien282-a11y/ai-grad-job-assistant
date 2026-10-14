@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import fixtures from '../test/api-fixtures.json'
 import { createExperienceApi, credentialsSchema, readCredentials, sessionSchema, SESSION_KEY } from './experience'
+import { newPending } from './idempotency'
 
 describe('FastAPI client contracts and temporary credential storage', () => {
   it('accepts every recorded server snapshot and rejects invalid versions or source shapes', () => {
@@ -17,11 +18,12 @@ describe('FastAPI client contracts and temporary credential storage', () => {
   })
   it('never reflects server errors or private payloads to users', async () => {
     const api = createExperienceApi(vi.fn(async () => new Response(JSON.stringify({ error: { code: 'database_unavailable', message: 'PRIVATE SQL OR CREDENTIAL' } }), { status: 503 })) as typeof fetch)
-    await expect(api.create('Synthetic')).rejects.toThrow('数据库暂时不可用')
-    await expect(api.create('Synthetic')).rejects.not.toThrow('PRIVATE')
+    const pending = await newPending('Synthetic')
+    await expect(api.create('Synthetic', pending)).rejects.toThrow('数据库暂时不可用')
+    await expect(api.create('Synthetic', pending)).rejects.not.toThrow('PRIVATE')
   })
   it('rejects successful responses that violate the API contract', async () => {
     const api = createExperienceApi(vi.fn(async () => new Response('{}', { status: 200 })) as typeof fetch)
-    await expect(api.create('Synthetic')).rejects.toThrow('资料格式异常')
+    await expect(api.create('Synthetic', await newPending('Synthetic'))).rejects.toThrow('资料格式异常')
   })
 })
