@@ -72,6 +72,7 @@ flowchart TD
 - [M1-1A 经历事实库持久化基础](docs/M1_1A_PERSISTENCE.md)（已合并）
 - [M1-1B-1 HTTP API、版本控制与本地 PostgreSQL](docs/M1_1B_1_API.md)（React 工作台待 M1-1B-2）
 - [M1-1B-2 React 事实确认工作台](docs/M1_1B_2_WORKSPACE.md)（真实 API，开发期临时会话）
+- [M1-1B-3 隔离浏览器测试与 Windows 验收](docs/M1_1B_3_E2E.md)（含真实幂等阻断与待审修复提案）
 - [M1-1B 幂等修复与临时恢复](docs/M1_1B_IDEMPOTENCY_FIX.md)（独立 Draft，24 小时不是长期账号恢复）
 
 - [产品愿景与目标用户](docs/PRODUCT_VISION.md)

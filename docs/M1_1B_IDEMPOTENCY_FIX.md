@@ -1,6 +1,6 @@
-# M1-1B 幂等修复（独立 Draft PR）
+# M1-1B 幂等修复（PR #6 已合并）
 
-基于 main `f52df79`，分支 `codex/m1-1b-idempotency-fix`。按 [批准的合同 v2](https://github.com/greglien282-a11y/ai-grad-job-assistant/blob/21fca42cf7dfa123020f9f5c6a794a3297c6e5d5/docs/M1_1B_3_IDEMPOTENCY_PROPOSAL.md) 与 [设计批准 Review](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/5#pullrequestreview-5505636662) 实现，不合并 PR #5、不关闭 Issue #1。
+PR #6 基于 main `f52df79`，已 squash 合并为 `e7e872c`。PR #5 现已整合修复与项目内 E2E，完整验收见 [M1-1B-3](M1_1B_3_E2E.md)。按 [批准的合同 v2](https://github.com/greglien282-a11y/ai-grad-job-assistant/blob/21fca42cf7dfa123020f9f5c6a794a3297c6e5d5/docs/M1_1B_3_IDEMPOTENCY_PROPOSAL.md) 与 [设计批准 Review](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/5#pullrequestreview-5505636662) 实现，不合并 PR #5、不关闭 Issue #1。
 
 ## 业务行为
 
@@ -35,18 +35,16 @@
 
 开发启动执行一次清理，失败则停止启动，不静默忽略。部署方必须按小时执行 `python -m app.cleanup_idempotency`，监测非零退出码并告警；本轮提供命令及失败测试，不安装 Windows 定时任务、修改系统服务或部署生产调度。正常每小时调度时，过期行在到期后 1 小时内物理清除；任务未运行/失败不能声称达成该期限。清理仅删除过期操作元数据，不删除活会话或用户资料；输出只有删除条数和最老过期时间，失败信息不带连接/正文。
 
-本轮空 schema upgrade/check/downgrade/upgrade和已有已确认事实升级均在真实 PostgreSQL 测试中通过；未对日常 pathwise_dev 执行迁移或数据清理。CI 保留 upgrade/check并增加清理命令烟雾检查。
+本轮空 schema upgrade/check/downgrade/upgrade和已有已确认事实升级均在真实 PostgreSQL 测试中通过。2026-10-14 经用户单独授权，本机 pathwise_dev 已先私有备份再升级 0003/check，既有业务内容与计数保持一致；详见验收文档。CI 保留 upgrade/check并增加清理命令烟雾检查。
 
-## 回归与 PR #5 组合验证
+## 回归与项目内验收
 
-- 后端真实 PostgreSQL：57 项通过，保留 main 原 40 项。新增重复/不同正文、错凭证/键/时钟、只读恢复、多连接并发、真实等待及 5 秒锁超时、部分写入回滚、提交前过期、删除竞争、墓碑约束/清理/失败监测、当前来源及共享签名向量。
+- PR #6 后端真实 PostgreSQL 57 项通过；整合 PR #5 隔离守卫后共 66 项通过，保留原测试目标。新增重复/不同正文、错凭证/键/时钟、只读恢复、多连接并发、真实等待及 5 秒锁超时、部分写入回滚、提交前过期、删除竞争、墓碑约束/清理/失败监测、当前来源及共享签名向量。
 - 前端：35 项通过，保留原 21 项目标。覆盖发送前暂存、丢201只读恢复、刷新零POST、原正文标签门禁、存储/随机数失败、迁移失败保留pending、回合/事实稳定重试、专用409、过期/删除、显式孤立回合选择、Retry-After；TypeScript/Vite构建通过。
 - Windows Edge真实组合验证：16项通过，包含 PR #5原11项及本PR新增5项。只用合成数据，真实React/FastAPI/PostgreSQL、独立端口与新测试schema。原两项失败断言原样变绿，不使用skip/expected failure。
 
-新 Chromium CI作业在 `.e2e/harness` 检出 PR #5已审查的固定提交 `21fca42`，再运行 `scripts/prepare-idempotency-e2e.py` 叠加本修复代码与新增测试。脚本验证原两个 spec文件的 Git对象/文件哈希，不能改变原11项断言。仅调整组合检出的迁移 head和测试schema重置（先删除操作元数据再清合成会话，避免FK阻止测试清理），不提交/推送该检出，不改PR #5。专用数据库的普通角色与随机密码由原隔离引导生成，默认无trace/视频，仅上传合成截图。
+PR #6 曾临时固定检出 PR #5 的 `21fca42` 并叠加修复，以验证原 11 项目标。修复合并后，该双检出入口和 prepare 脚本已移除。PR #5 现在使用一次正常项目检出、独立 PostgreSQL 服务及新 schema，执行全部 16 项 Chromium E2E；不存在重复组合测试作业。测试重置先清除本次 schema 的操作元数据再清合成会话，避免外键阻止清理。仅上传合成截图，不上传 trace、HAR 或私有日志。
 
-本修复不把 PR #5基础设施整包提交到 main。新增 E2E spec单独保留在本分支，其执行入口为上述组合检出；等修复被人审查合并后，再更新/rebase PR #5进行正式验收。
-
-本机复现可创建固定提交的独立检出，再运行 prepare 脚本，进入该检出的 apps/web安装锁定依赖，配置原Python3.12虚拟环境路径、专用测试连接和显式 msedge 通道后运行原 `npm run test:e2e`。不要直接在日常服务或数据库执行 Playwright；缺少隔离配置时启动器应停止。最终 CI状态及提交号记录在 Draft PR，人工体验仍待反馈。
+本机复现及 Windows Edge 人工入口见 [E2E 验收说明](M1_1B_3_E2E.md)。缺少隔离配置时直接停止，不能回退日常服务或 pathwise_dev。最终 CI 状态及提交号记录在 Draft PR #5，人工体验仍待反馈。
 
 构建保留 Zod依赖注释移除提示；Pytest保留现有 TestClient/httpx弃用提示。没有接入 AI、变更原产品PRD或静态prototype/Pages。

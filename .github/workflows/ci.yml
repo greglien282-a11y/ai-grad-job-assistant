@@ -71,8 +71,8 @@ jobs:
       - run: npm run test
       - run: npm run build
 
-  idempotency_e2e:
-    name: Idempotency / real Chromium integration
+  e2e:
+    name: Real Chromium / FastAPI / PostgreSQL E2E
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -92,42 +92,33 @@ jobs:
     env:
       E2E_ADMIN_PASSWORD: synthetic-e2e-service-password
       PATHWISE_E2E_PYTHON: python
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
-      # Audited PR #5 test infrastructure only; never merge/copy it into main.
-      - uses: actions/checkout@v4
-        with:
-          ref: 21fca42cf7dfa123020f9f5c6a794a3297c6e5d5
-          path: .e2e/harness
-          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: python -m pip install -r apps/api/requirements.txt
+      - run: python -m pip install -r ../api/requirements.txt
       - run: npm install --global npm@11
-      - run: python scripts/prepare-idempotency-e2e.py .e2e/harness
       - run: npm ci --no-audit --no-fund
-        working-directory: .e2e/harness/apps/web
       - run: npx playwright install --with-deps chromium --only-shell
-        working-directory: .e2e/harness/apps/web
       - run: python e2e/ci_database.py
-        working-directory: .e2e/harness/apps/web
       - run: npm run e2e:preflight
-        working-directory: .e2e/harness/apps/web
       - run: npm run test:e2e:types
-        working-directory: .e2e/harness/apps/web
       - run: npm run test:e2e
-        working-directory: .e2e/harness/apps/web
+      # No trace, HAR, service logs, private config, downloads or HTML reports.
       - name: Synthetic UI screenshots only
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: synthetic-idempotency-screenshots
+          name: synthetic-e2e-screenshots
           path: |
-            .e2e/harness/apps/web/test-results/**/desktop_workspace.png
-            .e2e/harness/apps/web/test-results/**/mobile_workspace.png
+            apps/web/test-results/**/desktop_workspace.png
+            apps/web/test-results/**/mobile_workspace.png
           if-no-files-found: ignore
           retention-days: 7
