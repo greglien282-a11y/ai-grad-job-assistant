@@ -1,0 +1,16 @@
+.result-shell { max-width:960px; margin:0 auto; padding:36px 32px 48px; font-size:16px; }
+.result-nav { display:flex; flex-wrap:wrap; gap:28px; margin-bottom:36px; font-size:16px; }
+.result-nav [aria-current] { color:#ddd1ff; font-weight:700; }
+.result-heading { margin-bottom:28px; }
+.result-heading p { max-width:720px; }
+.result-document { background:#1c2336; border:1px solid #424a64; border-radius:12px; padding:38px; min-height:260px; }
+.document-meta { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-bottom:20px; border-bottom:1px solid #424a64; color:#bfc7df; }
+.result-document .summary-text { font-size:19px; line-height:2; border:0; padding:0; margin:28px 0 0; }
+.result-actions { display:flex; flex-wrap:wrap; align-items:center; gap:24px; margin:24px 0; }
+.result-empty { padding:16px 0; }
+.result-empty>a { display:inline-block; margin:18px; }
+.result-sources { margin-top:36px; border-top:1px solid #424a64; padding-top:24px; overflow-wrap:anywhere; }
+.result-sources>summary { cursor:pointer; font-size:16px; min-height:44px; }
+.result-sources section { padding:20px 0; border-top:1px solid #333c58; }
+.result-sources h2 { font-size:19px; }
+@media(max-width:600px) { .result-shell { padding:24px 18px; } .result-document { padding:24px 20px; } .result-document .summary-text { font-size:17px; } .result-nav { gap:16px; } }

@@ -32,6 +32,14 @@ def main():
             db.execute(text('DELETE FROM experience_sessions'))
             db.commit()
             return
+        if sys.argv[1] == 'mining-audit':
+            print(json.dumps({
+                'runs': [dict(r) for r in db.execute(text('SELECT id::text,input_turn_id::text,state FROM ai_mining_runs ORDER BY created_at')).mappings()],
+                'answers': [dict(r) for r in db.execute(text('SELECT turn_id::text,question_id::text,question_version FROM ai_answer_questions ORDER BY slot')).mappings()],
+                'questions': [dict(r) for r in db.execute(text('SELECT id::text,state,content,version FROM ai_mining_questions ORDER BY created_at')).mappings()],
+                'user_turns': db.scalar(text("SELECT count(*) FROM conversation_turns WHERE role='user'")),
+            }, ensure_ascii=True))
+            return
         output = {'sessions': [dict(r) for r in db.execute(text('SELECT id::text,status FROM experience_sessions ORDER BY created_at')).mappings()],
                   'facts': [dict(r) for r in db.execute(text('SELECT id::text,statement,status,version FROM experience_facts ORDER BY created_at')).mappings()],
                   'turns': db.scalar(text('SELECT count(*) FROM conversation_turns')),

@@ -20,6 +20,8 @@ export function FactCard({ fact, index, session, disabled, onMutate }: {
   return <article className="card fact-card" aria-label={`事实 ${index}`}>
     <div className="fact-top"><span className="fact-number">{String(index).padStart(2, '0')}</span><span className={`pill ${fact.status}`}>{statusLabels[fact.status]}</span><small>版本 {fact.version}</small></div>
     <h3 className="statement">{fact.statement}</h3>
+    {fact.origin === 'ai_extracted' && <p className="fact-origin">{fact.source_kind === 'user_edit' ? '最初由合成流程提取；当前陈述来源为用户编辑。' : '由合成流程引用用户原文整理 · 需用户审核'}</p>}
+    {fact.memory_state && <label className="memory-label">记忆状态 {index}<select aria-label={`记忆状态 ${index}`} value={fact.memory_state} disabled={disabled || editing} onChange={e => void onMutate({ action: 'set_memory', expected_version: fact.version, memory_state: e.target.value as 'unspecified' | 'certain' | 'approximate' | 'needs_check' })}><option value="unspecified">未标记</option><option value="certain">确定做过</option><option value="approximate">大概记得</option><option value="needs_check">需要核实</option></select></label>}
     <div className="fact-actions"><button className="secondary" disabled={disabled || editing} onClick={() => { if (editing) return; setDraft(fact.statement); setEditVersion(fact.version); setEditing(true); setVerifying(false) }}>编辑陈述</button>
       <button disabled={disabled || fact.status !== 'pending' || editing} onClick={() => void onMutate({ action: 'confirm', expected_version: fact.version })}>确认事实</button>
       <button className="secondary" disabled={disabled || fact.status === 'rejected' || editing} onClick={() => void onMutate({ action: 'reject', expected_version: fact.version })}>拒绝事实</button>

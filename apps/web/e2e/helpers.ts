@@ -28,7 +28,7 @@ export function probe(action = 'audit'): Audit {
   return action === 'reset' ? {} as Audit : JSON.parse(result)
 }
 export async function create(page: Page) {
-  await page.goto('/')
+  await page.goto('/manual')
   await page.getByLabel('原始经历', { exact: true }).fill('Synthetic course project: built a task tracker.')
   await page.getByRole('button', { name: '创建经历会话 →', exact: true }).click()
   await expect(page.getByRole('heading', { name: '你的事实清单', exact: true })).toBeVisible()

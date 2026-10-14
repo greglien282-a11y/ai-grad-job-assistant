@@ -116,7 +116,8 @@ def main():
             identity = subprocess.check_output(['whoami'], text=True).strip()
             subprocess.run(['icacls', str(run_file), '/inheritance:r', '/grant:r', identity + ':F'], check=True, stdout=subprocess.DEVNULL)
         env = {**os.environ, 'DATABASE_URL': config['database_url'], 'PATHWISE_E2E': '1',
-               'PATHWISE_E2E_RUN_FILE': str(run_file), 'CORS_ORIGINS': config['web_origin'], 'REQUIRE_HTTPS': 'false'}
+               'PATHWISE_E2E_RUN_FILE': str(run_file), 'CORS_ORIGINS': config['web_origin'], 'REQUIRE_HTTPS': 'false',
+               'AI_ENABLED': 'true', 'AI_PROVIDER': 'scripted'}
         # Migration exceptions are suppressed at the outer boundary: no URL/SQL in output.
         subprocess.run([sys.executable, '-m', 'alembic', 'upgrade', 'head'], cwd=API, env=env,
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

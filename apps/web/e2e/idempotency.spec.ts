@@ -17,7 +17,7 @@ async function forward(route: Route) {
   catch { throw new Error('Isolated upstream failed; private headers suppressed') }
 }
 async function create(page: Page) {
-  await page.goto('/')
+  await page.goto('/manual')
   await page.getByLabel('原始经历', { exact: true }).fill('Synthetic refresh recovery project')
   await page.getByRole('button', { name: '创建经历会话 →', exact: true }).click()
 }
