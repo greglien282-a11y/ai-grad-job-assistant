@@ -96,7 +96,7 @@ failed/unknown/stale 的已保存回答需二次确认重新整理，复用原�
 
 浏览器检查创建→初始整理→两题选择→回答关系→确认/编辑/再确认/材料→复制→刷新→停止/结束/删除；另外覆盖问题动作、创建及回答丢响应、网络未到达后的原键重试、版本冲突+失败读取+打开面板、移动切换、200% 缩放可用宽度。SQL probe 直接核对运行、user turns、question ID/version 关联及删除。trace/HAR/video/私有服务日志默认不上传，CI 只增加合成 UI 截图。
 
-本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 62 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；前轮 Edge 27 项全通过；本轮完整 CI Chromium 30 项通过（原 16 + 对话 7 + 恢复 4 + 独立成果 3），零重试。本机 Edge 新一轮因人工预览占用 15173/18000 被启动器拒绝，未复用预览或清空其资料，不能记为本轮 Edge 已通过。原四张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
+本机最终验证：PostgreSQL 后端 121 项通过（含迁移 upgrade/check/rollback），React 62 项通过，E2E TypeScript 与 TypeScript/Vite 构建通过；前轮 Edge 27 项全通过；本轮完整 CI Chromium 30 项通过（原 16 + 对话 7 + 恢复 4 + 独立成果 3），零重试。本机 Edge 初次启动因人工预览占用 15173/18000 被拒绝，未复用预览或清空其资料；负责人正常关闭预览后，新隔离 schema 的完整 Edge 30 项通过（1.5 分钟），零重试。原四张截图来自上述合成流程，已逐张检查，200% 对话列不再被挤窄。CI Chromium 最终状态和链接记录在 Draft PR。本机保留现有 Zod 注释、TestClient/httpx 弃用警告；没有新增系统依赖。
 
 ![独立三入口首页](assets/m1-2b/home.png)
 
