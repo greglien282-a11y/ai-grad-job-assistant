@@ -80,6 +80,8 @@ def snapshot(db: Session, fact: ExperienceFact, *, edit: FactChange | None = Non
         ).order_by(FactChange.after["version"].as_integer().desc().nulls_last(),
                    FactChange.created_at.desc(), FactChange.id.desc()).limit(1))
     return {"statement": fact.statement, "status": str(fact.status),
+            "origin": fact.origin, "memory_state": fact.memory_state, "ai_run_id": str(fact.ai_run_id) if fact.ai_run_id else None,
+            "citations": [] if edit else [c for row in db.scalars(select(FactSource).where(FactSource.fact_id == fact.id)) for c in (row.citations or [])],
             "version": fact.version,
             "original_source_turn_ids": original_sources,
             "source_kind": "user_edit" if edit else "conversation_turns",
@@ -97,7 +99,7 @@ def record_change(db: Session, fact: ExperienceFact, action: str, before: dict |
     db.flush()
 
 
-def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_turn_ids: list[UUID]) -> ExperienceFact:
+def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_turn_ids: list[UUID], *, origin="manual", ai_run_id=None, citations=None) -> ExperienceFact:
     project = db.get(ExperienceProject, project_id)
     if project is None:
         raise PermissionError("Session unavailable")
@@ -109,11 +111,11 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
         turn = db.get(ConversationTurn, turn_id)
         if turn is None or turn.session_id != project.session_id or turn.role != "user":
             raise ValueError("Source must be a user turn in this session")
-    fact = ExperienceFact(project_id=project.id, session_id=project.session_id, statement=statement)
+    fact = ExperienceFact(project_id=project.id, session_id=project.session_id, statement=statement, origin=origin, ai_run_id=ai_run_id)
     session.updated_at = utcnow()
     db.add(fact)
     db.flush()
-    db.add_all([FactSource(fact_id=fact.id, turn_id=item, session_id=project.session_id) for item in source_turn_ids])
+    db.add_all([FactSource(fact_id=fact.id, turn_id=item, session_id=project.session_id, citations=citations) for item in source_turn_ids])
     db.flush()
     record_change(db, fact, "created", None, "system")
     return fact
@@ -121,7 +123,7 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
 
 def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None = None,
                 status: FactStatus | None = None, material_reference: str | None = None,
-                basis: str | None = None, expected_version: int) -> ExperienceFact:
+                basis: str | None = None, memory_state: str | None = None, expected_version: int) -> ExperienceFact:
     fact = db.get(ExperienceFact, fact_id)
     if fact is None:
         raise PermissionError("Session unavailable")
@@ -131,7 +133,14 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
     if fact.version != expected_version:
         raise VersionConflict("Fact version has changed")
     before = snapshot(db, fact)
-    if statement is not None:
+    if memory_state is not None:
+        if memory_state not in ('unspecified','certain','approximate','needs_check') or any(v is not None for v in (statement,status,material_reference,basis)):
+            raise ValueError('Invalid memory action')
+        if memory_state == fact.memory_state:
+            raise StateConflict('Memory is unchanged')
+        fact.memory_state = memory_state
+        action = 'memory_changed'
+    elif statement is not None:
         required_text(statement)
         if status is not None or material_reference is not None or basis is not None:
             raise ValueError("Edit and confirmation must be separate operations")

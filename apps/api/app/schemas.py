@@ -58,7 +58,13 @@ class VerifyFact(Input):
     basis: TextInput
 
 
-FactMutation = Annotated[EditFact | ConfirmFact | RejectFact | VerifyFact, Field(discriminator="action")]
+class SetMemory(Input):
+    action: Literal['set_memory']
+    expected_version: Version
+    memory_state: Literal['unspecified','certain','approximate','needs_check']
+
+
+FactMutation = Annotated[EditFact | ConfirmFact | RejectFact | VerifyFact | SetMemory, Field(discriminator="action")]
 
 
 class Output(BaseModel):
@@ -81,12 +87,18 @@ class ProjectView(Output):
     created_at: datetime
 
 
+class AnswerQuestionView(Output):
+    question_id: UUID
+    question_version: int
+
+
 class TurnView(Output):
     id: UUID
     session_id: UUID
     role: Literal["user", "assistant"]
     content: str
     created_at: datetime
+    answered_questions: list[AnswerQuestionView] = Field(default_factory=list)
 
 
 class FactView(Output):
@@ -103,6 +115,10 @@ class FactView(Output):
     source_turn_ids: list[UUID]
     source_change_id: UUID | None
     evidence_id: UUID | None
+    origin: Literal['manual','ai_extracted'] = 'manual'
+    memory_state: Literal['unspecified','certain','approximate','needs_check'] = 'unspecified'
+    ai_run_id: UUID | None = None
+    citations: list[dict] = Field(default_factory=list)
 
 
 class EvidenceView(Output):
@@ -125,16 +141,53 @@ class ChangeView(Output):
     created_at: datetime
 
 
+class MiningQuestionView(Output):
+    id: UUID
+    state: Literal['active','skipped','corrected','hidden','deleted']
+    version: int
+    content: str | None
+
+
+class MiningRunView(Output):
+    id: UUID
+    session_id: UUID
+    project_id: UUID
+    input_turn_id: UUID
+    base_revision: int
+    reserved_revision: int
+    state: Literal['reserved','running','completed','failed','unknown','stale']
+    lease_until: datetime
+    error_code: str | None
+    retry_of: UUID | None
+    provider: Literal['scripted']
+    synthetic: Literal[True]
+    questions: list[MiningQuestionView]
+    candidate_fact_ids: list[UUID]
+    answered_questions: list[AnswerQuestionView] = Field(default_factory=list)
+
+
+class ExperienceSummary(Output):
+    project_id: UUID
+    context_revision: int
+    confirmed: list[FactView]
+    pending: list[FactView]
+    text: str
+    incomplete: bool
+
+
 class SessionView(Output):
     id: UUID
     status: Literal["active", "ended"]
     created_at: datetime
     updated_at: datetime
+    context_revision: int = 1
+    mining_status: Literal['not_started','active','stopped'] = 'not_started'
     projects: list[ProjectView]
     turns: list[TurnView]
     facts: list[FactView]
     evidence: list[EvidenceView]
     history: list[ChangeView]
+    mining_runs: list[MiningRunView] = Field(default_factory=list)
 
 
 class SessionExport(Output):

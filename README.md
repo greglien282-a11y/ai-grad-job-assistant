@@ -69,6 +69,8 @@ flowchart TD
 
 ## 仓库导览
 
+- [M1-2A 合成经历挖掘后端](docs/M1_2A_BACKEND_MINING.md)（状态机、来源、恢复与迁移合同；无真实模型调用）
+
 - [M1-1A 经历事实库持久化基础](docs/M1_1A_PERSISTENCE.md)（已合并）
 - [M1-1B-1 HTTP API、版本控制与本地 PostgreSQL](docs/M1_1B_1_API.md)（React 工作台待 M1-1B-2）
 - [M1-1B-2 React 事实确认工作台](docs/M1_1B_2_WORKSPACE.md)（真实 API，开发期临时会话）

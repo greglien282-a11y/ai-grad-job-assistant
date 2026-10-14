@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid, Index, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -30,15 +30,20 @@ class Record:
 
 class ExperienceSession(Record, Base):
     __tablename__ = "experience_sessions"
-    __table_args__ = (CheckConstraint("status IN ('active', 'ended')", name="ck_session_status"),)
+    __table_args__ = (CheckConstraint("status IN ('active', 'ended')", name="ck_session_status"),
+                      CheckConstraint("context_revision > 0", name="ck_context_revision"),
+                      CheckConstraint("mining_status IN ('not_started','active','stopped')", name="ck_mining_status"))
     access_token_hash: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(16), default="active")
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    context_revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    mining_status: Mapped[str] = mapped_column(String(16), default="not_started", server_default="not_started")
 
 
 class ExperienceProject(Record, Base):
     __tablename__ = "experience_projects"
-    __table_args__ = (UniqueConstraint("id", "session_id", name="uq_project_session"),)
+    __table_args__ = (UniqueConstraint("id", "session_id", name="uq_project_session"),
+                      UniqueConstraint("session_id", name="uq_mvp_one_project"))
     session_id: Mapped[UUID] = mapped_column(ForeignKey("experience_sessions.id", ondelete="CASCADE"), index=True)
     raw_input: Mapped[str] = mapped_column(Text)
     title: Mapped[str | None] = mapped_column(String(200))
@@ -63,6 +68,8 @@ class ExperienceFact(Record, Base):
         CheckConstraint("status IN ('pending', 'user_confirmed', 'evidence_supported', 'rejected')", name="ck_fact_status"),
         CheckConstraint("length(trim(statement)) > 0", name="ck_fact_statement"),
         CheckConstraint("version > 0", name="ck_fact_version"),
+        CheckConstraint("origin IN ('manual','ai_extracted')", name="ck_fact_origin"),
+        CheckConstraint("memory_state IN ('unspecified','certain','approximate','needs_check')", name="ck_fact_memory"),
         CheckConstraint("status != 'evidence_supported' OR evidence_id IS NOT NULL", name="ck_fact_evidence"),
         ForeignKeyConstraint(["evidence_id", "id", "session_id"], ["fact_evidence.id", "fact_evidence.fact_id", "fact_evidence.session_id"], name="fk_fact_current_evidence", use_alter=True),
     )
@@ -74,6 +81,9 @@ class ExperienceFact(Record, Base):
     status: Mapped[str] = mapped_column(String(24), default=FactStatus.PENDING)
     evidence_id: Mapped[UUID | None] = mapped_column(Uuid)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    origin: Mapped[str] = mapped_column(String(16), default="manual", server_default="manual")
+    memory_state: Mapped[str] = mapped_column(String(16), default="unspecified", server_default="unspecified")
+    ai_run_id: Mapped[UUID | None] = mapped_column(ForeignKey("ai_mining_runs.id", ondelete="SET NULL", use_alter=True, name="fk_fact_ai_run"))
 
 
 class FactSource(Base):
@@ -85,6 +95,7 @@ class FactSource(Base):
     fact_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     turn_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
     session_id: Mapped[UUID] = mapped_column(Uuid)
+    citations: Mapped[list | None] = mapped_column(JSONB)
 
 
 class FactEvidence(Record, Base):
@@ -133,3 +144,74 @@ class IdempotencyOperation(Base):
     initial_turn_id: Mapped[UUID | None] = mapped_column(Uuid)
     turn_id: Mapped[UUID | None] = mapped_column(Uuid)
     fact_id: Mapped[UUID | None] = mapped_column(Uuid)
+
+
+class MiningRun(Record, Base):
+    __tablename__ = "ai_mining_runs"
+    __table_args__ = (
+        UniqueConstraint('retry_of', name='uq_mining_retry_parent'),
+        ForeignKeyConstraint(["project_id", "session_id"], ["experience_projects.id", "experience_projects.session_id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["input_turn_id", "session_id"], ["conversation_turns.id", "conversation_turns.session_id"], ondelete="CASCADE"),
+        CheckConstraint("state IN ('reserved','running','completed','failed','unknown','stale')", name="ck_mining_state"),
+        CheckConstraint("base_revision > 0 AND reserved_revision >= base_revision", name="ck_mining_revisions"),
+        Index("uq_mining_active", "session_id", unique=True, postgresql_where=text("state IN ('reserved','running')")),
+    )
+    session_id: Mapped[UUID] = mapped_column(ForeignKey("experience_sessions.id", ondelete="CASCADE"), index=True)
+    project_id: Mapped[UUID] = mapped_column(Uuid)
+    input_turn_id: Mapped[UUID] = mapped_column(Uuid)
+    base_revision: Mapped[int] = mapped_column(Integer)
+    reserved_revision: Mapped[int] = mapped_column(Integer)
+    state: Mapped[str] = mapped_column(String(16))
+    lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(48))
+    retry_of: Mapped[UUID | None] = mapped_column(ForeignKey("ai_mining_runs.id", ondelete="SET NULL"))
+    provider: Mapped[str] = mapped_column(String(32), default="scripted")
+    prompt_version: Mapped[str] = mapped_column(String(16), default="extractive-v1")
+    tokens_in: Mapped[int] = mapped_column(Integer, default=0)
+    tokens_out: Mapped[int] = mapped_column(Integer, default=0)
+    assistant_turn_id: Mapped[UUID | None] = mapped_column(ForeignKey("conversation_turns.id", ondelete="SET NULL"))
+
+
+class MiningReceipt(Base):
+    __tablename__ = "ai_mining_receipts"
+    __table_args__ = (CheckConstraint("(state='live' AND session_id IS NOT NULL AND run_id IS NOT NULL AND request_tag IS NOT NULL) OR (state='deleted' AND session_id IS NULL AND run_id IS NULL AND request_tag IS NULL)", name="ck_mining_receipt"),)
+    key_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    state: Mapped[str] = mapped_column(String(16))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    session_id: Mapped[UUID | None] = mapped_column(ForeignKey("experience_sessions.id"), index=True)
+    run_id: Mapped[UUID | None] = mapped_column(ForeignKey("ai_mining_runs.id"))
+    request_tag: Mapped[str | None] = mapped_column(String(64))
+
+
+class MiningQuestion(Record, Base):
+    __tablename__ = "ai_mining_questions"
+    __table_args__ = (UniqueConstraint('id', 'session_id', name='uq_question_session'),
+                      CheckConstraint("state IN ('active','skipped','corrected','hidden','deleted')", name="ck_question_state"),
+                      CheckConstraint("(state='deleted' AND content IS NULL) OR (state!='deleted' AND content IS NOT NULL)", name="ck_question_content"))
+    session_id: Mapped[UUID] = mapped_column(ForeignKey("experience_sessions.id", ondelete="CASCADE"), index=True)
+    run_id: Mapped[UUID] = mapped_column(ForeignKey("ai_mining_runs.id", ondelete="CASCADE"))
+    content: Mapped[str | None] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(String(16), default="active")
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+
+class MiningCapacity(Base):
+    __tablename__ = "ai_mining_capacity"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Singleton row lock coordinates admission across processes; no personal data.
+
+
+class AnswerQuestion(Base):
+    """Immutable IDs/version only. Question deletion never erases a user answer."""
+    __tablename__ = 'ai_answer_questions'
+    __table_args__ = (
+        ForeignKeyConstraint(['turn_id','session_id'], ['conversation_turns.id','conversation_turns.session_id'], ondelete='CASCADE'),
+        ForeignKeyConstraint(['question_id','session_id'], ['ai_mining_questions.id','ai_mining_questions.session_id'], ondelete='CASCADE'),
+        UniqueConstraint('turn_id', 'slot', name='uq_answer_question_slot'),
+        CheckConstraint('slot IN (1,2) AND question_version > 0', name='ck_answer_question_slot'),
+    )
+    turn_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    question_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    session_id: Mapped[UUID] = mapped_column(Uuid)
+    question_version: Mapped[int] = mapped_column(Integer)
+    slot: Mapped[int] = mapped_column(Integer)
