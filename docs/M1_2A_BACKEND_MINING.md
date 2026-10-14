@@ -93,7 +93,7 @@ AI_ENABLED 默认 false；显式 AI_ENABLED=true 且 AI_PROVIDER=scripted 才可
 
 ## 验证与限制
 
-MiningInput 目前只含单次用户回合，**完整历史上下文是 M1-2C 的前置设计事项**：接真实 Provider 前必须审查包含问题 ID/version、回答关联、已确认事实与来源、跳过/删除状态的最小上下文快照、版本一致性、脱敏和长度预算。不得仅替换 Provider 类就宣称支持跨轮自适应追问。本次仅修复持久化/HTTP 关系，不扩展语义理解或 UI。
+M1-2A 初版 MiningInput 只含单次用户回合；M1-2C-1 现提供有预算的上下文快照与 opt-in v2 合同，详见 [上下文与输出合同](M1_2C_1_CONTEXT_CONTRACT.md)。旧 Scripted extractive-v1 保持兼容。**真实 Provider 仍需后续审查**：接真实 Provider 前必须审查包含问题 ID/version、回答关联、已确认事实与来源、跳过/删除状态的最小上下文快照、版本一致性、脱敏和长度预算。不得仅替换 Provider 类就宣称支持跨轮自适应追问。本次仅修复持久化/HTTP 关系，不扩展语义理解或 UI。
 
 真实 PostgreSQL 测试覆盖空库往返、0003 旧确认资料升级/check/回滚、旧多项目拒绝无数据丢失；独立连接 HTTP 并发、旧写入 revision、响应丢失恢复、租约投影/回收、取消、同键/换键、原子部分失败、问题正文删除、越权、停止/结束/删除迟到结果、保留编辑历史及 Unicode/语义防改写。
 

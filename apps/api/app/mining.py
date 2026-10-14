@@ -7,7 +7,9 @@ from sqlalchemy import delete, event, func, select, update
 
 from app import facts, idempotency as idem
 from app.models import AnswerQuestion, ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactSource, MiningCapacity, MiningQuestion, MiningReceipt, MiningRun, utcnow
-from app.mining_provider import MiningInput, MiningOutput, Provider
+from app.mining_provider import MiningInput, MiningOutput, MiningOutputV2, Provider
+from app.mining_context import build_context
+from app.mining_validation import source_already_used, validate_v2
 
 LEASE_SECONDS = 60
 CALL_TIMEOUT_SECONDS = 45
@@ -194,7 +196,7 @@ def reserve(factory, sid, token, key, body):
         return run.id, True
 
 
-def claim(factory, sid, token, rid):
+def claim(factory, sid, token, rid, *, contract_version=1):
     with factory() as db, db.begin():
         run = get_run(db, sid, token, rid)
         session = db.get(ExperienceSession, sid)
@@ -208,10 +210,16 @@ def claim(factory, sid, token, rid):
             return None
         run.state = 'running'
         turn = db.get(ConversationTurn, run.input_turn_id)
-        return MiningInput(turn.id, turn.content)
+        snapshot = build_context(db, run, session)
+        # Legacy raw content exists solely for the approved synthetic v1 fixture.
+        # v2 providers receive the same masked text as their bounded payload.
+        content = turn.content if contract_version == 1 else snapshot.user_turns[0].content
+        return MiningInput(turn.id, content, snapshot)
 
 
-def validate_output(db, run, output):
+def validate_output(db, run, output, context=None):
+    if isinstance(output, MiningOutputV2) or (isinstance(output, dict) and output.get('schema_version') == 2):
+        return validate_v2(db, run, output, context)
     validated = MiningOutput.model_validate(output)
     for question in validated.questions:
         if not question.strip() or len(question) > 500:
@@ -238,7 +246,7 @@ def fail(factory, sid, token, rid, state, code):
         pass  # Session deleted; never recreate it.
 
 
-def complete(factory, sid, token, rid, output):
+def complete(factory, sid, token, rid, output, *, context=None):
     with factory() as db, db.begin():
         run = get_run(db, sid, token, rid)
         session = db.get(ExperienceSession, sid)
@@ -250,7 +258,7 @@ def complete(factory, sid, token, rid, output):
         if session.status != 'active' or session.mining_status != 'active' or session.context_revision != run.reserved_revision:
             run.state, run.error_code = 'stale', 'context_changed'
             return
-        validated = validate_output(db, run, output)
+        validated = validate_output(db, run, output, context)
         def guard_commit(db_session):
             if utcnow() >= run.lease_until:
                 raise MiningError(409, 'mining_lease_expired')
@@ -258,6 +266,8 @@ def complete(factory, sid, token, rid, output):
         added = 0
         for candidate in validated.candidates:
             citation = candidate.citation
+            if isinstance(validated, MiningOutputV2) and source_already_used(db, run, citation):
+                continue
             # Include rejected/manual facts: a rejection cannot be bypassed by re-extraction.
             if db.scalar(select(ExperienceFact.id).where(ExperienceFact.project_id == run.project_id,
                                                        ExperienceFact.statement == citation.quote)) or db.scalar(
@@ -272,12 +282,13 @@ def complete(factory, sid, token, rid, output):
         prior_empty = prior is not None and db.scalar(select(func.count()).select_from(ExperienceFact).where(ExperienceFact.ai_run_id == prior.id)) == 0
         stop = added == 0 and prior_empty
         round_count = db.scalar(select(func.count(func.distinct(MiningRun.input_turn_id))).where(MiningRun.session_id == sid))
-        stop = stop or round_count >= 6
+        stop = stop or round_count >= 6 or (isinstance(validated, MiningOutputV2) and validated.stop)
         if stop:
             session.mining_status = 'stopped'
         else:
             for question in validated.questions:
-                db.add(MiningQuestion(session_id=sid, run_id=rid, content=question))
+                db.add(MiningQuestion(session_id=sid, run_id=rid, content=question.text if isinstance(validated, MiningOutputV2) else question))
+        if isinstance(validated, MiningOutputV2): run.prompt_version = 'context-v2'
         # Question text is stored exactly ONCE, never copied into assistant/history blobs.
         assistant = ConversationTurn(session_id=sid, role='assistant', content='Synthetic provider: candidate review available.')
         db.add(assistant); db.flush()
@@ -286,12 +297,20 @@ def complete(factory, sid, token, rid, output):
 
 
 async def execute(factory, provider, sid, token, rid):
-    context = claim(factory, sid, token, rid)
+    try:
+        version = getattr(provider, 'output_contract_version', 1)
+        if version not in (1, 2): raise ValueError('Unsupported provider contract')
+        context = claim(factory, sid, token, rid, contract_version=version)
+    except ValueError:
+        fail(factory, sid, token, rid, 'failed', 'mining_context_invalid')
+        return
     if context is None:
         return
     try:
         output = await asyncio.wait_for(provider.mine(context), timeout=CALL_TIMEOUT_SECONDS)
-        complete(factory, sid, token, rid, output)
+        if version == 2 and not (isinstance(output, MiningOutputV2) or isinstance(output, dict) and output.get('schema_version') == 2):
+            raise ValueError('v2 provider cannot downgrade validation')
+        complete(factory, sid, token, rid, output, context=context.context)
     except (asyncio.TimeoutError, asyncio.CancelledError):
         fail(factory, sid, token, rid, 'unknown', 'provider_outcome_unknown')
         if asyncio.current_task().cancelling():

@@ -1,0 +1,327 @@
+{
+  "$defs": {
+    "AnswerRef": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "format": "uuid",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "exclusiveMinimum": 0,
+          "title": "Question Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "question_id",
+        "question_version"
+      ],
+      "title": "AnswerRef",
+      "type": "object"
+    },
+    "FactContext": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_id": {
+          "format": "uuid",
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "version": {
+          "exclusiveMinimum": 0,
+          "title": "Version",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "user_confirmed",
+            "evidence_supported",
+            "rejected"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "statement": {
+          "anyOf": [
+            {
+              "maxLength": 10000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Statement"
+        },
+        "memory_state": {
+          "enum": [
+            "unspecified",
+            "certain",
+            "approximate",
+            "needs_check"
+          ],
+          "title": "Memory State",
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "conversation_turns",
+            "user_edit"
+          ],
+          "title": "Source Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fact_id",
+        "version",
+        "status",
+        "statement",
+        "memory_state",
+        "source_kind"
+      ],
+      "title": "FactContext",
+      "type": "object"
+    },
+    "QuestionContext": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "format": "uuid",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "version": {
+          "exclusiveMinimum": 0,
+          "title": "Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "corrected",
+            "skipped",
+            "hidden",
+            "deleted"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Content"
+        },
+        "dedup_fingerprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dedup Fingerprint"
+        },
+        "answered_turn_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Answered Turn Id"
+        },
+        "answered_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Answered Version"
+        },
+        "answer_matches_current_version": {
+          "title": "Answer Matches Current Version",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "question_id",
+        "version",
+        "state",
+        "content",
+        "dedup_fingerprint",
+        "answered_turn_id",
+        "answered_version",
+        "answer_matches_current_version"
+      ],
+      "title": "QuestionContext",
+      "type": "object"
+    },
+    "StopContext": {
+      "additionalProperties": false,
+      "properties": {
+        "round_count": {
+          "title": "Round Count",
+          "type": "integer"
+        },
+        "maximum_rounds": {
+          "const": 6,
+          "default": 6,
+          "title": "Maximum Rounds",
+          "type": "integer"
+        },
+        "consecutive_empty_rounds": {
+          "title": "Consecutive Empty Rounds",
+          "type": "integer"
+        },
+        "user_stopped": {
+          "title": "User Stopped",
+          "type": "boolean"
+        },
+        "session_ended": {
+          "title": "Session Ended",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "round_count",
+        "consecutive_empty_rounds",
+        "user_stopped",
+        "session_ended"
+      ],
+      "title": "StopContext",
+      "type": "object"
+    },
+    "UserContext": {
+      "additionalProperties": false,
+      "properties": {
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "content": {
+          "maxLength": 10000,
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "answered_questions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AnswerRef"
+          },
+          "title": "Answered Questions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "turn_id",
+        "content"
+      ],
+      "title": "UserContext",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 2,
+      "default": 2,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "format": "uuid",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "context_revision": {
+      "exclusiveMinimum": 0,
+      "title": "Context Revision",
+      "type": "integer"
+    },
+    "input_turn_id": {
+      "format": "uuid",
+      "title": "Input Turn Id",
+      "type": "string"
+    },
+    "user_turns": {
+      "items": {
+        "$ref": "#/$defs/UserContext"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "User Turns",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/QuestionContext"
+      },
+      "maxItems": 24,
+      "title": "Questions",
+      "type": "array"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/FactContext"
+      },
+      "maxItems": 32,
+      "title": "Facts",
+      "type": "array"
+    },
+    "stop": {
+      "$ref": "#/$defs/StopContext"
+    },
+    "omitted_turns": {
+      "default": 0,
+      "title": "Omitted Turns",
+      "type": "integer"
+    },
+    "omitted_facts": {
+      "default": 0,
+      "title": "Omitted Facts",
+      "type": "integer"
+    },
+    "omitted_questions": {
+      "default": 0,
+      "title": "Omitted Questions",
+      "type": "integer"
+    },
+    "untrusted_user_data": {
+      "const": true,
+      "default": true,
+      "title": "Untrusted User Data",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "project_id",
+    "context_revision",
+    "input_turn_id",
+    "user_turns",
+    "questions",
+    "facts",
+    "stop"
+  ],
+  "title": "MiningContext",
+  "type": "object"
+}
