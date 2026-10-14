@@ -69,7 +69,7 @@ apps/api/.venv/Scripts/python.exe scripts/run_offline_evaluation.py --fault time
 
 ## 验证与尚未验证事项
 
-本机完整后端 228 项、React 62 项、Edge 30 项、TypeScript/Vite 构建、迁移/check/清理 smoke、离线合同 12 项及实际 CLI 均通过；最终 CI 结果见 Draft PR。原171后端、62 React、30 E2E 不删除/跳过/放宽。新增 PostgreSQL/Provider/故障评测测试；本机迁移 smoke 和实际 CLI 也运行。既有 Starlette TestClient 弃用和 Zod 构建注释警告仍是环境限制，不影响断言。
+本机完整后端首轮 228 项、React 62 项、Edge 30 项、TypeScript/Vite 构建、迁移/check/清理 smoke、离线合同 12 项及实际 CLI 均通过；最终 CI 结果见 Draft PR。原171后端、62 React、30 E2E 不删除/跳过/放宽。首轮 CI 暴露既有301秒时钟边界受请求调度影响：仅固定该测试时钟，原参数、422/410及零写入断言不变；补充300秒合法边界测试，业务时间规则没有修改。最终新增共58项，后端总数229，最终CI在PR记录。新增 PostgreSQL/Provider/故障评测测试；本机迁移 smoke 和实际 CLI 也运行。既有 Starlette TestClient 弃用和 Zod 构建注释警告仍是环境限制，不影响断言。
 
 尚未实测：官方/百炼实际可用型号/权重版本、区域/Workspace 域名、Schema 子集/UUID、有限输出 cap、真实 tokenizer/计费 Token、峰谷缓存/推理计费、拒答/超时/取消账单、留存/隐私条款适用账户、真实 latency/质量。没有 HTTP/Key/真实 ledger dispatch；不存在可启用的实际调用开关。未来也不得自动换渠道、模型、模式或修复 JSON 产生第二次费用。
 

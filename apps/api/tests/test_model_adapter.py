@@ -32,6 +32,7 @@ def test_all_synthetic_cases_real_postgresql_no_vendor_requests(ledger_stack,ind
     with factory() as db:
         confirmed=db.scalars(select(ExperienceFact).where(ExperienceFact.status=='user_confirmed')).all()
         assert len(confirmed)==1 and confirmed[0].statement=='我负责排序需求记录。'
+        assert all(r.tokens_in==100 and r.tokens_out==80 for r in db.scalars(select(MiningRun)))
     assert all(r['real_quality'] is None and r['provider_latency_ms'] is None for r in report['records'])
 
 

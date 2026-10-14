@@ -118,7 +118,11 @@ class Adapter:
             model=response['model']
             if model not in {self.profile.api_model,self.profile.version}: raise AdapterError('protocol_invalid')
             evidence={'reported_model':model,'version_confidence':'mock_only_not_real_version','region':self.profile.region,'deployment':self.profile.deployment,'mode':self.profile.mode,'structured_mode':self.profile.structured_mode}
-            return Envelope(parse_output(message['content']),usage,evidence)
+            parsed=parse_output(message['content'])
+            # Runtime mining metadata and the ledger share envelope usage, never
+            # model-authored token fields. Revalidate legacy token ceilings.
+            parsed=MiningOutputV2.model_validate(parsed.model_dump() | {'tokens_in':usage['input'],'tokens_out':usage['output']})
+            return Envelope(parsed,usage,evidence)
         except AdapterError: raise
         except (KeyError,TypeError,ValueError,AttributeError,IndexError): raise AdapterError('protocol_invalid') from None
 

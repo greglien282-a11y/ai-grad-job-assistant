@@ -18,6 +18,7 @@ from app.cost_ledger import Ledger, LedgerError, digest
 from app.model_adapter import Profile, Adapter, MockTransport, OfflineRunner, SimulatedCrash
 from app.mining_context import MiningContext, UserContext, StopContext
 from app.models import CostBudget, CostCall, utcnow
+from test_http_api import api
 
 ROOT=Path(__file__).resolve().parents[3]
 RATE={'currency':'CNY_SIMULATED','input':'2','cached':'1','output':'8'}
@@ -168,6 +169,7 @@ def test_provider_contract_and_usage_accounting(ledger_stack,index):
     assert ('thinking' in request)==(index==0) and 'Authorization' not in str(request)
     cid,result=OfflineRunner(ledger,adapter,transport).run(ctx,'one','S0','.1',RATE)
     assert result and result.usage=={'input':100,'output':20,'cached':40,'reasoning':5}
+    assert result.output.tokens_in==100 and result.output.tokens_out==20
     assert ledger.get(cid)['estimated']=='0.000320'
     assert ledger.get(cid)['actual'] is None
     ledger.reconcile(cid,'0','synthetic-mock-free')
@@ -238,3 +240,12 @@ def test_insufficient_mock_reservation_refuses_before_transport(ledger_stack):
     with pytest.raises(LedgerError,match='reservation_below_mock_upper_bound'):
         OfflineRunner(ledger,Adapter(p,{}),transport).run(ctx,'tiny','S0','.000001',RATE)
     assert transport.calls==0
+
+
+def test_exactly_300_second_clock_skew_is_accepted_without_relaxing_301(api,monkeypatch):
+    from test_idempotency import headers,ROOT,BODY
+    from app import idempotency as idem
+    client,_=api;now=utcnow().replace(microsecond=0)
+    monkeypatch.setattr(idem,'utcnow',lambda:now)
+    h,_=headers(issued=int(now.timestamp())+300)
+    assert client.post(ROOT+'/sessions',headers=h,json=BODY).status_code==201
