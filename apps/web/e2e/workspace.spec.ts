@@ -165,7 +165,7 @@ test('acknowledged source turn is reused after interrupted fact insertion', asyn
 })
 
 test('rapid repeated clicks produce a single session and fact', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/manual')
   await page.getByLabel('原始经历').fill('Synthetic repeated click session')
   await page.getByRole('button', { name: '创建经历会话 →', exact: true }).evaluate(button => { (button as HTMLButtonElement).click(); (button as HTMLButtonElement).click() })
   await expect(page.getByRole('heading', { name: '你的事实清单', exact: true })).toBeVisible()
@@ -196,7 +196,7 @@ test('committed edit whose response is lost is reconciled by a fresh read', asyn
 
 // These are release gates, NOT test.fail/test.skip or expected-success simulations.
 test('acceptance blocker: lost create response must not leave an unrecoverable session', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/manual')
   await page.route('**/api/v1/experience/sessions', async route => {
     const response = await forward(route)
     expect(response.status()).toBe(201)

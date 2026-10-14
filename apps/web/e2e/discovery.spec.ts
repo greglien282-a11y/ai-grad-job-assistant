@@ -26,6 +26,9 @@ test('discovery full real UI / HTTP / PostgreSQL flow and desktop evidence', asy
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
   await expect(page.getByRole('region', { name: '三个首页入口' })).toBeVisible()
+  await expect(page.getByLabel('原始经历', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('描述一段经历')).toHaveCount(0)
+  await page.screenshot({ path: info.outputPath('home.png'), fullPage: true })
   await page.getByRole('link', { name: /我还没有一份像样的简历/ }).click()
   await page.getByLabel('描述一段经历').fill('合成课程项目：任务列表，我负责页面交互，团队负责整体演示。')
   await page.getByRole('button', { name: '开始合成整理', exact: true }).click()
@@ -197,4 +200,84 @@ test('discovery lost creation and recovery response refresh never auto-creates o
   await page.getByRole('button', { name: '根据已保存经历开始合成整理' }).click()
   await expect(page.getByRole('article', { name: '合成追问' })).toHaveCount(2)
   expect(mines).toBe(1)
+})
+
+
+test('creation never received: refresh reads real 404, identical same-key retry creates once', async ({ page }) => {
+  await page.goto('/discovery')
+  const original = '合成：从未发送到服务端的课程经历。', keys: string[] = []
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/sessions')) keys.push(request.headers()['idempotency-key']) })
+  await page.route('**/api/v1/experience/sessions', route => route.abort('internetdisconnected'), { times: 1 })
+  await page.getByLabel('描述一段经历').fill(original)
+  await page.getByRole('button', { name: '开始合成整理', exact: true }).click()
+  await expect(page.getByText(/明确未找到创建结果/)).toBeVisible()
+  expect(probe().sessions).toHaveLength(0)
+  const recovery = page.waitForResponse(r => r.url().endsWith('/session-creations/recovery'))
+  await page.reload()
+  expect((await recovery).status()).toBe(404)
+  await expect(page.getByText(/明确未找到创建结果/)).toBeVisible()
+  expect(keys).toHaveLength(1);expect(probe().sessions).toHaveLength(0)
+  await page.getByLabel('描述一段经历').fill('合成：与原文不同。')
+  await page.getByRole('button', { name: '用原描述同键重试' }).click()
+  await expect(page.getByText(/这次输入与先前提交不同/)).toBeVisible()
+  expect(keys).toHaveLength(1);expect(probe().sessions).toHaveLength(0)
+  await page.getByLabel('描述一段经历').fill(original)
+  await page.getByRole('button', { name: '用原描述同键重试' }).click()
+  await expect(page.getByRole('article', { name: '合成追问' })).toHaveCount(2)
+  expect(keys).toHaveLength(2);expect(keys[0] === keys[1]).toBe(true)
+  expect(probe().sessions).toHaveLength(1);expect(audit().user_turns).toBe(1);expect(audit().runs).toHaveLength(1)
+  expect((await apiRead(page)).turns.find((t: { role: string }) => t.role === 'user').content).toBe(original)
+  await page.reload()
+  await expect(page.getByRole('article', { name: '合成追问' })).toHaveCount(2)
+  expect(keys).toHaveLength(2)
+})
+
+for (const boundary of ['expired', 'damaged'] as const) {
+  test(`creation ${boundary} storage blocks writes after refresh`, async ({ page }) => {
+    await page.goto('/discovery')
+    let creates = 0
+    page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/sessions')) creates++ })
+    await page.route('**/api/v1/experience/sessions', route => route.abort('internetdisconnected'), { times: 1 })
+    await page.getByLabel('描述一段经历').fill('合成：恢复窗口边界。')
+    await page.getByRole('button', { name: '开始合成整理', exact: true }).click()
+    await expect(page.getByText(/明确未找到创建结果/)).toBeVisible()
+    await page.evaluate(async kind => {
+      const name = 'pathwise.development.pendingCreate'
+      const p = JSON.parse(sessionStorage.getItem(name)!)
+      if (kind === 'damaged') p.bodyTag = 'damaged'
+      else {
+        // Generate an actually valid expired proof, never expose secrets in output.
+        const issued = Math.floor(Date.now() / 1000) - 86401, nonce = p.key.split('.')[2]
+        const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(p.token), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+        const proof = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`pathwise-idempotency-v1\ncreate_session\nglobal\n${issued}\n${nonce}`)))
+        const encoded = btoa(String.fromCharCode(...proof)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
+        p.key = `v1.${issued}.${nonce}.${encoded}`;p.expiresAt = (issued + 86400) * 1000
+      }
+      sessionStorage.setItem(name, JSON.stringify(p))
+    }, boundary)
+    await page.reload()
+    await expect(page.getByRole('alert')).toContainText(boundary === 'expired' ? '24 小时临时恢复窗口已结束' : '临时恢复记录异常')
+    await page.getByLabel('描述一段经历').fill('合成：恢复窗口边界。')
+    await expect(page.getByRole('button', { name: '开始合成整理', exact: true })).toBeDisabled()
+    expect(creates).toBe(1);expect(probe().sessions).toHaveLength(0);expect(audit().runs).toHaveLength(0)
+  })
+}
+
+test('uncertain creation recovery never authorizes retry, even after a previous definite 404', async ({ page }) => {
+  await page.goto('/discovery')
+  let creates = 0
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/sessions')) creates++ })
+  await page.route('**/api/v1/experience/sessions', route => route.abort('internetdisconnected'), { times: 1 })
+  await page.getByLabel('描述一段经历').fill('合成：结果不确定边界。')
+  await page.getByRole('button', { name: '开始合成整理', exact: true }).click()
+  await expect(page.getByText(/明确未找到创建结果/)).toBeVisible()
+  await page.route('**/session-creations/recovery', route => route.abort('connectionreset'))
+  await page.reload()
+  await expect(page.getByText(/创建结果仍不确定/)).toBeVisible()
+  await page.getByLabel('描述一段经历').fill('合成：结果不确定边界。')
+  await expect(page.getByRole('button', { name: '用原描述同键重试' })).toBeDisabled()
+  await page.unroute('**/session-creations/recovery')
+  await page.getByRole('button', { name: '只读恢复创建结果' }).click()
+  await expect(page.getByRole('button', { name: '用原描述同键重试' })).toBeEnabled()
+  expect(creates).toBe(1);expect(probe().sessions).toHaveLength(0)
 })

@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import fixtures from '../../test/mining-fixtures.json'
 import { createExperienceApi, SESSION_KEY } from '../../lib/experience'
+import { newPending, PENDING_KEY, storePending } from '../../lib/idempotency'
 import { MINING_KEY } from '../../lib/pending-mining'
 import DiscoveryWorkbench from './DiscoveryWorkbench'
 
 type Stage = 'empty' | 'initial' | 'answered' | 'confirmed'
 function setup(initial: Stage | null = 'initial') {
-  let stage: Stage = initial ?? 'empty', failReads = false, disabled = false, lost = false, missing = false, conflict = false
+  let stage: Stage = initial ?? 'empty', failReads = false, disabled = false, lost = false, missing = false, conflict = false, creationMissing = false, creationUnknown = false
   if (initial) sessionStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId: fixtures.created.session_id, token: fixtures.created.access_token }))
   const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input), method = init?.method ?? 'GET'
@@ -16,7 +17,9 @@ function setup(initial: Stage | null = 'initial') {
     if (method === 'GET' && failReads) throw new Error('Synthetic offline')
     if (path.endsWith('/experience-summary')) return json(fixtures[`${stage}Summary`])
     if (path.endsWith('/mining-runs/recovery')) return missing ? json({ error: { code: 'mining_operation_not_found' } }, 404) : json(stage === 'initial' ? fixtures.initialRun : fixtures.answerRun)
+    if (path.endsWith('/session-creations/recovery')) return json({ error: { code: creationUnknown ? 'resource_unavailable' : 'idempotency_creation_not_found' } }, 404)
     if (method === 'GET') return json(fixtures[stage])
+    if (path.endsWith('/sessions') && creationMissing) throw new Error('Synthetic creation never received')
     if (path.endsWith('/sessions')) return json({ ...fixtures.created, access_token: (init?.headers as Record<string, string>).Authorization.slice(7) }, 201)
     if (path.endsWith('/mining-runs')) {
       if (disabled) return json({ error: { code: 'ai_disabled' } }, 503)
@@ -35,7 +38,7 @@ function setup(initial: Stage | null = 'initial') {
   })
   const api = createExperienceApi(fetcher as typeof fetch), copy = vi.fn(async () => {})
   const view = render(<DiscoveryWorkbench api={api} copy={copy} />)
-  return { fetcher, api, copy, view, loseResponse: () => { lost = true }, missing: () => { missing = true }, enable: () => { missing = false }, disable: () => { disabled = true }, offline: () => { failReads = true }, online: () => { failReads = false; conflict = false }, conflict: () => { conflict = true } }
+  return { fetcher, api, copy, view, creationMissing: () => { creationMissing = true }, creationUnknown: () => { creationUnknown = true }, creationOnline: () => { creationMissing = false; creationUnknown = false }, loseResponse: () => { lost = true }, missing: () => { missing = true }, enable: () => { missing = false }, disable: () => { disabled = true }, offline: () => { failReads = true }, online: () => { failReads = false; conflict = false }, conflict: () => { conflict = true } }
 }
 const posts = (fetcher: ReturnType<typeof setup>['fetcher']) => fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')
 const waitReady = () => waitFor(() => expect(screen.getByRole('button', { name: '重新读取' })).not.toBeDisabled())
@@ -53,6 +56,44 @@ describe('scripted conversation with recorded FastAPI contracts', () => {
     expect(screen.getByText(/真实 AI 尚未启用/)).toBeInTheDocument()
     const stored = JSON.stringify(Object.keys(sessionStorage).map(key => sessionStorage.getItem(key)))
     expect(stored.includes('Synthetic project:')).toBe(false)
+  })
+  it('refresh creation 404 permits only explicit identical same-key retry', async () => {
+    const original = 'Synthetic unsubmitted creation.'
+    const x = setup(null);x.creationMissing()
+    fireEvent.change(screen.getByLabelText('描述一段经历'), { target: { value: original } })
+    await userEvent.click(screen.getByRole('button', { name: '开始合成整理' }))
+    await screen.findByText(/明确未找到创建结果/)
+    const key = JSON.parse(sessionStorage.getItem(PENDING_KEY)!).key
+    x.view.unmount();const restored = render(<DiscoveryWorkbench api={x.api} />)
+    await screen.findByText(/明确未找到创建结果/)
+    expect(posts(x.fetcher)).toHaveLength(1)
+    fireEvent.change(screen.getByLabelText('描述一段经历'), { target: { value: 'Different original' } })
+    await userEvent.click(screen.getByRole('button', { name: '用原描述同键重试' }))
+    await screen.findByText(/这次输入与先前提交不同/)
+    expect(posts(x.fetcher)).toHaveLength(1)
+    fireEvent.change(screen.getByLabelText('描述一段经历'), { target: { value: original } })
+    x.creationUnknown();await userEvent.click(screen.getByRole('button', { name: '只读恢复创建结果' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '用原描述同键重试' })).toBeDisabled())
+    expect(posts(x.fetcher)).toHaveLength(1)
+    x.creationOnline();await userEvent.click(screen.getByRole('button', { name: '只读恢复创建结果' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '用原描述同键重试' })).toBeEnabled())
+    await userEvent.click(screen.getByRole('button', { name: '用原描述同键重试' }))
+    await screen.findByRole('heading', { name: '一起回忆你的经历' })
+    expect(posts(x.fetcher)[1][1]?.headers).toMatchObject({ 'Idempotency-Key': key })
+    restored.unmount()
+  })
+  it.each(['expired', 'damaged'] as const)('blocks %s creation storage without any POST', async kind => {
+    const p = await newPending('Synthetic pending creation.')
+    if (kind === 'expired') {
+      const issued = Math.floor(Date.now() / 1000) - 86401
+      p.key = p.key.replace(p.key.split('.')[1], String(issued));p.expiresAt = (issued + 86400) * 1000
+      storePending(p)
+    } else sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ...p, bodyTag: 'damaged' }))
+    const x = setup(null)
+    await screen.findByRole('alert')
+    fireEvent.change(screen.getByLabelText('描述一段经历'), { target: { value: 'Synthetic pending creation.' } })
+    expect(screen.getByRole('button', { name: '开始合成整理' })).toBeDisabled()
+    expect(posts(x.fetcher)).toHaveLength(0)
   })
   it('binds only the selected question, leaving unselected questions unbound', async () => {
     const { fetcher } = setup()

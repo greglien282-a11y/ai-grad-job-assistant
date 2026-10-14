@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ApiError, readCredentials, saveCredentials, SESSION_KEY, type Credentials, type ExperienceApi, type ExperienceSession, type Fact, type Mutation } from '../../lib/experience'
-import { checkBody, clearPending, newPending, readPending, storePending } from '../../lib/idempotency'
+import { checkBody, clearPending, newPending, readPending, storePending, type PendingCreate } from '../../lib/idempotency'
 import { createMiningApi, type Summary } from '../../lib/mining'
 import { clearMining, newMining, originalBody, readMining, storeMining, verifyMining, type PendingMining } from '../../lib/pending-mining'
 import type { MiningBody, MiningRun, Question, QuestionAction } from '../../lib/mining-contract'
@@ -37,6 +37,22 @@ export function useDiscovery(api: ExperienceApi) {
     saveCredentials(c); clearPending(); setCreation({ value: null, error: '' }); setCredentials(c); setRaw('')
     return c
   }
+  async function recoverCreation(p: PendingCreate, active = () => true) {
+    // Only the creation contract's explicit 404 establishes absence. A transport
+    // error, another 404, or an expired key must never authorize a write.
+    try {
+      const result = await apiRef.current.recover(p)
+      if (active()) setCreateNotFound(false)
+      return result
+    } catch (cause) {
+      if (active()) {
+        const absent = cause instanceof ApiError && cause.status === 404 && cause.code === 'idempotency_creation_not_found' && Date.now() < p.expiresAt
+        setCreateNotFound(absent); setNeedsReload(!absent)
+        setNotice(absent ? '明确未找到创建结果。请重新输入完全一致的原描述，再显式同键重试；不会自动新建。' : '创建结果仍不确定，写入已暂停。请先只读恢复，不会换键或自动重发。')
+      }
+      throw cause
+    }
+  }
   async function acceptRun(c: Credentials, p: PendingMining, result: MiningRun) {
     if (result.session_id !== c.sessionId || result.project_id !== p.project_id) throw new Error('恢复资料归属不一致。')
     await load(c)
@@ -61,7 +77,7 @@ export function useDiscovery(api: ExperienceApi) {
       let loaded = false
       try {
         let c = credentials
-        if (!c && creation.value && !creation.error) c = adopt(await apiRef.current.recover(creation.value), creation.value)
+        if (!c && creation.value && !creation.error) c = adopt(await recoverCreation(creation.value, () => active), creation.value)
         if (c) {
           await load(c, () => active)
           loaded = true
@@ -69,8 +85,9 @@ export function useDiscovery(api: ExperienceApi) {
         }
       } catch (cause) {
         if (!active) return
-        if (cause instanceof ApiError && cause.code === 'idempotency_creation_not_found') setCreateNotFound(true)
-        setNeedsReload(!(loaded && cause instanceof ApiError && cause.code === 'mining_operation_not_found')); setError(cause instanceof Error ? cause.message : '恢复失败，请只读查询。')
+        const absent = !credentials && creation.value && !creation.error && Date.now() < creation.value.expiresAt && cause instanceof ApiError && cause.status === 404 && cause.code === 'idempotency_creation_not_found'
+        setNeedsReload(!(absent || (loaded && cause instanceof ApiError && cause.code === 'mining_operation_not_found')))
+        setError(cause instanceof Error ? cause.message : '恢复失败，请只读查询。')
       } finally { if (active) { locked.current = false; setBusy(false) } }
     }
     void boot()
@@ -113,18 +130,16 @@ export function useDiscovery(api: ExperienceApi) {
     }
   }
   async function create() {
-    if (creation.error || mining.error) throw new Error('暂存异常，请先核对恢复记录。')
+    if (needsReload || creation.error || mining.error) throw new Error('暂存异常，请先核对恢复记录。')
     if (creation.value && !createNotFound) throw new Error('请先查询刚才的创建结果，不会新建第二份。')
     const p = creation.value ?? await newPending(raw)
     await checkBody(p, raw); storePending(p); setCreation({ value: p, error: '' })
+    setCreateNotFound(false)
     let c: Credentials
     try { c = adopt(await apiRef.current.create(raw, p), p) }
     catch (cause) {
-      try { c = adopt(await apiRef.current.recover(p), p) }
-      catch (recovery) {
-        if (recovery instanceof ApiError && recovery.code === 'idempotency_creation_not_found') setCreateNotFound(true)
-        throw cause
-      }
+      try { c = adopt(await recoverCreation(p), p) }
+      catch { throw cause }
     }
     const data = await load(c)
     if (data) await send(c, body(data, { input_turn_id: data.turns.find(t => t.role === 'user')!.id }))
@@ -149,7 +164,7 @@ export function useDiscovery(api: ExperienceApi) {
   }
   async function refresh() {
     if (!credentials) {
-      if (creation.value) { const c = adopt(await apiRef.current.recover(creation.value), creation.value); await load(c) }
+      if (creation.value) { const c = adopt(await recoverCreation(creation.value), creation.value); await load(c) }
     } else { await load(); if (mining.value) await recoverMine() }
   }
   async function mutate(fact: Fact, mutation: Mutation) {
