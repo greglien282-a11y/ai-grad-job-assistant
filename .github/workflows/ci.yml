@@ -6,6 +6,8 @@ on:
     paths:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
+      - 'scripts/run_offline_evaluation.py'
+      - 'scripts/check_isolated_migrations.py'
       - 'docs/evaluation/**'
       - 'compose.yaml'
       - '.github/workflows/ci.yml'
@@ -13,6 +15,8 @@ on:
     paths:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
+      - 'scripts/run_offline_evaluation.py'
+      - 'scripts/check_isolated_migrations.py'
       - 'docs/evaluation/**'
       - 'compose.yaml'
       - '.github/workflows/ci.yml'
@@ -51,12 +55,13 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r requirements.txt
-      - run: python -m alembic upgrade head
-      - run: python -m alembic check
-      - run: python -m app.cleanup_idempotency
+      - name: Upgrade, check and cleanup in fresh isolated test schema
+        run: python ../../scripts/check_isolated_migrations.py
       - run: python -m pytest -q -ra
       - name: Offline model preparation contracts (no network or keys)
         run: python ../../scripts/check_m12c2_contracts.py
+      - name: Isolated MOCK evaluation CLI (no vendor HTTP)
+        run: python ../../scripts/run_offline_evaluation.py --profile 0 --output ../../mock-evaluation-report.json
 
   web:
     name: React / TypeScript build and tests
