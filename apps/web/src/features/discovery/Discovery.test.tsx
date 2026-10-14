@@ -8,14 +8,18 @@ import { MINING_KEY } from '../../lib/pending-mining'
 import DiscoveryWorkbench from './DiscoveryWorkbench'
 
 type Stage = 'empty' | 'initial' | 'answered' | 'confirmed'
-function setup(initial: Stage | null = 'initial') {
-  let stage: Stage = initial ?? 'empty', failReads = false, disabled = false, lost = false, missing = false, conflict = false, creationMissing = false, creationUnknown = false
+function setup(initial: Stage | null = 'initial', viewMode: 'workspace' | 'summary' = 'workspace') {
+  let stage: Stage = initial ?? 'empty', failReads = false, disabled = false, lost = false, missing = false, conflict = false, creationMissing = false, creationUnknown = false, staleSummary = false
   if (initial) sessionStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId: fixtures.created.session_id, token: fixtures.created.access_token }))
   const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input), method = init?.method ?? 'GET'
     const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status })
     if (method === 'GET' && failReads) throw new Error('Synthetic offline')
-    if (path.endsWith('/experience-summary')) return json(fixtures[`${stage}Summary`])
+    if (path.endsWith('/experience-summary')) {
+      const result = structuredClone(fixtures[`${stage}Summary`])
+      if (staleSummary && result.confirmed.length) result.confirmed[0].version++
+      return json(result)
+    }
     if (path.endsWith('/mining-runs/recovery')) return missing ? json({ error: { code: 'mining_operation_not_found' } }, 404) : json(stage === 'initial' ? fixtures.initialRun : fixtures.answerRun)
     if (path.endsWith('/session-creations/recovery')) return json({ error: { code: creationUnknown ? 'resource_unavailable' : 'idempotency_creation_not_found' } }, 404)
     if (method === 'GET') return json(fixtures[stage])
@@ -37,8 +41,8 @@ function setup(initial: Stage | null = 'initial') {
     return json(fixtures[stage])
   })
   const api = createExperienceApi(fetcher as typeof fetch), copy = vi.fn(async () => {})
-  const view = render(<DiscoveryWorkbench api={api} copy={copy} />)
-  return { fetcher, api, copy, view, creationMissing: () => { creationMissing = true }, creationUnknown: () => { creationUnknown = true }, creationOnline: () => { creationMissing = false; creationUnknown = false }, loseResponse: () => { lost = true }, missing: () => { missing = true }, enable: () => { missing = false }, disable: () => { disabled = true }, offline: () => { failReads = true }, online: () => { failReads = false; conflict = false }, conflict: () => { conflict = true } }
+  const view = render(<DiscoveryWorkbench api={api} copy={copy} view={viewMode} />)
+  return { fetcher, api, copy, view, stale: () => { staleSummary = true }, creationMissing: () => { creationMissing = true }, creationUnknown: () => { creationUnknown = true }, creationOnline: () => { creationMissing = false; creationUnknown = false }, loseResponse: () => { lost = true }, missing: () => { missing = true }, enable: () => { missing = false }, disable: () => { disabled = true }, offline: () => { failReads = true }, online: () => { failReads = false; conflict = false }, conflict: () => { conflict = true } }
 }
 const posts = (fetcher: ReturnType<typeof setup>['fetcher']) => fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')
 const waitReady = () => waitFor(() => expect(screen.getByRole('button', { name: '重新读取' })).not.toBeDisabled())
@@ -95,6 +99,54 @@ describe('scripted conversation with recorded FastAPI contracts', () => {
     expect(screen.getByRole('button', { name: '开始合成整理' })).toBeDisabled()
     expect(posts(x.fetcher)).toHaveLength(0)
   })
+  it('independent summary allows an empty result and guides back without management controls', async () => {
+    const x = setup('initial', 'summary')
+    await screen.findByRole('heading', { name: '先确认一件你做过的事' })
+    expect(screen.getByRole('link', { name: '返回继续完善' })).toHaveAttribute('href', '/discovery')
+    expect(screen.getByRole('button', { name: '复制经历文本' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: '确认事实' })).not.toBeInTheDocument()
+    expect(posts(x.fetcher)).toHaveLength(0)
+  })
+  it('shows only current confirmed text and distinct original provenance', async () => {
+    setup('confirmed', 'summary')
+    const document = await screen.findByRole('article', { name: '已确认经历正文' })
+    expect(within(document).getByText(fixtures.confirmedSummary.text)).toBeInTheDocument()
+    expect(document).not.toHaveTextContent(fixtures.confirmed.facts[0].statement)
+    await userEvent.click(screen.getByText('查看事实依据'))
+    expect(within(screen.getByRole('region', { name: '整理依据 1' })).getByText('用户原始自述', { exact: true })).toBeInTheDocument()
+  })
+  it('summary read failure hides previous text and disables copying until successful GET', async () => {
+    const x = setup('confirmed', 'summary')
+    await screen.findByRole('article', { name: '已确认经历正文' })
+    x.offline()
+    x.view.rerender(<DiscoveryWorkbench api={x.api} copy={x.copy} view="workspace" />)
+    x.view.rerender(<DiscoveryWorkbench api={x.api} copy={x.copy} view="summary" />)
+    await screen.findByRole('heading', { name: '先恢复并核对资料' })
+    expect(screen.queryByRole('article', { name: '已确认经历正文' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '复制经历文本' })).not.toBeInTheDocument()
+    x.online();await userEvent.click(screen.getByRole('button', { name: '重新读取成果' }))
+    await screen.findByRole('article', { name: '已确认经历正文' })
+    expect(posts(x.fetcher)).toHaveLength(0)
+  })
+  it('rejects an older/different summary fact version even at the same revision', async () => {
+    const x = setup('confirmed');await waitReady();x.stale()
+    x.view.rerender(<DiscoveryWorkbench api={x.api} view="summary" />)
+    expect(await screen.findByRole('alert')).toHaveTextContent('整理稿与当前事实版本不一致，请重新读取后核对。')
+    expect(screen.queryByRole('article', { name: '已确认经历正文' })).not.toBeInTheDocument()
+    expect(posts(x.fetcher)).toHaveLength(0)
+  })
+  it('moving to the result and back preserves unsaved answer and fact drafts', async () => {
+    const x = setup();await waitReady()
+    fireEvent.change(screen.getByLabelText('你的回答或自由补充'), { target: { value: 'Synthetic unsaved answer' } })
+    await userEvent.click(screen.getByRole('button', { name: '编辑陈述' }))
+    fireEvent.change(screen.getByLabelText('编辑事实 1'), { target: { value: 'Synthetic unsaved edit' } })
+    x.view.rerender(<DiscoveryWorkbench api={x.api} view="summary" />)
+    await screen.findByRole('heading', { name: '先确认一件你做过的事' })
+    x.view.rerender(<DiscoveryWorkbench api={x.api} view="workspace" />)
+    expect(screen.getByLabelText('你的回答或自由补充')).toHaveValue('Synthetic unsaved answer')
+    expect(screen.getByLabelText('编辑事实 1')).toHaveValue('Synthetic unsaved edit')
+    expect(posts(x.fetcher)).toHaveLength(0)
+  })
   it('binds only the selected question, leaving unselected questions unbound', async () => {
     const { fetcher } = setup()
     await waitReady()
@@ -114,15 +166,15 @@ describe('scripted conversation with recorded FastAPI contracts', () => {
     expect(JSON.parse(String(posts(fetcher)[0][1]?.body)).answered_question_ids).toBeUndefined()
   })
   it('restores question identity and copies only the confirmed summary', async () => {
-    const { copy } = setup('confirmed')
-    await waitReady()
+    const { copy } = setup('confirmed', 'summary')
+    await screen.findByRole('article', { name: '已确认经历正文' })
     expect(screen.getByText('已关联 1 个问题')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: '复制经历文本' }))
     expect(copy).toHaveBeenCalledWith(fixtures.confirmedSummary.text)
     expect(screen.getByText('技术备份（JSON，非正式简历）')).toBeInTheDocument()
   })
   it('clipboard denial explains manual copying without claiming success', async () => {
-    const x = setup('confirmed');await waitReady()
+    const x = setup('confirmed', 'summary');await screen.findByRole('article', { name: '已确认经历正文' })
     x.copy.mockRejectedValueOnce(new DOMException('Denied', 'NotAllowedError'))
     await userEvent.click(screen.getByRole('button', { name: '复制经历文本' }))
     await screen.findByText('剪贴板不可用，请选中上方文字手动复制。')

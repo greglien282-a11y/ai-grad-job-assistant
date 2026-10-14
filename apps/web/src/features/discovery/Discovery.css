@@ -83,3 +83,7 @@
   .step-strip { gap:10px; }
   .step-strip li { flex:1; min-width:0; }
 }
+
+.discovery main[hidden] { display:none; }
+.result-entry { border-top:1px solid #424a64; padding:20px 0; }
+.mobile-tabs>a { min-height:44px; padding:10px; font-size:16px; }

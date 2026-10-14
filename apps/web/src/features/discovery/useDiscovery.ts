@@ -28,6 +28,8 @@ export function useDiscovery(api: ExperienceApi) {
     if (!data.context_revision || !data.mining_runs || !data.mining_status) throw new Error('后端需要先升级至 0005；已停止写入，请使用隔离预览或手工入口。')
     const organized = await mineRef.current.summary(c, data.projects[0].id)
     if (organized.context_revision !== data.context_revision) throw new Error('读取期间资料发生变化，请重新读取后核对。')
+    const confirmed = data.facts.filter(f => ['user_confirmed', 'evidence_supported'].includes(f.status))
+    if (organized.project_id !== data.projects[0].id || organized.confirmed.length !== confirmed.length || organized.confirmed.some(f => !confirmed.some(current => current.id === f.id && JSON.stringify(current) === JSON.stringify(f)))) throw new Error('整理稿与当前事实版本不一致，请重新读取后核对。')
     if (active()) { setSession(data); setSummary(organized); setNeedsReload(false) }
     return data
   }
