@@ -32,6 +32,7 @@ class Start(schemas.Input):
     input_turn_id: UUID | None = None
     retry_of: UUID | None = None
     confirm_retry: bool = Field(strict=True, default=False)
+    answered_question_ids: list[UUID] | None = Field(default=None, max_length=2)
 
     @model_validator(mode='after')
     def one_input(self):
@@ -39,6 +40,8 @@ class Start(schemas.Input):
             raise ValueError('Exactly one input required')
         if self.confirm_retry != (self.retry_of is not None):
             raise ValueError('Retry requires explicit confirmation')
+        if self.answered_question_ids and len(set(self.answered_question_ids)) != len(self.answered_question_ids):
+            raise ValueError('Question IDs must be distinct')
         return self
 
 class ContextAction(schemas.Input):

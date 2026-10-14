@@ -47,6 +47,12 @@ def fact_view(db: Session, fact: ExperienceFact) -> schemas.FactView:
                             created_at=fact.created_at, updated_at=fact.updated_at, **facts.snapshot(db, fact))
 
 
+def turn_view(db: Session, turn: ConversationTurn) -> schemas.TurnView:
+    from app.mining import answer_links
+    return schemas.TurnView(id=turn.id, session_id=turn.session_id, role=turn.role, content=turn.content,
+                            created_at=turn.created_at, answered_questions=answer_links(db, turn.id))
+
+
 def session_view(db: Session, record: ExperienceSession) -> schemas.SessionView:
     from app.mining import view
     from app.models import MiningRun
@@ -58,7 +64,7 @@ def session_view(db: Session, record: ExperienceSession) -> schemas.SessionView:
         id=record.id, status=record.status, created_at=record.created_at, updated_at=record.updated_at,
         context_revision=record.context_revision, mining_status=record.mining_status,
         projects=[schemas.ProjectView.model_validate(row) for row in rows(ExperienceProject)],
-        turns=[schemas.TurnView.model_validate(row) for row in rows(ConversationTurn)],
+        turns=[turn_view(db, row) for row in rows(ConversationTurn)],
         facts=[fact_view(db, row) for row in rows(ExperienceFact)],
         evidence=[schemas.EvidenceView.model_validate(row) for row in rows(FactEvidence)],
         history=[schemas.ChangeView.model_validate(row) for row in rows(FactChange)],
@@ -148,11 +154,11 @@ def create_turn(session_id: UUID, body: schemas.AddTurn, token: Token, db: Datab
             if turn is None:
                 raise idem.IdempotencyError(410, 'idempotency_result_unavailable')
             response.headers['Idempotency-Replayed'] = 'true'
-            return schemas.TurnView.model_validate(turn)
+            return turn_view(db, turn)
     turn = facts.add_turn(db, session_id, token, body.content)
     if key:
         idem.remember(db, key, token, body.model_dump(mode='json'), session_id=session_id, target_id=session_id, turn_id=turn.id)
-    return schemas.TurnView.model_validate(turn)
+    return turn_view(db, turn)
 
 
 @router.post("/projects/{project_id}/facts", response_model=schemas.FactView, status_code=201)

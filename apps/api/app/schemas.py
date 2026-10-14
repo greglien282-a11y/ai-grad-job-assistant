@@ -87,12 +87,18 @@ class ProjectView(Output):
     created_at: datetime
 
 
+class AnswerQuestionView(Output):
+    question_id: UUID
+    question_version: int
+
+
 class TurnView(Output):
     id: UUID
     session_id: UUID
     role: Literal["user", "assistant"]
     content: str
     created_at: datetime
+    answered_questions: list[AnswerQuestionView] = Field(default_factory=list)
 
 
 class FactView(Output):
@@ -157,6 +163,7 @@ class MiningRunView(Output):
     synthetic: Literal[True]
     questions: list[MiningQuestionView]
     candidate_fact_ids: list[UUID]
+    answered_questions: list[AnswerQuestionView] = Field(default_factory=list)
 
 
 class ExperienceSummary(Output):

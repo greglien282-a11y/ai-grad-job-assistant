@@ -4,6 +4,8 @@
 
 ## 数据归属与迁移 0004
 
+PR #7 第一轮 Review 修复新增 `0005_answer_questions`（保留原 0004 不重写）。`ai_answer_questions` 持久化 user turn ↔ question 的 ID、作答时 question_version 及 1/2 slot，不复制问题正文。同会话复合 FK、user-role 触发器、两槽约束和不可更新触发器保护关联；会话删除级联清除。0003 → 0004 → 0005 及已有 0004 升级均支持；回退 0005 只移除关联功能，原回答/问题/事实仍保留。日常库仍不迁移。
+
 - `experience_projects.session_id` 数据库唯一约束强制 MVP **一会话一项目**。ConversationTurn 仍只有 session_id，但该会话不可能有第二个项目。迁移遇到旧多项目资料直接失败并回滚，不合并、不删除。将来多项目需独立迁移 project_id/FK，而非放松本约束。
 - FactSource 同会话 FK + 用户角色触发器；原始回合的角色/正文/归属数据库不可变。AI 提取仅接受当前 run.input_turn_id 的同会话 user turn。项目和输入回合的同会话 FK 共同约束 MiningRun。
 - Session 增加 `context_revision` 和独立的 `mining_status`；Fact 增加 `origin`、`memory_state`、`ai_run_id`；FactSource 增加 citations。旧事实回填 manual/unspecified，原确认状态、版本、引用、编辑历史不变。
@@ -44,7 +46,7 @@ completed 不转回 running；同键 POST 不做第二次推理。lease 默认 6
 
 | 方法/路径 | 输入/行为 |
 |---|---|
-| POST `/sessions/{id}/mining-runs` | project_id、base_revision；content / input_turn_id / retry_of 三选一；retry_of 必须 confirm_retry=true；必需稳定键 |
+| POST `/sessions/{id}/mining-runs` | project_id、base_revision；content / input_turn_id / retry_of 三选一；可选 answered_question_ids（不同 UUID，最多 2 个）；retry_of 必须 confirm_retry=true；必需稳定键 |
 | GET `/sessions/{id}/mining-runs/recovery` | 通过已暂存的键只读找回 run ID/状态；未找到 404，绝不触发 provider 或保存回答 |
 | GET `/sessions/{id}/mining-runs/{run_id}` | 权限校验后只读状态、revision、问题和候选资源 ID |
 | POST `/sessions/{id}/mining-stop` | base_revision；停止挖掘，事实仍可审核；不结束整个会话 |
@@ -57,6 +59,16 @@ POST 完成新操作 201，重放终态 200，重放仍运行 202 + Idempotency-
 同键不同正文 `409 idempotency_payload_mismatch`；事实冲突 `409 version_conflict`；上下文冲突 `409 context_conflict`；忙碌 `409 mining_busy`；未知结果需明确重试 `409 mining_retry_requires_confirmation`。即使换新键，已经提交过的输入回合或相同回答正文仍 `409 mining_input_already_submitted`，不静默保存第二份。旧 receipt 未找到不是换键理由，调用方先只读核对会话；过期 410，越权统一不可用。限额 429 + Retry-After；这些错误不能被前端统一当作自动重发许可。
 
 ## 问题操作的真实语义
+
+### 回答关联（第一轮 P1 修复）
+
+- 首轮/自由补充可以不传 answered_question_ids，空列表与省略表示无关联。有绑定时，只接受本会话最近 completed run 的 active/corrected 问题；不是按列表位置推断。每题至多一个用户回答，仍可一次回答两题或仅回答其中一题，另一题可独立跳过。旧轮次未回答问题保留历史，但不能用新回答补绑；返回 `409 mining_question_not_current`。
+- skip/hidden/deleted 不能新绑定：`409 mining_question_not_answerable`。skip/hide 后若仍是当前轮且尚未回答，用户显式 correct 可重新启用；deleted 无法恢复。纠正之前的 base_revision 已过期，旧请求先返回 context_conflict；新请求关联当前 question_version。
+- 回答保存和 ID/version 关联在预留事务中原子提交，并参与 reserved_revision。每条新增关联也由数据库触发器递增 context_revision；重放和 retry 不新增关系、不重复递增。
+- 已回答的问题后来纠正或删除，原关系仍保留原 question_id/version；不把旧回答解释成对修订后新措辞的作答。当前问题可显示已改版本或无正文删除标记，旧正文不另存快照；user turn、已确认事实及来源不受影响。
+- 显式 retry 省略该字段时继承原回答关联；若携带则必须与原 ID 集合完全相同，否则 `409 mining_retry_questions_changed`。即使问题后来跳过/隐藏/删除或不再是当前轮，重试只是重新处理已经保存的回答，不重新绑定或验证为一次新作答。
+- GET 聚合中的 turns、run GET/恢复及 JSON 导出新增 answered_questions=[{question_id,question_version}]。题目当前正文/状态在所属 run.questions 查阅，不在回答、assistant、FactChange 或 receipt 中复制。初始/旧回合/自由补充返回 []。
+- 同键更改回答或绑定集合仍返回专用 `409 idempotency_payload_mismatch`；ID 顺序规范化，不因顺序交换产生新关联。省略/空列表的旧 0004 请求保持原签名正文，旧 receipts 可重放。不存在/跨会话题目统一不可用，重复 ID 或超过两题为 422。
 
 - skip：标 skipped，保留文字作为已跳过记录，不自动保存答案。
 - hide：标 hidden，保留文字但消费方不应在当前问题区显示；它**不是删除**，导出仍可查看。
@@ -81,6 +93,10 @@ AI_ENABLED 默认 false；显式 AI_ENABLED=true 且 AI_PROVIDER=scripted 才可
 
 ## 验证与限制
 
+MiningInput 目前只含单次用户回合，**完整历史上下文是 M1-2C 的前置设计事项**：接真实 Provider 前必须审查包含问题 ID/version、回答关联、已确认事实与来源、跳过/删除状态的最小上下文快照、版本一致性、脱敏和长度预算。不得仅替换 Provider 类就宣称支持跨轮自适应追问。本次仅修复持久化/HTTP 关系，不扩展语义理解或 UI。
+
 真实 PostgreSQL 测试覆盖空库往返、0003 旧确认资料升级/check/回滚、旧多项目拒绝无数据丢失；独立连接 HTTP 并发、旧写入 revision、响应丢失恢复、租约投影/回收、取消、同键/换键、原子部分失败、问题正文删除、越权、停止/结束/删除迟到结果、保留编辑历史及 Unicode/语义防改写。
 
 本机验证（2026-10-14）：PostgreSQL 后端 105 项通过（新增 39 项挖掘/安全测试），React 35 项通过，TypeScript/Vite 构建及 E2E 类型检查通过；原 16 项真实 Edge E2E 全部通过（44.8s），断言文件与 main 一致。迁移空库/0003 升级/回滚/check 均在隔离 schema 通过。现有 TestClient/httpx 弃用及 Zod 注释警告保留；初次沙箱运行的数据库/Node EPERM 限制在所需权限下重跑后通过。CI Chromium 最终结果及链接记录在 Draft PR。真实模型、专业改写、语义拆分、自适应问答、永久账号恢复、真实费用账本和前端改版均未实现；不把 Scripted 测试当作模型质量验收。
+
+第一轮审查修复验证（2026-10-14）：新增 16 项真实 PostgreSQL 回答关联回归，覆盖两题只答一题、跳过、纠正版本、删除、越权/轮次、两题上限、同键不同关联、并发重放、响应丢失恢复、显式重试继承及 0004/0005 迁移兼容与回退。React 35 项、类型检查和构建通过；原 16 项 Edge E2E 全部通过（44.7s），三个 spec 文件未修改。最终后端总数及 Chromium CI 链接见 Draft PR #7。

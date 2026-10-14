@@ -185,7 +185,8 @@ class MiningReceipt(Base):
 
 class MiningQuestion(Record, Base):
     __tablename__ = "ai_mining_questions"
-    __table_args__ = (CheckConstraint("state IN ('active','skipped','corrected','hidden','deleted')", name="ck_question_state"),
+    __table_args__ = (UniqueConstraint('id', 'session_id', name='uq_question_session'),
+                      CheckConstraint("state IN ('active','skipped','corrected','hidden','deleted')", name="ck_question_state"),
                       CheckConstraint("(state='deleted' AND content IS NULL) OR (state!='deleted' AND content IS NOT NULL)", name="ck_question_content"))
     session_id: Mapped[UUID] = mapped_column(ForeignKey("experience_sessions.id", ondelete="CASCADE"), index=True)
     run_id: Mapped[UUID] = mapped_column(ForeignKey("ai_mining_runs.id", ondelete="CASCADE"))
@@ -198,3 +199,19 @@ class MiningCapacity(Base):
     __tablename__ = "ai_mining_capacity"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # Singleton row lock coordinates admission across processes; no personal data.
+
+
+class AnswerQuestion(Base):
+    """Immutable IDs/version only. Question deletion never erases a user answer."""
+    __tablename__ = 'ai_answer_questions'
+    __table_args__ = (
+        ForeignKeyConstraint(['turn_id','session_id'], ['conversation_turns.id','conversation_turns.session_id'], ondelete='CASCADE'),
+        ForeignKeyConstraint(['question_id','session_id'], ['ai_mining_questions.id','ai_mining_questions.session_id'], ondelete='CASCADE'),
+        UniqueConstraint('turn_id', 'slot', name='uq_answer_question_slot'),
+        CheckConstraint('slot IN (1,2) AND question_version > 0', name='ck_answer_question_slot'),
+    )
+    turn_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    question_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    session_id: Mapped[UUID] = mapped_column(Uuid)
+    question_version: Mapped[int] = mapped_column(Integer)
+    slot: Mapped[int] = mapped_column(Integer)
