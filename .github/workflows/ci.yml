@@ -120,5 +120,8 @@ jobs:
           path: |
             apps/web/test-results/**/desktop_workspace.png
             apps/web/test-results/**/mobile_workspace.png
+            apps/web/test-results/**/discovery_desktop.png
+            apps/web/test-results/**/discovery_mobile.png
+            apps/web/test-results/**/discovery_zoom.png
           if-no-files-found: ignore
           retention-days: 7

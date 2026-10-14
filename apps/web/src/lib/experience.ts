@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { PendingCreate } from './idempotency'
+import { answerLinkSchema, miningRunSchema } from './mining-contract'
 
 const id = z.string().uuid()
 const timestamp = z.string().datetime({ offset: true })
@@ -9,17 +10,20 @@ export const factSchema = z.object({
   version: z.number().int().positive(), created_at: timestamp, updated_at: timestamp,
   original_source_turn_ids: z.array(id), source_kind: z.enum(['conversation_turns', 'user_edit']),
   source_turn_ids: z.array(id), source_change_id: id.nullable(), evidence_id: id.nullable(),
+  origin: z.enum(['manual', 'ai_extracted']).optional(), memory_state: z.enum(['unspecified', 'certain', 'approximate', 'needs_check']).optional(),
+  citations: z.array(z.object({ turn_id: id, quote: z.string(), start: z.number().int(), end: z.number().int() })).optional(), ai_run_id: id.nullable().optional(),
 }).refine(fact => fact.source_kind === 'user_edit'
   ? fact.source_change_id !== null && fact.source_turn_ids.length === 0
   : fact.source_change_id === null, 'Current provenance is inconsistent')
 const projectSchema = z.object({ id, session_id: id, raw_input: z.string(), title: z.string().nullable(), created_at: timestamp })
-export const turnSchema = z.object({ id, session_id: id, role: z.enum(['user', 'assistant']), content: z.string(), created_at: timestamp })
+export const turnSchema = z.object({ id, session_id: id, role: z.enum(['user', 'assistant']), content: z.string(), created_at: timestamp, answered_questions: z.array(answerLinkSchema).optional() })
 const historySnapshot = z.object({ statement: z.string(), status: factStatus, version: z.number().int().positive().optional() }).passthrough()
 export const sessionSchema = z.object({
   id, status: z.enum(['active', 'ended']), created_at: timestamp, updated_at: timestamp,
   projects: z.array(projectSchema), turns: z.array(turnSchema), facts: z.array(factSchema),
   evidence: z.array(z.object({ id, fact_id: id, material_reference: z.string(), basis: z.string(), reviewer: z.literal('user'), created_at: timestamp, verification_label: z.string() })),
   history: z.array(z.object({ id, fact_id: id, action: z.string(), actor: z.enum(['user', 'system']), before: historySnapshot.nullable(), after: historySnapshot, created_at: timestamp })),
+  context_revision: z.number().int().positive().optional(), mining_status: z.enum(['not_started', 'active', 'stopped']).optional(), mining_runs: z.array(miningRunSchema).optional(),
 })
 const createdSchema = z.object({ session_id: id, project_id: id, initial_turn_id: id, status: z.enum(['active', 'ended']), access_token: z.string().min(32).max(256) })
 const exportSchema = z.object({ format_version: z.literal(1), exported_at: timestamp, data: sessionSchema })
@@ -31,6 +35,7 @@ export type Fact = z.infer<typeof factSchema>
 export type Mutation = { action: 'edit'; statement: string; expected_version: number }
   | { action: 'confirm' | 'reject'; expected_version: number }
   | { action: 'verify_material'; expected_version: number; material_reference: string; basis: string }
+  | { action: 'set_memory'; expected_version: number; memory_state: 'unspecified' | 'certain' | 'approximate' | 'needs_check' }
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, public retryAt = 0) {
@@ -72,6 +77,7 @@ export function createExperienceApi(fetcher: typeof fetch = fetch) {
     return parsed.data
   }
   return {
+    request,
     create: (raw_input: string, pending: PendingCreate) => {
       if (!pending?.key || !pending.token) throw new Error('缺少安全恢复记录，尚未发送创建请求。')
       return request('/sessions', createdSchema, pending, 'POST', { raw_input }, undefined, pending.key)

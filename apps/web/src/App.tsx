@@ -4,8 +4,9 @@ import type { CreatedSession, Credentials, ExperienceApi, ExperienceSession, Fac
 import { checkBody, clearPending, newPending, operation, readPending, storePending } from './lib/idempotency'
 import type { PendingCreate } from './lib/idempotency'
 import { FactCard } from './features/FactCard'
+import type { ReactNode } from 'react'
 
-export default function App({ api = createExperienceApi(), download = downloadJson }: { api?: ExperienceApi; download?: typeof downloadJson }) {
+export default function App({ api = createExperienceApi(), download = downloadJson, intro }: { api?: ExperienceApi; download?: typeof downloadJson; intro?: ReactNode }) {
   const apiRef = useRef(api)
   const [credentials, setCredentials] = useState<Credentials | null>(readCredentials)
   const [initialPending] = useState(readPending)
@@ -170,6 +171,7 @@ export default function App({ api = createExperienceApi(), download = downloadJs
   const unusedTurns = session?.turns.filter((turn, i) => i > 0 && turn.role === 'user' && !session.facts.some(f => f.original_source_turn_ids.includes(turn.id))) ?? []
   return <div className="page">
     <header className="header"><a className="brand" href="#"><span className="brand-symbol">✦</span>启程 <span className="brand-en">Pathwise</span></a><span className="stage">真实经历库 · 开发版</span></header>
+    {intro}
     <main className="workspace"><div className="page-heading"><p className="eyebrow">YOUR EXPERIENCE, YOUR WORDS</p><h1>让真实经历，成为你的底气。</h1><p className="intro">从一句自述开始，逐条整理、核对与确认。每一条事实，都能回到它的来源。</p></div>
       <div className="principles"><span>01 记录经历</span><span>02 核对事实</span><span>03 保存与复用</span></div>
       {error && <div className="alert" role="alert">{error}</div>}{notice && <p className="notice" role="status">{notice}</p>}{busy && <p role="status" className="loading">正在与经历库同步…</p>}
