@@ -110,3 +110,5 @@ M1-2C-2 当前仅提交 [真实接入准备与合成评测设计](docs/M1_2C_2_A
 M1-2C-2B 零费用实现与运行方式：[适配器、账本和隔离评测](docs/M1_2C_2B_OFFLINE_IMPLEMENTATION.md)。只有 Mock Transport；真实接口和密钥未接入。
 
 M1-2C-2 C-0：[DeepSeek 官方零费用接入准备](docs/M1_2C_2C0_DEEPSEEK_PREPARATION.md)。官方 HTTP 协议仅通过离线 fixture 验证，真实请求入口仍拒绝，已批准真实费用0元。
+
+M1-2C-2 C-1A：[独立收费授权与持久预算账本](docs/M1_2C_2C1A_PAID_AUTHORITY.md)。零初始额度、受限数据库角色、原子预留与人工对账；尚未开放真实 HTTP，费用授权仍为0元。
