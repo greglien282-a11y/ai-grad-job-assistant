@@ -20,7 +20,7 @@ def main():
     parser.add_argument('--runtime-role',required=True)
     args=parser.parse_args();engine=None
     try:
-        value=json.loads(Path(args.owner_config).read_text(encoding='utf8-sig'))
+        value=json.loads(Path(args.owner_config).read_text(encoding='utf-8-sig'))
         if set(value)!={'database_url'}:raise ValueError()
         url=make_url(value['database_url'])
         if (url.drivername!='postgresql+psycopg' or url.host not in ('127.0.0.1','localhost')

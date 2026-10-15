@@ -27,7 +27,7 @@ from tokenizers import Tokenizer, models, pre_tokenizers
 from app.controlled_probe import (ExperimentPolicy,ExperimentAdmin,ExperimentControl,RISK_ACCEPTANCE,
     TOKENIZER_ARCHIVE_SHA,verify_bytes)
 from app.controlled_probe_models import ControlledProbe
-from app.controlled_probe_io import orchestrate,FakeExperimentSecret,WindowsCredentialSecret,validate_response,_post_once
+from app.controlled_probe_io import orchestrate,FakeExperimentSecret,WindowsCredentialSecret,validate_response,_post_once,_https_options
 from app.paid_models import PaidFunding
 from app.deepseek_contract import ProbeError,FAKE_SECRET,ENDPOINT
 from app.deepseek_bridge import synthetic_request
@@ -319,7 +319,9 @@ def test_production_http_options_with_factory_replaced_by_memory_mock(monkeypatc
         captured.append(kwargs)
         return httpx.MockTransport(ok_handler)
     with patch('app.controlled_probe_io.httpx.AsyncHTTPTransport',side_effect=factory):
-        status,body=asyncio.run(_post_once(synthetic_request().body,FAKE_SECRET))
+        # Test the exact TLS/no-retry factory without opening a real path.
+        memory_transport=httpx.AsyncHTTPTransport(**_https_options())
+        status,body=asyncio.run(_post_once(synthetic_request().body,FAKE_SECRET,mock=memory_transport))
     assert status==200 and len(captured)==1 and body
 
 
@@ -395,10 +397,12 @@ def test_operator_clis_reject_daily_database_before_connect(tmp_path,script,args
     config=tmp_path/'config.json'
     value={'database_url':'postgresql+psycopg://fake:do-not-log@127.0.0.1:9/pathwise_dev'}
     if script=='controlled_live_probe.py':value['ledger_id']=str(uuid4())
-    config.write_text(json.dumps(value))
+    config.write_text(json.dumps(value),encoding='utf-8-sig')
     result=subprocess.run([sys.executable,'-X','utf8',str(root/'scripts'/script),*args,str(config)],capture_output=True,encoding='utf8')
     assert result.returncode==2
     assert 'do-not-log' not in result.stdout+result.stderr and 'Traceback' not in result.stderr
+    if script=='controlled_live_probe.py':
+        assert json.loads(result.stdout)['safe_code']=='controlled_live_database_required'
 
 
 def test_revoke_during_fake_secret_resolution_stops_before_http(experiment):

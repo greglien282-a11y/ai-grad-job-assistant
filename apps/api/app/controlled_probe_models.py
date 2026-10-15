@@ -27,4 +27,6 @@ class ControlledProbe(Base):
     actual_cny: Mapped[Decimal | None] = mapped_column(Numeric(24, 12))
     invoice_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
     lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    dispatch_token_hash: Mapped[str | None] = mapped_column(String(64))
+    dispatch_claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     diagnostic: Mapped[dict | None] = mapped_column(JSONB)

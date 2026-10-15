@@ -1,0 +1,23 @@
+{
+  "mode": "windows_native_fake_credential",
+  "passed": true,
+  "cleanup_verified": true,
+  "real_key_reads": 0,
+  "real_provider_requests": 0,
+  "real_authorizations_created": 0,
+  "last_stage": "fake_writer_completed",
+  "native_write_read": true,
+  "account_binding": true,
+  "rotation_revision_binding": true,
+  "native_delete": true,
+  "verified_on": "2026-10-15T13:35:20.288662+00:00",
+  "os": "Windows",
+  "python": "3.12.14",
+  "scope": "Random owned Credential Manager entry; public fake values; no enumeration, DB, real account or provider request.",
+  "source_sha256": {
+    "scripts/check_windows_fake_credential.py": "aeba5c56db61e5ef8c7ac9f4856a6d53f099291ce98b627c9bff6fb23b5c648a",
+    "scripts/set-probe-secret.ps1": "01f3c862f4c1616f743ffb0bac5ad600af20044cbcd50758c0b4612b4678efb2",
+    "apps/api/app/controlled_probe_io.py": "4baf2d9ada225b8f2587475b696b9f45d27f4cf5a2c27efd73c6defa5365b422",
+    "apps/api/app/windows_operator.py": "c04f23497749a971b312c09bdb628bed09cadd926a6708caf2ec8d35049b2045"
+  }
+}

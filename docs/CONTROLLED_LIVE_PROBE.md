@@ -28,7 +28,7 @@
 
 新增一张 `controlled_probe`，复用0008的 **同一个 paid_funding(1) 及ledger UUID**，无新预算池/namespace。0009不种授权、额度、价格或角色。新表单例id=1，终身保留，即使撤销、核账完成或未发送关闭，也不能新建第二份实验。
 
-记录不可变审批policy/SHA、grant UUID、固定操作键摘要、账户/SecretRef/revision、币种/价格/估算/剩余风险、计划金额、窗口；可变状态、lease、白名单诊断及原币actual_cny/发票摘要。没有Key、完整请求/响应、原始错误、用户资料或系统提示。state变更和管理动作追加到既有paid_audit。
+记录不可变审批policy/SHA、grant UUID、固定操作键摘要、账户/SecretRef/revision、币种/价格/估算/剩余风险、计划金额、窗口；可变状态、lease、白名单诊断及原币actual_cny/发票摘要。PR17审查修复新增dispatch_token_hash、dispatch_claimed_at；原文令牌只在permit成功时返回一次，之后不能从数据库SELECT重建。没有Key、完整请求/响应、原始错误、用户资料或系统提示。state变更和管理动作追加到既有paid_audit。
 
 单池锁顺序 `paid_funding → controlled_probe`，同事务检查DB墙钟、吊销、policy/ledger/请求/操作摘要、剩余额度。预留使用**批准计划金额**，不是伪造的最坏收费上界。一次发送许可提交后立即冻结中央池；未知和成功未核账均保留held。新实验一旦授权，DB触发器阻止原paid_calls插入，使这个首次探针独占已批准中央池；不能与旧路径并行复制额度。授权只允许空、未使用的中央池，已有其他额度时不覆盖或叠加，需独立审查。
 
@@ -36,12 +36,15 @@
 
 - `approved → reserved`：一次占用全部计划；同键不重复占用。缺少/到期/撤销授权、额度不足或绑定不符立即拒绝。
 - `reserved → sent`：一次原子许可并冻结；只有刚完成本次reserve的执行者能沿流程申请，后续执行看到reserved也停止，不自动续跑。
+- `sent → dispatch claim`：实际HTTP入口独立检查角色、政策、字节、授权/预算，并向SQL交回permit签发的随机令牌；数据库仅存其SHA，原子消费一次、记录时间并审计。消费后才可解析真实Key和构造实际网络Transport；发送前再次检查吊销/有效期。裸`_post_once(..., mock=None)`无许可立即拒绝。即使内部代码保留旧令牌也不能再次派发；崩溃后不重建或重新签发。
 - `sent → response_received / unknown`：严格业务Schema/引用有效才算received；HTTP错误、截断、超时、取消、无效响应、密钥变化和解析失败均unknown。两者都不自动结算或释放。
 - 进程在sent之后、HTTP之前或期间退出：保留sent/held/frozen。60秒后report仅投影unknown，不写库、不解析Key、不重发；账单可由管理员核账。
 - `sent / received / unknown → reconciled`：独立管理员凭最终账单和复核摘要手工记录CNY，发票幂等，不允许覆盖不同金额。实际原币保留12位小数，中央CNY spent向上取整到微元；完整记录超计划，不截断，不自动解冻。
 - `approved / reserved → reconciled`：管理员可凭证据close-unsent，确认从未取得发送许可才按0关闭；不产生新调用名额。sent禁止走此入口。
 
 运行LOGIN仅SELECT和受限 `controlled_runtime`（以及复用配置所授的旧受限函数），无owner角色成员资格、DML/DDL/增额/审批/对账权限；拒绝superuser、CREATEROLE/CREATEDB/BYPASSRLS、SET ROLE掩饰身份及持久schema CREATE。DB函数固定search_path、限定schema，校验绑定和诊断白名单；运行角色不能修改审批或解冻。owner/DBA及同一Windows账户的恶意代码是明确的信任边界，本实现不是防DBA或本机恶意程序的沙箱。
+
+**0009回滚保护**：先按相同顺序锁中央paid_funding及controlled_probe；只要存在任意行，无论approved/reserved/sent/unknown/response_received/reconciled，downgrade均在删除任何触发器/函数/表之前拒绝。事务回滚后记录、审批、冻结和Alembic版本不变，重新upgrade不能获得第二名额。仅空表允许0009↔0008往返。DBA恶意直接DROP/重建属于现有信任边界，正常Alembic不提供绕过或force选项。本PR未合并，继续完善0009，不增加新版本，不迁移日常库。
 
 生产CLI只接受本机5432的专用 `pathwise_probe/public`、固定ledger UUID，不读取日常DATABASE_URL或环境Key。不建立或修改pathwise_dev。管理员凭证与运行JSON配置分离；普通业务进程不得取得owner配置。配置发布及中央ledger身份由负责人控制，不通过换数据库/端口/配置复制审批。测试只允许pathwise_test/e2e的随机schema，用独立offline_mock模式；Mock记录禁止作为真实发票结算。
 
@@ -80,7 +83,7 @@ apps/api/.venv/Scripts/python.exe scripts/setup_probe_ledger.py --owner-config "
 
 仅SecureString交互输入，不回显、无Key命令行参数或环境变量，不粘贴到聊天。通过Windows Credential Manager保存当前用户的Generic Credential，目标固定 `Pathwise/DeepSeek/<account_ref>`，不写明文Key文件。脚本只输出secret_ref、account_ref及非秘密secret_revision（LastWritten）。轮换/删除凭据、账户标签或revision改变均须停止并重新审查；当前单次授权不静默沿用新Key。
 
-Python仅在人工execute取得完整审批/预算/sent许可后CredReadW；核对target/UserName/revision，失败不发网。只把Key短暂用于Authorization，最终CredFree并清理原生buffer；Python字符串/OS副本不能承诺完全清零。同一Windows用户的其他恶意进程仍可能读取凭据，这不是企业级独立出网broker；正式Web账户不能复用该配置。所有native API本轮仅用假内存替身测试，未访问真实凭据库。
+Python仅在人工execute取得完整审批/预算/sent许可并消费dispatch令牌后CredReadW；核对target/UserName/revision，失败不发网。只把Key短暂用于Authorization，最终CredFree并清理原生buffer；Python字符串/OS副本不能承诺完全清零。同一Windows用户的其他恶意进程仍可能读取凭据，这不是企业级独立出网broker；正式Web账户不能复用该配置。审查修复已用随机native_test条目及公开假值验证真实Windows写读/轮换/删除，见下方证据；没有配置或读取真实Key。
 
 5. 官方公开tokenizer归档由负责人预先离线放到本机路径。估算器必须匹配上述归档SHA，只读其中JSON，不下载或执行远程代码。复制[无效审批模板](evaluation/controlled-probe-approval.template.json)到私有目录，填写并核对：账户/实际CNY证据、SecretRef/revision、ledger UUID、一次固定operation_hash、审批人/证据SHA、最多一小时窗口、适用价格证据、明确planned_cny及风险接受原文。所有null必须有实际依据；库内模板没有批准金额或风险接受记录。
 
@@ -113,6 +116,18 @@ HTTP固定CA证书验证、禁止重定向和环境代理，AsyncHTTPTransport r
 
 report区分初始估算、按返回usage计算的峰值未命中估算及人工actual_cny；**前两项永远不是实际账单**。响应成功但未核账仍held/frozen；超时等结果不明也保留全部计划。错误后只运行report及人工核对，不换操作键、不重复执行。失败命令退出2且不输出traceback或连接串；成功执行只有state=response_received才退出0。
 
+### 校验后的模型结果预览（PR17修复）
+
+execute现在返回并显示`validated_preview`：候选事实及其quote/start/end/turn_id、下一轮问题及来源ID、停止理由。只来自经过envelope、usage、Pydantic、固定合成user原话/原子性及隐私检查的MiningOutputV2，明确标为“未经用户确认、未写入经历库”。不打印API原始JSON、headers、system prompt或未校验内容，不产生正式简历导出。
+
+真实execute在发送前准备固定本机 `%LOCALAPPDATA%\PathwiseProbe\results`，只允许当前Windows用户拥有、受保护且唯一FullControl ACE；拒绝UNC、符号链接/junction和不安全权限。文件在写入首字节前同样收紧ACL，不能覆盖已有grant文件。POSIX测试采用目录0700/文件0600。同一Windows用户/管理员仍在既有信任边界内；这是私有明文合成预览，不是假称加密存储。
+
+仅保存`<grant UUID>.json`的最小校验输出及ledger/grant/policy/request/execution绑定；不保存完整供应商响应、Key、usage以外的任意envelope字段或真实用户输入。保存前拒绝Key原文、凭据形态和PII；真实HTTP边界在Key尚在受限作用域时也检查JSON转义后的Key回显。账本diagnostic只增加文件SHA，不存模型正文。写入刷新/fsync后才记录received。
+
+后续report无需读取Key或发网：校验owner/DACL、摘要、grant/ledger/policy/合成SHA，重新跑Pydantic及来源校验后才展示预览。丢失、被改动或权限过宽时隐藏内容并返回安全preview_error，仍显示费用/状态，不重新调用。模型有效但留存失败时保留本次execute内存预览供操作人审看，状态保守unknown、held/frozen不释放，并提示不可重试；若ledger更新失败但文件已写，只能人工检查受限文件，不自动相信未在账本提交摘要的文件。
+
+文件不上传GitHub/CI artifact，不通过URL或前端传输，不当作事实确认。可在完成审查后由操作人手工删除具体grant文件；只影响本地预览，不能重置账本身份或发送名额。首次旧HEAD曾丢弃的结果无法凭空恢复，不会为恢复结果补发请求。
+
 ## 6. 恢复、核账与停止条件
 
 真实账户余额、实际扣款和最终账单核对须**另行明确授权**。本PR不实现 `/user/balance` 或任何自动余额查询；execute许可不含余额访问。负责人获准后手工取得对应账户/币种的最终账单/扣减证据，排除其他账户活动，不把余额暂未变化当免费或退款。
@@ -137,8 +152,16 @@ reserved但确定从未取得许可时，管理员可 `close-unsent --config own
 
 旧offline_mock记录禁止核成真实发票。原币核账正向测试在随机测试schema内使用明确虚构的SQL合同夹具，不连接生产/专用真实池；报告没有将模拟账单作为真实消费。
 
-尚未实测：Windows真实Credential Manager写入/读取、真实Key/账户对应、实际币种和价格、HTTP可达性/服务端行为/账单、真实模型质量及延迟；这些需要用户本机配置与首次执行的独立授权。实际HTTP Transport虽已接线，但本轮所有HTTP均Mock，不自动调用。新安装依赖仅在Python3.12项目虚拟环境，不改变系统Python/Windows服务。日常库不访问或迁移，无首页/01/02/03、PRD、prototype、Pages或自动路由改动。
+尚未实测：真实Key/账户对应、实际币种和价格、HTTP可达性/服务端行为/账单、真实模型质量及延迟；这些需要用户本机配置与首次执行的独立授权。实际HTTP Transport虽已接线，但本轮所有HTTP均Mock，不自动调用。新安装依赖仅在Python3.12项目虚拟环境，不改变系统Python/Windows服务。日常库不访问或迁移，无首页/01/02/03、PRD、prototype、Pages或自动路由改动。
 
 完整本机及CI结果见本PR。完成后保持Draft停止，交由独立审查；本文件不构成第一次真实执行许可。
 
-本机验证：原444项后端全部通过；新增53项完整补跑通过（含真实受限LOGIN、多进程及os._exit）。首次全套的新增CLI子进程测试遇Windows GBK/UTF-8解码不一致，已显式指定UTF-8修复并复核，未放宽安全断言。React62、构建、E2E类型、原30项Edge E2E（2.7分钟）、随机schema迁移/check/清理、12项合同和Mock CLI通过。PowerShell凭据配置脚本仅做语法解析，没有执行。CI负责同一提交的全套497项后端及Chromium30项，最终结果附PR。
+首轮HEAD daac01b的历史验证：原444项后端全部通过；新增53项完整补跑通过（含真实受限LOGIN、多进程及os._exit）。首次全套的新增CLI子进程测试遇Windows GBK/UTF-8解码不一致，已显式指定UTF-8修复并复核，未放宽安全断言。React62、构建、E2E类型、原30项Edge E2E（2.7分钟）、随机schema迁移/check/清理、12项合同和Mock CLI通过。当时PowerShell凭据配置脚本仅做语法解析，没有执行。首轮CI497项后端及Chromium30项通过；最新原生验证与回归见下文。
+
+### 第一轮审查修复验证
+
+上述497项为首轮基线。修复新增21项后端回归，涵盖非空候选+追问的真实DB/MockHTTP/私有文件/只读report链路、错误无预览或Key、留存失败仍可审看有效内存结果、Windows真实ACL拒绝过宽文件、文件损坏/重解析点拒绝、裸发送拒绝、伪造/过期/吊销/错误policy令牌、不可重放、所有六种非空状态阻止回滚；空表原往返仍保留。原TLS配置测试改为纯options+内存工厂验证，保留证书/重试/代理/字节全部断言，并额外测试裸真实入口不得构造客户端。UTF-8 BOM配置测试现在明确断言到达日常库拒绝检查，防止通用错误掩盖读取失败。
+
+Windows本机执行 `apps/api/.venv/Scripts/python.exe scripts/check_windows_fake_credential.py`，无参数、不枚举凭据，只处理不可预测的`Pathwise/DeepSeek/native_test_<UUID>`。以公开假值调用实际PowerShell writer和Python CredReadW，验证账户/revision、轮换拒绝旧revision、删除及finally清理。网络/DNS陷阱开启；没有真实Key、DB授权或HTTP调用。该脚本在Linux CI不冒充原生测试；原有假native单测继续运行。结果与源码摘要见[本机原生假凭据证据](evaluation/pr17-windows-native-fake-verification.json)。所有失败尝试也逐项确认cleanup_verified。
+
+原生检查发现5.1子进程不能继承PowerShell7模块路径；新增最小已知环境白名单和固定5.1系统模块路径，不继承供应商Key。另修正operator的无效`utf8-sig`为`utf-8-sig`。预览DACL用.NET仅修改owner/access，不申请SeSecurityPrivilege或改SACL。没有扩大Windows权限、修改系统环境或服务。完整最新518项后端、62React、30Chromium及迁移/合同/Mock结果附同一PR，未新开PR或合并。

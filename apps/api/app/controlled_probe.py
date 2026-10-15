@@ -7,6 +7,7 @@ from datetime import timedelta
 from decimal import Decimal
 import hashlib
 import json
+import logging
 import re
 from uuid import UUID, uuid4
 
@@ -218,11 +219,15 @@ class ExperimentControl:
 
     def action(self, p, action, diagnostic=None):
         payload=diagnostic if diagnostic is not None else {'request_sha':PROBE_SHA,'operation':p.operation_hash}
-        with self.engine.begin() as conn:
-            return conn.scalar(text(f'SELECT "{self.schema}".controlled_runtime(:l,:p,:a,CAST(:v AS jsonb))'),
-                {'l':self.ledger_id,'p':p.sha(),'a':action,'v':canonical(payload)})
+        previous=logging.root.manager.disable
+        if action in ('permit','dispatch'):logging.disable(logging.CRITICAL)
+        try:
+            with self.engine.begin() as conn:
+                return conn.scalar(text(f'SELECT "{self.schema}".controlled_runtime(:l,:p,:a,CAST(:v AS jsonb))'),
+                    {'l':self.ledger_id,'p':p.sha(),'a':action,'v':canonical(payload)})
+        finally:logging.disable(previous)
 
-    def report(self):
+    def report(self, *, preview_store=None):
         row=self.read();p=row['policy'];state=row['state']
         if state=='sent' and row['lease_until']<=row['now']:state='unknown'
         usage=(row['diagnostic'] or {}).get('usage')
@@ -230,10 +235,16 @@ class ExperimentControl:
         if p and usage:
             usage_estimate=str(money((Decimal(usage['prompt_tokens'])*Decimal(p['peak_input_miss_cny_per_million'])
                 +Decimal(usage['completion_tokens'])*Decimal(p['peak_output_cny_per_million']))/Decimal(1000000)))
-        return {'mode':'controlled_live_probe','execution':p['execution'] if p else None,'state':state,
+        result={'mode':'controlled_live_probe','execution':p['execution'] if p else None,'state':state,
             'account_currency':p['currency'] if p else None,'approved_plan_cny':str(row['reserved']) if p else None,
             'plan_is_guaranteed_loss_cap':False,'estimated_cost_cny':str(ExperimentPolicy.model_validate(p).estimate_cny()) if p else None,
             'usage_estimated_cost_cny':usage_estimate,
             'actual_cny':str(row['actual_cny']) if row['actual_cny'] is not None else None,
             'held_cny':str(row['held']),'spent_cny':str(row['spent']),'frozen':row['frozen'],
             'diagnostic':row['diagnostic'],'automatic_retry':False}
+        if preview_store is not None:
+            try:result['validated_preview']=preview_store.load(row)
+            except Exception:
+                result['validated_preview']=None
+                result['preview_error']='controlled_preview_unavailable_or_invalid'
+        return result

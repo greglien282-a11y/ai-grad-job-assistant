@@ -15,6 +15,7 @@ from app.controlled_probe_io import orchestrate
 from app.deepseek_bridge import synthetic_request
 from app.deepseek_contract import ProbeError
 from app.probe_estimate import estimate
+from app.probe_preview import operator_preview_store
 
 
 def confirmation(phrase):
@@ -35,7 +36,7 @@ def main():
     args=parser.parse_args()
     engine=None
     try:
-        config=json.loads(Path(args.config).read_text(encoding='utf8-sig'))
+        config=json.loads(Path(args.config).read_text(encoding='utf-8-sig'))
         if set(config)!={'database_url','ledger_id'}:raise ProbeError('controlled_config_invalid')
         url=make_url(config['database_url'])
         if url.drivername!='postgresql+psycopg' or url.host not in ('localhost','127.0.0.1') or (url.port or 5432)!=5432 or url.database!='pathwise_probe' or url.query:
@@ -45,7 +46,7 @@ def main():
         if args.command in ('authorize','revoke','reconcile','close-unsent'):
             admin=ExperimentAdmin(sessionmaker(engine,expire_on_commit=False))
             if args.command=='authorize':
-                policy=ExperimentPolicy.model_validate_json(Path(args.approval_json).read_text(encoding='utf8-sig'))
+                policy=ExperimentPolicy.model_validate_json(Path(args.approval_json).read_text(encoding='utf-8-sig'))
                 if policy.execution!='controlled_live_probe' or str(policy.ledger_id)!=control.ledger_id:
                     raise ProbeError('controlled_mode_mismatch')
                 if estimate(args.tokenizer_archive,synthetic_request().body)!=policy.estimated_input_tokens:
@@ -65,7 +66,7 @@ def main():
                 admin.close_unsent(args.review_sha);print('provably unsent experiment closed; no new send slot')
             return 0
         control.check_role(live=True)
-        if args.command=='report':result=control.report()
+        if args.command=='report':result=control.report(preview_store=operator_preview_store())
         else:
             policy=control.policy('controlled_live_probe')
             count=estimate(args.tokenizer_archive,synthetic_request().body)
@@ -83,6 +84,8 @@ def main():
                     'estimated_peak_miss_cny':str(policy.estimate_cny()),'internal_plan_cny':str(policy.planned_cny),
                     'guaranteed_loss_cap':False,'risk_acceptance':policy.risk_acceptance,'remaining_calls':1}
             else:result=asyncio.run(orchestrate(control,execution='controlled_live_probe'))
+        if result.get('validated_preview') is not None:
+            result['preview_notice']='仅固定合成案例的模型候选，未经用户确认，未写入经历库。'
         print(json.dumps(result,ensure_ascii=False,indent=2))
         return 0 if args.command!='execute' or result['state']=='response_received' else 2
     except BaseException as error:

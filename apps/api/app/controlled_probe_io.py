@@ -1,6 +1,8 @@
 """Explicit local operator IO. Not imported by application startup/routes."""
 import asyncio
 from contextlib import contextmanager
+from dataclasses import dataclass, field
+from functools import wraps
 import ctypes
 from ctypes import wintypes
 import json
@@ -18,6 +20,7 @@ from app.mining_context import MiningContext
 from app.mining_validation import validate_context_v2
 from app.controlled_probe import verify_bytes
 from app.controlled_probe import ExperimentControl
+from app.probe_preview import safe_output, LocalPreviewStore, operator_preview_store
 
 
 @contextmanager
@@ -70,18 +73,52 @@ class HTTPFailure(ProbeError):
         super().__init__(code);self.code,self.status=code,status
 
 
-async def _post_once(body, key, *, mock=None):
-    """Private IO primitive; caller must already commit unique sent intent.
+def quiet_io(function):
+    @wraps(function)
+    async def wrapped(*args,**kwargs):
+        with private_io():return await function(*args,**kwargs)
+    return wrapped
 
-    Exact MockTransport accepted for offline fixtures. Production transport has
-    zero retries, fixed CA bundle, no redirects/proxy or customizable target.
+
+def _https_options():
+    # Pure configuration: cannot construct a connection or send a request.
+    return dict(retries=0,verify=ssl.create_default_context(cafile=certifi.where()),trust_env=False,
+                limits=httpx.Limits(max_connections=1,max_keepalive_connections=0))
+
+
+@dataclass(frozen=True,repr=False)
+class DispatchPermit:
+    control: ExperimentControl
+    policy: object
+    token: str = field(repr=False)
+
+
+@quiet_io
+async def _post_once(body, key, *, mock=None, permit=None):
+    """Bare calls are MOCK ONLY. Real IO must consume a DB-issued send token.
+
+    A valid sent row alone cannot reconstruct the secret permit or replay it.
+    The token is returned once by permit(), its SHA only is stored in SQL.
     """
     verify_bytes(body)
-    if mock is not None and (type(mock) is not httpx.MockTransport or key!=FAKE_SECRET):
-        raise ProbeError('controlled_mock_boundary')
-    transport=mock if mock is not None else httpx.AsyncHTTPTransport(retries=0,
-        verify=ssl.create_default_context(cafile=certifi.where()),trust_env=False,
-        limits=httpx.Limits(max_connections=1,max_keepalive_connections=0))
+    if permit is None:
+        if mock is None:raise ProbeError('controlled_dispatch_permit_required')
+        if type(mock) is not httpx.MockTransport or key!=FAKE_SECRET:raise ProbeError('controlled_mock_boundary')
+    else:
+        if type(permit) is not DispatchPermit or type(permit.control) is not ExperimentControl:
+            raise ProbeError('controlled_dispatch_permit_required')
+        control,p=permit.control,permit.policy
+        live=p.execution=='controlled_live_probe'
+        if (live and (mock is not None or key is not None)) or (not live and (type(mock) is not httpx.MockTransport or key!=FAKE_SECRET)):
+            raise ProbeError('controlled_mode_mismatch')
+        control.check_role(live=live)
+        if control.policy(p.execution).sha()!=p.sha():raise ProbeError('controlled_policy_changed')
+        control.action(p,'dispatch',{'request_sha':p.request_sha,'operation':p.operation_hash,'dispatch_token':permit.token})
+        if live:
+            # Key resolution AND real client construction are inside this gate.
+            key=WindowsCredentialSecret().resolve(p)
+            if control.policy(p.execution).sha()!=p.sha():raise ProbeError('controlled_policy_changed')
+    transport=mock if mock is not None else httpx.AsyncHTTPTransport(**_https_options())
     try:
         async with asyncio.timeout(45):
             async with httpx.AsyncClient(transport=transport,trust_env=False,follow_redirects=False,
@@ -95,12 +132,17 @@ async def _post_once(body, key, *, mock=None):
                         size+=len(chunk)
                         if size>262144:raise HTTPFailure('controlled_body_too_large',status)
                         chunks.append(chunk)
-                    return status,b''.join(chunks)
+                    result=b''.join(chunks)
+                    if permit is not None and permit.policy.execution=='controlled_live_probe':
+                        # Check against the actual secret BEFORE it leaves this
+                        # scope, including JSON-escaped echoes of that secret.
+                        validate_response(result,body,secret=key)
+                    return status,result
     except (TimeoutError,httpx.TimeoutException):raise HTTPFailure('controlled_timeout') from None
     except httpx.HTTPError:raise HTTPFailure('controlled_network_unknown') from None
 
 
-def validate_response(body, request_body):
+def validate_response(body, request_body, *, secret=None):
     """Uses actual usage, NOT an invented hard input bound or TokenCertificate."""
     try:
         raw=json.loads(body,object_pairs_hook=unique_pairs,parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
@@ -121,13 +163,14 @@ def validate_response(body, request_body):
         if 'prompt_tokens_details' in u and u['prompt_tokens_details'].get('cached_tokens')!=u['prompt_cache_hit_tokens']:raise ValueError()
         output=parse_output(m['content'])
         context=MiningContext.model_validate_json(json.loads(request_body)['messages'][1]['content'])
-        validate_context_v2(context,output)
-        return {'http_status':200,'validated':True,'safe_code':'controlled_validated',
-            'reported_model':raw['model'],'usage':{k:u[k] for k in keys}}
+        checked=validate_context_v2(context,output)
+        preview=safe_output(checked,secret=secret)
+        return ({'http_status':200,'validated':True,'safe_code':'controlled_validated',
+            'reported_model':raw['model'],'usage':{k:u[k] for k in keys}},preview)
     except Exception:raise ProbeError('controlled_response_invalid') from None
 
 
-async def orchestrate(control, *, execution, mock=None):
+async def orchestrate(control, *, execution, mock=None, preview_store=None):
     # Only the separate CLI's interactive live entry calls with mock=None.
     # Test callers cannot use fixture policy to turn this into live IO.
     if type(control) is not ExperimentControl:raise ProbeError('controlled_control_required')
@@ -149,27 +192,43 @@ async def orchestrate(control, *, execution, mock=None):
         expected='EXECUTE '+str(row['grant_id'])+' '+p.sha()[:12]
         if input('确认后输入 '+expected+': ').strip()!=expected:
             raise ProbeError('controlled_confirmation_cancelled')
+        if preview_store is not None:raise ProbeError('controlled_operator_preview_path_fixed')
+        preview_store=operator_preview_store()
+    if preview_store is not None:
+        if type(preview_store) is not LocalPreviewStore:raise ProbeError('controlled_preview_store_required')
+        preview_store.prepare(control.read()['grant_id'])
     from app.deepseek_bridge import synthetic_request
     body=synthetic_request().body;verify_bytes(body)
     result=control.action(p,'reserve')
     if not result['created']:raise ProbeError('controlled_already_attempted')
     p2=control.policy(execution)
     if p2.sha()!=p.sha():raise ProbeError('controlled_policy_changed')
-    if not control.action(p,'permit')['permitted']:raise ProbeError('controlled_already_attempted')
+    permission=control.action(p,'permit')
+    if not permission['permitted']:raise ProbeError('controlled_already_attempted')
+    permit=DispatchPermit(control,p,permission['dispatch_token'])
     status=None
+    preview=None
+    retention_error=False
     try:
         # After sent, even a local failure or no actual socket is uncertain.
         p2=control.policy(execution);verify_bytes(body)
         if p2.sha()!=p.sha():raise ProbeError('controlled_policy_changed')
         with private_io():
-            key=resolver.resolve(p)
+            key=resolver.resolve(p) if not live else None
             try:
                 if control.policy(execution).sha()!=p.sha():raise ProbeError('controlled_policy_changed')
                 verify_bytes(body)
-                status,raw=await _post_once(body,key,mock=mock)
+                status,raw=await _post_once(body,key,mock=mock,permit=permit)
+                # Live secret stays inside the gated IO; credential-like output
+                # is independently rejected by the preview's strict filter.
+                diagnostic,preview=validate_response(raw,body,secret=key)
+                del raw
             finally:del key  # Python/OS memory zeroization cannot be guaranteed.
-            diagnostic=validate_response(raw,body)
-            del raw
+        if preview_store is not None:
+            try:diagnostic['preview_sha']=preview_store.save(control.read(),preview)
+            except Exception:
+                retention_error=True
+                raise ProbeError('controlled_preview_retention_failed') from None
         control.action(p,'received',diagnostic)
     except BaseException as error:
         code='controlled_cancelled' if isinstance(error,(asyncio.CancelledError,KeyboardInterrupt)) else 'controlled_result_unknown'
@@ -179,4 +238,7 @@ async def orchestrate(control, *, execution, mock=None):
         try:control.action(p,'unknown',{'http_status':status,'validated':False,'safe_code':code})
         except Exception:raise ProbeError('controlled_unknown_not_persisted') from None
         if isinstance(error,(asyncio.CancelledError,KeyboardInterrupt)):raise asyncio.CancelledError() from None
-    return control.report()
+    result=control.report()
+    if preview is not None:result['validated_preview']=preview
+    if retention_error:result['preview_error']='controlled_preview_retention_failed_no_retry'
+    return result
