@@ -92,9 +92,12 @@ def test_receipt_recovery_payload_authorization_and_legacy(api, caplog):
 
 
 @pytest.mark.parametrize('offset,code,status', [(-86400,'idempotency_key_expired',410),(301,'idempotency_clock_skew',422)])
-def test_deadline_unknown_key_is_not_a_new_operation(api, offset, code, status):
+def test_deadline_unknown_key_is_not_a_new_operation(api, offset, code, status, monkeypatch):
     client, factory = api
-    h, _ = headers(issued=int(utcnow().timestamp()) + offset)
+    # Keep the exact 301-second boundary independent of HTTP/CI scheduling.
+    now = utcnow().replace(microsecond=0)
+    monkeypatch.setattr(idem, 'utcnow', lambda: now)
+    h, _ = headers(issued=int(now.timestamp()) + offset)
     result = client.post(ROOT + '/sessions', headers=h, json=BODY)
     assert result.status_code == status and result.json()['error']['code'] == code
     assert count(factory, ExperienceSession) == 0

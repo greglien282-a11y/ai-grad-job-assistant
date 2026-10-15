@@ -1,9 +1,10 @@
 """M1-1A storage. UUIDs identify records; separate credentials authorize access."""
 from datetime import datetime, timezone
+from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid, Index, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid, Index, text, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -215,3 +216,52 @@ class AnswerQuestion(Base):
     session_id: Mapped[UUID] = mapped_column(Uuid)
     question_version: Mapped[int] = mapped_column(Integer)
     slot: Mapped[int] = mapped_column(Integer)
+
+
+# Isolated offline cost ledger. No FK to private experience records, no prompts.
+class CostBudget(Base):
+    __tablename__ = 'cost_budgets'
+    __table_args__ = (
+        CheckConstraint("kind IN ('global','provider','model','session')", name='ck_cost_budget_kind'),
+        CheckConstraint('ceiling >= 0 AND held >= 0 AND spent >= 0 AND call_limit >= 0', name='ck_cost_budget_money'),
+        CheckConstraint('max_active > 0', name='ck_cost_budget_active'),
+    )
+    namespace: Mapped[str] = mapped_column(String(64), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16), primary_key=True)
+    key: Mapped[str] = mapped_column(String(128), primary_key=True)
+    ceiling: Mapped[Decimal] = mapped_column(Numeric(20, 6))
+    call_limit: Mapped[Decimal] = mapped_column(Numeric(20, 6))
+    held: Mapped[Decimal] = mapped_column(Numeric(20, 6), default=0)
+    spent: Mapped[Decimal] = mapped_column(Numeric(20, 6), default=0)
+    frozen: Mapped[bool] = mapped_column(Boolean, default=False)
+    max_active: Mapped[int] = mapped_column(Integer, default=2)
+
+
+class CostCall(Record, Base):
+    __tablename__ = 'cost_calls'
+    __table_args__ = (
+        UniqueConstraint('namespace', 'operation_hash', name='uq_cost_operation'),
+        CheckConstraint("state IN ('reserved','sent','response_received','unknown','reconciled')", name='ck_cost_call_state'),
+        CheckConstraint('reserved >= 0 AND (estimated IS NULL OR estimated >= 0) AND (actual IS NULL OR actual >= 0)', name='ck_cost_call_money'),
+        CheckConstraint("transport = 'mock'", name='ck_cost_mock_only'),
+    )
+    namespace: Mapped[str] = mapped_column(String(64), index=True)
+    operation_hash: Mapped[str] = mapped_column(String(64))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    profile_id: Mapped[str] = mapped_column(String(64))
+    profile_hash: Mapped[str] = mapped_column(String(64))
+    profile_snapshot: Mapped[dict] = mapped_column(JSONB)
+    provider: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str] = mapped_column(String(64))
+    session_tag: Mapped[str] = mapped_column(String(128))
+    transport: Mapped[str] = mapped_column(String(16), default='mock')
+    state: Mapped[str] = mapped_column(String(24), default='reserved')
+    reserved: Mapped[Decimal] = mapped_column(Numeric(20, 6))
+    estimated: Mapped[Decimal | None] = mapped_column(Numeric(20, 6))
+    actual: Mapped[Decimal | None] = mapped_column(Numeric(20, 6))
+    invoice_key: Mapped[str | None] = mapped_column(String(64), unique=True)
+    rate: Mapped[dict] = mapped_column(JSONB)
+    usage: Mapped[dict | None] = mapped_column(JSONB)
+    model_evidence: Mapped[dict | None] = mapped_column(JSONB)
+    error_code: Mapped[str | None] = mapped_column(String(40))
+    lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))

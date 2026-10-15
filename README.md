@@ -106,3 +106,5 @@ flowchart TD
 M1-2C-1 的多轮上下文与合成 v2 输出合同见 [技术说明](docs/M1_2C_1_CONTEXT_CONTRACT.md)。真实模型未启用，旧 Scripted/UI 合同保持兼容。
 
 M1-2C-2 当前仅提交 [真实接入准备与合成评测设计](docs/M1_2C_2_ADAPTER_EVAL_DESIGN.md)，真实开关关闭、费用授权为零；30 元是待批准草案。
+
+M1-2C-2B 零费用实现与运行方式：[适配器、账本和隔离评测](docs/M1_2C_2B_OFFLINE_IMPLEMENTATION.md)。只有 Mock Transport；真实接口和密钥未接入。
