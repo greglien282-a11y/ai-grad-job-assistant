@@ -77,8 +77,8 @@ def restricted(request, role_capability):
     with engine.begin() as conn:
         conn.execute(text("SELECT set_config('pathwise.fixture_password', :p, true)"), {'p':password})
         # Password is a bind value in the previous statement, not SQL/report text.
-        conn.exec_driver_sql(f'''DO $$ BEGIN EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD %L',
-            '{role}',current_setting('pathwise.fixture_password')); END $$''')
+        conn.execute(text(f'''DO $$ BEGIN EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD %L',
+            '{role}',current_setting('pathwise.fixture_password')); END $$'''))
     runtime_engine = create_engine(engine.url.set(username=role, password=password), poolclass=NullPool, hide_parameters=True)
     try:
         admin.provision_runtime_role(schema, role)
@@ -271,6 +271,22 @@ def test_missing_authority_or_failed_reservation_never_resolves(restricted):
         with stack[0][2].begin() as db: db.get(PaidFunding,1).ceiling = 0
         result = exercise(stack, lambda _:pytest.fail('no HTTP'))
         assert result.code == 'paid_pool_blocked'
+
+
+def test_runtime_role_membership_is_rejected_even_with_noinherit(restricted):
+    stack=restricted;role=stack[1].engine.url.username
+    with stack[0][2].begin() as db:db.execute(text(f'GRANT pg_read_all_data TO "{role}"'))
+    with pytest.raises(ProbeError,match='bridge_restricted_login_required'):stack[1].assert_offline_runtime()
+
+
+def test_owner_credentials_cannot_be_masked_with_set_role(restricted):
+    stack=restricted
+    engine=create_engine(stack[0][2].kw['bind'].url,poolclass=NullPool,hide_parameters=True,
+                         connect_args={'options':f'-crole={stack[1].engine.url.username}'})
+    try:
+        control=PaidControl(engine,stack[1].schema,stack[1].ledger_id)
+        with pytest.raises(ProbeError,match='bridge_restricted_login_required'):control.assert_offline_runtime()
+    finally:engine.dispose()
 
 
 def test_reservation_without_permit_stays_reserved_and_replay_is_read_only(restricted):

@@ -272,6 +272,7 @@ class PaidControl:
         with self.engine.connect() as conn:
             safe = conn.scalar(text('''SELECT current_user=session_user AND NOT (
                 r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolbypassrls
+                OR EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member=r.oid)
                 OR has_database_privilege(r.oid,current_database(),'CREATE')
                 OR EXISTS (SELECT 1 FROM pg_namespace n WHERE n.nspname NOT LIKE 'pg_temp_%'
                     AND has_schema_privilege(r.oid,n.oid,'CREATE'))

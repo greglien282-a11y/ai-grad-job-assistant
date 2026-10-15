@@ -56,9 +56,9 @@ Mock handler 验证实际 `request.content` 与批准字节、SHA 完全相同�
 
 没有完整授权或预算预留时不解析假密钥；预留之后也必须先取得 sent 许可并再次核对授权，才能 resolve_fake。元数据检查不解析密钥。无授权/预算失败/许可拒绝均以断言证明 resolver 与 HTTP 未调用。
 
-Bridge 强制连接 localhost/127.0.0.1 的 pathwise_test/pathwise_e2e、随机 `test_UUID`/`test_eval_UUID`；在连接前拒绝 pathwise_dev 或非随机 Schema。数据库当前角色必须等于 session_user，且无超管/建库/建角色/BYPASSRLS、owner 成员资格、数据库/持久Schema CREATE 或收费表写权限。不能用管理员凭证加 SET ROLE 冒充受限业务进程。
+Bridge 强制连接 localhost/127.0.0.1 的 pathwise_test/pathwise_e2e、随机 `test_UUID`/`test_eval_UUID`；在连接前拒绝 pathwise_dev 或非随机 Schema。数据库当前角色必须等于 session_user，且无超管/建库/建角色/BYPASSRLS、任何角色成员关系、数据库/持久Schema CREATE 或收费表写权限。即使 NOINHERIT，也拒绝通过 SET ROLE 获权的路径；运行角色只能使用直接授予的最小权限。不能用管理员凭证加 SET ROLE 冒充受限业务进程。
 
-CI 隔离 fixture 用管理身份建立随机、短生命周期 LOGIN、随机合成数据库密码，配置现有 C-1A 最小权限。Bridge/子进程只收到受限 LOGIN 连接，不得到管理 factory/凭证。结束撤销权限并删除本次角色；无 Windows 服务或日常库配置变更。既有 DB owner 单元测试不能代替这条链路。本机角色没有 CREATEROLE，新 LOGIN 链路本地明确未执行；CI 遇此条件强制失败，不允许跳过或退回 owner。
+CI 隔离 fixture 用管理身份建立随机、短生命周期 LOGIN、随机合成数据库密码，配置现有 C-1A 最小权限。Bridge/子进程只收到受限 LOGIN 连接，不得到管理 factory/凭证。结束撤销权限并删除本次角色；无 Windows 服务或日常库配置变更。既有 DB owner 单元测试不能代替这条链路。常规本机测试角色没有 CREATEROLE，首轮新 LOGIN 项明确未执行；随后用现有PG16二进制在工作区启动一次性实例（loopback35432、仅合成测试库、随机Schema），补齐所有94项新增测试且无跳过。未注册服务，结束关闭并清理该实例；CI仍遇权限不足就强制失败，不允许退回owner。
 
 ## 状态、失败与恢复
 
@@ -94,7 +94,9 @@ HTTP 无 SDK、无 POST 自动重试、trust_env=false、无代理/重定向/自
 
 使用既有 Python3.12 环境、显式专用 TEST_DATABASE_URL。`python -m pytest -q -ra` 保留原321项后端断言，新增 Bridge 字节/权限/故障/多进程测试；62 React、构建/类型、30 Chromium E2E、迁移/check/清理及12项离线合同/Mock CLI继续执行。代码没有更改旧测试、前端或迁移版本。
 
-新增包括12组合成案例完整 HTTP→账本链路、24个固定字节合同、来源否定/团队/假设/不确定边界、相同键两进程只派发一次、不同批次共享预算、os._exit 在HTTP之前/过程中退出、取消/超时/无效响应、保留 held、恢复只读、无权时 resolver 不调用、日志脱敏、owner/SET ROLE 拒绝。本机缺少 CREATEROLE 时，仅新增受限 LOGIN 集成项明确报告未执行；CI 强制执行，原321项不因此跳过。最终测试数量、平台及CI链接写入Draft PR。
+新增包括12组合成案例完整 HTTP→账本链路、24个固定字节合同、来源否定/团队/假设/不确定边界、相同键两进程只派发一次、不同批次共享预算、os._exit 在HTTP之前/过程中退出、取消/超时/无效响应、保留 held、恢复只读、无权时 resolver 不调用、日志脱敏、owner/SET ROLE/NOINHERIT成员身份拒绝。CI完整收集为原321+新增94=415项，任何受限LOGIN项都不得跳过。
+
+本机原实例首轮360 passed/53新增LOGIN项未执行（原321无跳过）；临时实例最终新增94 passed（84秒、无跳过），补齐本机权限/并发/崩溃验证。React62、TypeScript/Vite/E2E类型、隔离迁移/check/清理、12项离线合同及Mock CLI通过。首轮CI暴露测试fixture SQL format占位符被驱动误解析，改用SQLAlchemy编译执行修正；不修改验收目标。最终CI与Edge结果写入PR。仅有既有Starlette弃用及Zod/Rollup注释提示。
 
 ## 首次真实合成探针执行前检查（尚未获准）
 
