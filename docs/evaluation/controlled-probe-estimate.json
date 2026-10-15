@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "mode": "controlled_live_probe_preparation_only",
+  "real_requests": 0,
+  "actual_cost_cny": null,
+  "approved_real_cny": "0",
+  "approved_real_calls": 0,
+  "case": "S03/b",
+  "request_sha256": "5cc2def4f875e43760e799678a43c1f2d2072dd4245eaf54457dfe78ee0b373e",
+  "request_utf8_bytes": 2521,
+  "estimate": {
+    "method": "official_tokenizer_raw_request_json_not_server_framing",
+    "library": "tokenizers==0.22.2",
+    "source_url": "https://cdn.deepseek.com/api-docs/deepseek_v4_tokenizer.zip",
+    "archive_sha256": "e7310d1dafe0a86d8a5629fe78a7c763760f651db9b8682718a1781dcd6fe495",
+    "member": "deepseek_v4_tokenizer/tokenizer.json",
+    "input_tokens_estimated": 812,
+    "output_cap": 256,
+    "certified_upper_bound": false,
+    "supplier_framing_included": false,
+    "local_python_or_template_executed": false
+  },
+  "price_observation": {
+    "date": "2026-10-15",
+    "url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+    "currency": "CNY",
+    "per_1000000_tokens": {
+      "input_cache_miss_peak": "2",
+      "output_peak": "8"
+    },
+    "applicable_account_confirmed": false,
+    "supplier_guaranteed_valid_until": null
+  },
+  "cost_estimated_cny": "0.003672",
+  "suggested_internal_plan_cny_not_approved": "0.10",
+  "maximum_bill_guaranteed": false,
+  "limitations": [
+    "Tokenizes full raw request JSON, not proven online role/framing or exact server version.",
+    "Output cap is finite but actual JSON may truncate or fail validation.",
+    "Peak cache-miss rates are a planning assumption; account currency/prices must be confirmed separately.",
+    "Actual bill, actual provider latency and real model quality remain unmeasured."
+  ]
+}
