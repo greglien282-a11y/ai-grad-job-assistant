@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-15",
+  "mode": "public_document_review_only",
+  "provider_api_requests": 0,
+  "approved_real_calls": 0,
+  "approved_real_cny": "0",
+  "approved_bound_strategies": [],
+  "verified_input_upper_bound": null,
+  "verified_maximum_cost": null,
+  "probe_sha256": "5cc2def4f875e43760e799678a43c1f2d2072dd4245eaf54457dfe78ee0b373e",
+  "sources": [
+    {
+      "id": "price_en",
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "sha256": "210f102275ccf1a6542f08a3bc9e4b4c7c83278cb74b35217bffa112df6363b2"
+    },
+    {
+      "id": "price_zh",
+      "url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+      "sha256": "5a7b1832592387340f2fc456399b34b89b05f3fa167c2e35909e2fa4afe021e3"
+    },
+    {
+      "id": "chat_en",
+      "url": "https://api-docs.deepseek.com/api/create-chat-completion/",
+      "sha256": "e7133a7c2a7c2662567cca2e2392b503f97c2fb583009ff85f878744e0a36ba7"
+    },
+    {
+      "id": "chat_zh",
+      "url": "https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/",
+      "sha256": "77665d74fcfb4f81b51eaae6750a704c1bdfeee598c770947444ef0b2cdebebb"
+    },
+    {
+      "id": "faq_en",
+      "url": "https://api-docs.deepseek.com/faq/",
+      "sha256": "115b55dd28af54bc9a387497226c113eb232d0cfced3d39aab56e99a470227a2"
+    },
+    {
+      "id": "faq_zh",
+      "url": "https://api-docs.deepseek.com/zh-cn/faq/",
+      "sha256": "55aa92d098220b17c6f0cfb0507259b787d4968c571281bf049be68fc5f5a1c4"
+    },
+    {
+      "id": "balance_en",
+      "url": "https://api-docs.deepseek.com/api/get-user-balance/",
+      "sha256": "454b5a89bdd5faa4f9de4c166cd18d3e00186dec9060e49720267ca76691f376"
+    },
+    {
+      "id": "token_en",
+      "url": "https://api-docs.deepseek.com/quick_start/token_usage/",
+      "sha256": "08bf766935b9ff92aee592c70bdac0908e3f44f1e3e52e93dd7aeafc9925fd1a"
+    },
+    {
+      "id": "responses_en",
+      "url": "https://api-docs.deepseek.com/guides/responses_api/",
+      "sha256": "3af115c64774731d42e29b8b6982b914351d501882aaa9440dfa55c83f549ce0"
+    },
+    {
+      "id": "faq_static_bundle",
+      "url": "https://static.deepseek.com/faq/static/main.86961ff339.js",
+      "sha256": "b449d767b2a4638a8dcd71e4f2071cbb9f8875b00f8e01770cdf31be34a91953"
+    }
+  ],
+  "facts": [
+    {
+      "id": "F1",
+      "sources": [
+        "price_en",
+        "price_zh"
+      ],
+      "claim": "Flash alias maps to DeepSeek-V4.1-Flash; advertised context is 1M. Alias is not immutable weights."
+    },
+    {
+      "id": "F2",
+      "sources": [
+        "chat_en",
+        "chat_zh"
+      ],
+      "claim": "Chat max_tokens caps generation; input plus generated length is limited by model context length."
+    },
+    {
+      "id": "F3",
+      "sources": [
+        "chat_en"
+      ],
+      "claim": "Response usage splits prompt cache hit/miss and completion; length finish can indicate output or context limit."
+    },
+    {
+      "id": "F4",
+      "sources": [
+        "responses_en"
+      ],
+      "claim": "Responses guide states oversized context returns 400 and truncation is unsupported. This is not a Chat guarantee."
+    },
+    {
+      "id": "F5",
+      "sources": [
+        "price_en",
+        "price_zh"
+      ],
+      "claim": "Billing is based on total model input and output token usage and prices; gift deducted before topped-up balance. Prices may change."
+    },
+    {
+      "id": "F6",
+      "sources": [
+        "balance_en"
+      ],
+      "claim": "Documented balance_infos array includes currency CNY or USD and decimal-string total/granted/topped-up amounts."
+    },
+    {
+      "id": "F7",
+      "sources": [
+        "token_en"
+      ],
+      "claim": "Character ratios are estimates; actual usage is returned. Linked tokenizer does not establish online full-request billing equivalence."
+    }
+  ],
+  "observed_prices_not_approved": {
+    "unit": "per_1000000_tokens",
+    "valid_until": null,
+    "CNY": {
+      "cache_miss_peak": "2",
+      "cache_miss_off_peak": "1",
+      "cache_hit_peak": "0.04",
+      "cache_hit_off_peak": "0.02",
+      "output_peak": "8",
+      "output_off_peak": "4"
+    },
+    "USD": {
+      "cache_miss_peak": "0.30",
+      "cache_miss_off_peak": "0.15",
+      "cache_hit_peak": "0.006",
+      "cache_hit_off_peak": "0.003",
+      "output_peak": "1.20",
+      "output_off_peak": "0.60"
+    },
+    "peak": "Monday-Friday 09:00-12:00 and 14:00-18:00 Asia/Shanghai; excludes Chinese public holidays; weekends off-peak",
+    "account_settlement_currency": null,
+    "approved_fx": null,
+    "approved_tax_margin": null
+  },
+  "conditional_inferences": [
+    "If billable input equals context-accounted input and I+O<=C, then I<=C. A cap O<=256 does not imply I<=C-256.",
+    "Only conditional scenarios may use C=1000000 or C=1048576. Neither is an accepted certificate or reservation amount."
+  ],
+  "unproven": [
+    "Exact numeric meaning of 1M for billing.",
+    "All billable input including role/system/framing/internal overhead shares the advertised Chat context bound.",
+    "Chat overflow handling, billing of rejected/truncated/failed/cancelled requests and any additional charges.",
+    "Official preflight count interface or exact online tokenizer/framing/price guarantee adequate for a hard monetary bound.",
+    "Actual account settlement currency, applicable price/tax validity and debit behavior.",
+    "A balance ceiling, top-up amount or is_available guarantees a spending cap or authorizes spending."
+  ]
+}
