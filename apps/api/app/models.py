@@ -315,3 +315,6 @@ class ProbeAttempt(Record, Base):
     lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     error_code: Mapped[str | None] = mapped_column(String(40))
     usage: Mapped[dict | None] = mapped_column(JSONB)
+
+# Register independent paid-control metadata; no runtime dispatch registration.
+from app import paid_models  # noqa: E402,F401
