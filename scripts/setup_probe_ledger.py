@@ -12,6 +12,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 from app.controlled_probe import ExperimentAdmin
 from controlled_live_probe import confirmation
+from app.probe_db_credentials import credential_engine
 
 
 def main():
@@ -21,12 +22,18 @@ def main():
     args=parser.parse_args();engine=None
     try:
         value=json.loads(Path(args.owner_config).read_text(encoding='utf-8-sig'))
-        if set(value)!={'database_url'}:raise ValueError()
-        url=make_url(value['database_url'])
-        if (url.drivername!='postgresql+psycopg' or url.host not in ('127.0.0.1','localhost')
-            or (url.port or 5432)!=5432 or url.database!='pathwise_probe' or url.query):raise ValueError()
+        if set(value)=={'database_credential'}:
+            # Only nonsecret reference metadata; resolution is lazy until the
+            # existing explicit SETUP confirmation has completed.
+            engine=credential_engine(value['database_credential'],expected_role='pathwise_probe_owner')
+        elif set(value)=={'database_url'}:
+            # Legacy private operator config only; new initializer never emits it.
+            url=make_url(value['database_url'])
+            if (url.drivername!='postgresql+psycopg' or url.host not in ('127.0.0.1','localhost')
+                or (url.port or 5432)!=5432 or url.database!='pathwise_probe' or url.query):raise ValueError()
+            engine=create_engine(url,hide_parameters=True,echo=False)
+        else:raise ValueError()
         confirmation('SETUP pathwise_probe')
-        engine=create_engine(url,hide_parameters=True,echo=False)
         with engine.connect() as conn:
             if conn.scalar(text('SELECT count(*) FROM information_schema.tables WHERE table_schema=\'public\''))!=0:
                 raise ValueError('requires empty dedicated database; never upgrades a populated target')
