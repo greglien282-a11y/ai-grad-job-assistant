@@ -23,7 +23,7 @@
 
 迁移撤销 PUBLIC 对收费表及函数的权限。`PaidAdmin.provision_runtime_role(schema, role)` 是显式 DBA 操作，不创建角色、密码或环境配置；验证现有角色没有 superuser/CREATEDB/CREATEROLE/BYPASSRLS、没有管理所有者成员资格、没有数据库 CREATE 或持久 Schema CREATE 权限，然后仅授予：该 schema USAGE、收费表 SELECT、`paid_runtime(text,text,jsonb)` EXECUTE。没有表 DML、对账、增额、授权或解冻权限。
 
-`paid_runtime` 为 SECURITY DEFINER，固定 search_path=pg_catalog，表/函数完全限定 schema，无动态 SQL。输入值全部绑定，schema/角色标识符受严格白名单限制。`PaidControl` 固定 engine/schema/ledger UUID，不接受 namespace；错误位置或 UUID 直接拒绝。所有部署/批次/将来渠道必须接同一受控 PostgreSQL 账本。不能通过环境变量或请求选择另一库；配置发布仍需管理审查。不能把每个随机测试 Schema 当成生产预算池。C-1B 接线前须证明实际运行身份符合本隔离规则，而不是继续使用迁移所有者。
+`paid_runtime` 为 SECURITY DEFINER，固定 search_path=pg_catalog，表/函数完全限定 schema，无动态 SQL。输入值全部绑定，schema/角色标识符受严格白名单限制。角色配置也拒绝已持有收费表写权限的身份。`PaidControl` 固定 engine/schema/ledger UUID，不接受 namespace；错误位置或 UUID 直接拒绝。所有部署/批次/将来渠道必须接同一受控 PostgreSQL 账本。不能通过环境变量或请求选择另一库；配置发布仍需管理审查。不能把每个随机测试 Schema 当成生产预算池。C-1B 接线前须证明实际运行身份符合本隔离规则，而不是继续使用迁移所有者。
 
 CI 专用服务中建立随机 NOLOGIN 受限角色，并真正以该角色连接/调用，验证允许预留、拒绝 INSERT 授权、改总额/Scope、解冻、删除账本/审计、创建另一 Schema；之后清理自己建立的角色。没有改动 Windows 服务或日常数据库角色。本机专用测试角色无 CREATEROLE：本地验证 PUBLIC 无执行权限及自身无管理能力，完整受限角色操作由 CI 执行，不能把本地分支说成已验证所有角色权限。
 
@@ -46,7 +46,7 @@ CI 专用服务中建立随机 NOLOGIN 受限角色，并真正以该角色连�
 | expired reserved | owner close_unsent → reconciled | 只有持久证据“从未给出发送许可”才可经人工证据核对为0 |
 | sent/response_received/unknown | owner reconcile → reconciled | 唯一账单+复核证据，按批准 FX 记录完整实际 USD/CNY，转 held 为 spent |
 
-同键不同授权/请求/政策/批次返回专用 `paid_idempotency_conflict`；同键重放不重复占用/计次。permit 是账本一次意图，不是可传到 HTTP 的能力令牌，本阶段没有网络消费者。发送意图已提交但实际未出网时，也可能只能保守记 unknown，不能猜测免费。已完成对账不被迟到错误覆盖。expired reserved 不自动退款或释放并发槽，需明确 owner close_unsent；这是小批探针的保守停止选择。
+同键不同授权/请求/政策/批次返回专用 `paid_idempotency_conflict`；同键重放不重复占用/计次。permit 也重新检查当前总额和 scope 是否仍覆盖占用，管理方收紧额度后不得沿用旧许可。permit 是账本一次意图，不是可传到 HTTP 的能力令牌，本阶段没有网络消费者。发送意图已提交但实际未出网时，也可能只能保守记 unknown，不能猜测免费。已完成对账不被迟到错误覆盖。expired reserved 不自动退款或释放并发槽，需明确 owner close_unsent；这是小批探针的保守停止选择。
 
 `reconcile` 不调用账单接口，仅接 owner 人工确认的原币最终账单和摘要；税费余量是预留缓冲，最终 USD 发票已含适用税费时不再重复乘余量。需要补税/附加账单时不得复用原发票覆盖历史，须先停用并另审调整合同。账单重放必须金额及摘要一致；同一摘要不能在另一调用复用。实际超预留或总额时完整记超额、全局冻结，不截断账单。只有所有未核对项已解决、实付在批准总额及 provider/model scope 内，owner 才可凭追加审计显式解冻。没有到期自动释放、账单清理或自动恢复。
 
@@ -70,6 +70,8 @@ CI 专用服务中建立随机 NOLOGIN 受限角色，并真正以该角色连�
 ```
 
 测试包含：无授权零出网、最坏价 Decimal、各层额度/次数、跨授权批次/进程竞争、同键一次许可、真正 os._exit(41) 后持久 sent/unknown、取消/断线不释放、期限/配置/价格/证书失效、发票全局去重、超额冻结/人工核对、不可变记录、合成清单限制、随机 Schema 0007→0008→0007→0008/空库与 alembic check/旧资料兼容。CI 保留原282后端、62 React、30 E2E 和离线合同/Mock评测。30个 E2E .spec.ts 未改，仅更新数据库启动探针 head 到0008。最终测试数及 CI 链接写入 Draft PR。
+
+本机完整后端首轮318项通过（399秒），后续新增/补强后专项39项通过（45秒）；CI完整收集应为原282+新增39=321项。React62、构建/E2E类型检查、Edge30（2.3分钟）、隔离迁移/清理、12项离线合同及Mock CLI均通过。受限角色实操分支由CI执行；最终CI结果见PR。仅有既有Starlette TestClient弃用提示及Zod/Rollup注释告警，没有改动依赖或放宽验收。
 
 所有迁移/回滚/数据写入都在随机隔离测试 Schema。日常 pathwise_dev 未迁移；页面、PRD、prototype、Pages 未改。
 

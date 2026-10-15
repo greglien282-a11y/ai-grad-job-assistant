@@ -162,6 +162,14 @@ def test_revoke_blocks_reserved_send_without_refund(paid):
         with paid[2].begin() as db: db.get(PaidGrant, paid[4]).revoked = False
 
 
+@pytest.mark.parametrize('kind,key', [('provider','deepseek_official'), ('model','deepseek-flash')])
+def test_scope_reduction_between_reserve_and_permit_blocks_send(paid, kind, key):
+    cid = reserve(paid)['id']
+    paid[0].approve_scope(kind, key, '0', digest('synthetic reduced scope'))
+    with pytest.raises(DBAPIError, match='paid_scope_exceeded'): permit(paid, cid)
+    assert paid[1].get(cid)['persisted_state'] == 'reserved'
+
+
 @pytest.mark.parametrize('boundary', ['grant', 'price', 'fx', 'token'])
 def test_expiry_rechecked_at_send(paid, boundary):
     data = paid[5].model_dump(mode='json'); until = utcnow()+timedelta(seconds=1)
@@ -364,6 +372,10 @@ def test_runtime_role_cannot_mint_authority_or_unfreeze(paid):
         for sql in forbidden:
             with pytest.raises(DBAPIError, match='permission denied'):
                 with role_engine.begin() as conn: conn.execute(text(sql))
+        with engine.begin() as conn:
+            conn.execute(text(f'GRANT UPDATE ON "{schema}".paid_funding TO "{role}"'))
+        with pytest.raises(ProbeError, match='paid_runtime_role_not_restricted'):
+            admin.provision_runtime_role(schema, role)
         with pytest.raises(ProbeError, match='paid_runtime_role_not_restricted'):
             admin.provision_runtime_role(schema, 'pathwise_test')
     finally:

@@ -154,6 +154,14 @@ def upgrade():
       IF cert IS NULL OR cert->>'kind'<>'owner_attested_full_request_bound' OR cert->>'covers_full_request_and_framing'<>'true' OR
          (cert->>'expires_at')::timestamptz<=stamp THEN RAISE EXCEPTION 'paid_token_bound_unproven'; END IF;
       IF action='permit' THEN
+        IF pool.held+pool.spent>pool.ceiling THEN RAISE EXCEPTION 'paid_budget_exceeded'; END IF;
+        FOREACH k IN ARRAY ARRAY['provider','model'] LOOP
+          v:=pol->>k;
+          SELECT ceiling INTO lim FROM {q}.paid_scopes WHERE kind=k AND key=v;
+          SELECT coalesce(sum(coalesce(actual,reserved)),0) INTO used FROM {q}.paid_calls
+            WHERE (k='provider' AND provider=v) OR (k='model' AND model=v);
+          IF lim IS NULL OR used>lim THEN RAISE EXCEPTION 'paid_scope_exceeded'; END IF;
+        END LOOP;
         UPDATE {q}.paid_calls SET state='sent',lease_until=stamp+interval '60 seconds' WHERE id=c.id;
         INSERT INTO {q}.paid_audit VALUES(gen_random_uuid(),stamp,'sent_intent',c.request_hash,jsonb_build_object('call_id',c.id));
         RETURN jsonb_build_object('permitted',true);

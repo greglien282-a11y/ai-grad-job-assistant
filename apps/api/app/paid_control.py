@@ -211,7 +211,10 @@ class PaidAdmin:
                 OR pg_has_role(r.oid,(SELECT oid FROM pg_roles WHERE rolname=current_user),'MEMBER')
                 OR has_database_privilege(r.oid,current_database(),'CREATE')
                 OR EXISTS (SELECT 1 FROM pg_namespace n WHERE n.nspname NOT LIKE 'pg_temp_%'
-                    AND has_schema_privilege(r.oid,n.oid,'CREATE')))
+                    AND has_schema_privilege(r.oid,n.oid,'CREATE'))
+                OR EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+                    WHERE n.nspname=:schema AND c.relname IN ('paid_funding','paid_scopes','paid_grants','paid_calls','paid_audit')
+                    AND has_table_privilege(r.oid,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')))
                 FROM pg_roles r WHERE rolname=:role'''), {'role':role, 'schema':schema})
             if restricted is not True: raise ProbeError('paid_runtime_role_not_restricted')
             db.execute(text(f'GRANT USAGE ON SCHEMA "{schema}" TO "{role}"'))
