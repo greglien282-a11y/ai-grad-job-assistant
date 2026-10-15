@@ -258,6 +258,51 @@ class PaidControl:
 
     def recover(self): return self._invoke('recover', {})
 
+    def assert_offline_runtime(self):
+        """C-1B exercises can only use a restricted LOGIN in a random test schema.
+
+        Reject owner credentials even when SET ROLE masks the current role.
+        This is NOT an enablement check for any real transport.
+        """
+        url = self.engine.url
+        if (url.get_backend_name() != 'postgresql' or url.database not in ('pathwise_test', 'pathwise_e2e')
+            or url.host not in ('localhost', '127.0.0.1')
+            or not re.fullmatch(r'test_(?:eval_)?[a-f0-9]{32}', self.schema)):
+            raise ProbeError('bridge_isolated_database_required')
+        with self.engine.connect() as conn:
+            safe = conn.scalar(text('''SELECT current_user=session_user AND NOT (
+                r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolbypassrls
+                OR has_database_privilege(r.oid,current_database(),'CREATE')
+                OR EXISTS (SELECT 1 FROM pg_namespace n WHERE n.nspname NOT LIKE 'pg_temp_%'
+                    AND has_schema_privilege(r.oid,n.oid,'CREATE'))
+                OR EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+                    WHERE n.nspname=:schema AND p.proname='paid_runtime' AND pg_has_role(r.oid,p.proowner,'MEMBER'))
+                OR EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+                    WHERE n.nspname=:schema AND c.relname IN ('paid_funding','paid_scopes','paid_grants','paid_calls','paid_audit')
+                    AND has_table_privilege(r.oid,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')))
+                FROM pg_roles r WHERE rolname=current_user'''), {'schema':self.schema})
+            if safe is not True: raise ProbeError('bridge_restricted_login_required')
+            if conn.scalar(text('SELECT current_database()')) != url.database:
+                raise ProbeError('bridge_isolated_database_required')
+            ledger = conn.scalar(text(f'SELECT ledger_id FROM "{self.schema}".paid_funding WHERE id=1'))
+            if str(ledger) != self.ledger_id: raise ProbeError('paid_ledger_identity_mismatch')
+
+    def checked_policy(self, grant_id):
+        """Read-only snapshot, validate immutable digest and current DB clock."""
+        with self.engine.connect() as conn:
+            ledger = conn.scalar(text(f'SELECT ledger_id FROM "{self.schema}".paid_funding WHERE id=1'))
+            if str(ledger) != self.ledger_id: raise ProbeError('paid_ledger_identity_mismatch')
+            row = conn.execute(text(f'''SELECT policy, policy_hash, starts_at, expires_at, revoked,
+                clock_timestamp() AS now FROM "{self.schema}".paid_grants WHERE id=:id'''), {'id':str(UUID(str(grant_id)))}).mappings().one_or_none()
+            if row is None or row['revoked'] or not row['starts_at'] <= row['now'] < row['expires_at']:
+                raise ProbeError('paid_grant_inactive')
+            try: policy = PaidPolicy.model_validate(row['policy'])
+            except Exception: raise ProbeError('bridge_policy_invalid') from None
+            if digest(canonical(policy.model_dump(mode='json'))) != row['policy_hash']:
+                raise ProbeError('bridge_policy_digest_invalid')
+            policy.check(row['now'])
+            return policy
+
     def get(self, call_id):
         with self.engine.connect() as conn:
             actual_id = conn.scalar(text(f'SELECT ledger_id FROM "{self.schema}".paid_funding WHERE id=1'))

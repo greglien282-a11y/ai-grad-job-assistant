@@ -34,27 +34,26 @@ def question_key(text):
     return ''.join(c for c in text if not c.isspace() and not unicodedata.category(c).startswith('P'))
 
 
-def validate_v2(db, run, output, context=None):
+def validate_context_v2(context, output, previous_questions=()):
+    """Pure snapshot checks shared by DB mining and the offline HTTP bridge.
+
+    Does not grant publication: live mining additionally checks real DB user
+    turns, project ownership, revisions, lease and session state in complete().
+    """
     result = MiningOutputV2.model_validate(output)
-    context = context or build_context(db, run, db.get(ExperienceSession, run.session_id))
-    if context.project_id != run.project_id or context.input_turn_id != run.input_turn_id or context.context_revision != run.reserved_revision:
-        raise ValueError('Invalid snapshot identity')
     included = {t.turn_id: t for t in context.user_turns}
     seen = set()
     for candidate in result.candidates:
         c = candidate.citation
-        turn = db.get(ConversationTurn, c.turn_id)
-        if (c.turn_id not in included or turn is None or turn.session_id != run.session_id or turn.role != 'user'
-            or c.end > len(turn.content) or c.start >= c.end or turn.content[c.start:c.end] != c.quote
-            or included[c.turn_id].content[c.start:c.end] != c.quote or PRIVATE.search(c.quote)
+        turn = included.get(c.turn_id)
+        if (turn is None or c.end > len(turn.content) or c.start >= c.end
+            or turn.content[c.start:c.end] != c.quote or PRIVATE.search(c.quote)
             or (c.start, c.end, c.quote) not in set(sentence_spans(turn.content)) or not atomic(c.quote)):
             raise ValueError('Invalid atomic source')
         identity = (c.turn_id, c.start, c.end)
         if identity in seen: raise ValueError('Repeated candidate')
         seen.add(identity)
-    # Suppress repeat questions (including skipped/hidden/current corrections).
-    # Deleted wording is gone: never resurrect it in a snapshot or hash cache.
-    previous = {question_key(q.content) for q in db.scalars(select(MiningQuestion).where(MiningQuestion.session_id == run.session_id)) if q.content}
+    previous = set(previous_questions) | {question_key(q.content) for q in context.questions if q.content}
     keys = set()
     for q in result.questions:
         key = question_key(q.text)
@@ -67,6 +66,26 @@ def validate_v2(db, run, output, context=None):
             raise ValueError('Unsupported number in clarification')
         keys.add(key)
     return result
+
+
+def validate_v2(db, run, output, context=None):
+    result = MiningOutputV2.model_validate(output)
+    context = context or build_context(db, run, db.get(ExperienceSession, run.session_id))
+    if context.project_id != run.project_id or context.input_turn_id != run.input_turn_id or context.context_revision != run.reserved_revision:
+        raise ValueError('Invalid snapshot identity')
+    included = {t.turn_id: t for t in context.user_turns}
+    for candidate in result.candidates:
+        c = candidate.citation
+        turn = db.get(ConversationTurn, c.turn_id)
+        if (c.turn_id not in included or turn is None or turn.session_id != run.session_id or turn.role != 'user'
+            or c.end > len(turn.content) or c.start >= c.end or turn.content[c.start:c.end] != c.quote
+            or included[c.turn_id].content[c.start:c.end] != c.quote or PRIVATE.search(c.quote)
+            or (c.start, c.end, c.quote) not in set(sentence_spans(turn.content)) or not atomic(c.quote)):
+            raise ValueError('Invalid atomic source')
+    # Suppress repeat questions (including skipped/hidden/current corrections).
+    # Deleted wording is gone: never resurrect it in a snapshot or hash cache.
+    previous = {question_key(q.content) for q in db.scalars(select(MiningQuestion).where(MiningQuestion.session_id == run.session_id)) if q.content}
+    return validate_context_v2(context, result, previous)
 
 
 def source_already_used(db, run, citation):
