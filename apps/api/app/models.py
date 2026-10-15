@@ -265,3 +265,53 @@ class CostCall(Record, Base):
     model_evidence: Mapped[dict | None] = mapped_column(JSONB)
     error_code: Mapped[str | None] = mapped_column(String(40))
     lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+# C-0 preflight controls are deliberately fixture-only. They CANNOT approve fees.
+class ProbeFunding(Base):
+    __tablename__ = 'probe_funding'
+    __table_args__ = (CheckConstraint('id = 1 AND approved_real_cny = 0', name='ck_probe_zero_authority'),
+                      CheckConstraint('fixture_ceiling >= 0 AND held >= 0 AND spent >= 0', name='ck_probe_funding_money'))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    approved_real_cny: Mapped[Decimal] = mapped_column(Numeric(20,6), default=0)
+    fixture_ceiling: Mapped[Decimal] = mapped_column(Numeric(20,6))
+    held: Mapped[Decimal] = mapped_column(Numeric(20,6), default=0)
+    spent: Mapped[Decimal] = mapped_column(Numeric(20,6), default=0)
+    frozen: Mapped[bool] = mapped_column(Boolean, default=False)
+    last_review_digest: Mapped[str | None] = mapped_column(String(64))
+
+
+class ProbeGrant(Record, Base):
+    __tablename__ = 'probe_grants'
+    __table_args__ = (CheckConstraint("mode IN ('draft','offline_fixture','revoked')", name='ck_probe_grant_mode'),
+                      CheckConstraint('pool_id = 1 AND approved_real_cny = 0', name='ck_probe_grant_zero'),
+                      CheckConstraint('starts_at < expires_at AND fixture_limit >= 0 AND calls_limit > 0', name='ck_probe_grant_limits'))
+    pool_id: Mapped[int] = mapped_column(ForeignKey('probe_funding.id'), default=1)
+    mode: Mapped[str] = mapped_column(String(24), default='draft')
+    approved_real_cny: Mapped[Decimal] = mapped_column(Numeric(20,6), default=0)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    fixture_limit: Mapped[Decimal] = mapped_column(Numeric(20,6))
+    calls_limit: Mapped[int] = mapped_column(Integer)
+    policy: Mapped[dict] = mapped_column(JSONB)
+
+
+class ProbeAttempt(Record, Base):
+    __tablename__ = 'probe_attempts'
+    __table_args__ = (UniqueConstraint('operation_hash', name='uq_probe_operation'),
+                      CheckConstraint("state IN ('reserved','sent','response_received','unknown','reconciled')", name='ck_probe_attempt_state'),
+                      CheckConstraint("execution = 'offline_http_fixture'", name='ck_probe_attempt_offline'),
+                      CheckConstraint('reserved >= 0 AND (actual IS NULL OR actual >= 0)', name='ck_probe_attempt_money'))
+    grant_id: Mapped[UUID] = mapped_column(ForeignKey('probe_grants.id'))
+    operation_hash: Mapped[str] = mapped_column(String(64))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    policy_snapshot: Mapped[dict] = mapped_column(JSONB)
+    batch_tag: Mapped[str] = mapped_column(String(64))
+    execution: Mapped[str] = mapped_column(String(24), default='offline_http_fixture')
+    state: Mapped[str] = mapped_column(String(24), default='reserved')
+    reserved: Mapped[Decimal] = mapped_column(Numeric(20,6))
+    actual: Mapped[Decimal | None] = mapped_column(Numeric(20,6))
+    invoice_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
+    lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(40))
+    usage: Mapped[dict | None] = mapped_column(JSONB)
