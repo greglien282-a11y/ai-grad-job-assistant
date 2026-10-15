@@ -90,4 +90,6 @@ CREATE pathwise_probe AND TWO RESTRICTED ROLES
 
 新增测试均使用 Fake PostgreSQL adapter/Fake Win32 API/临时假配置，无真实管理员凭据、真实建库、真实固定 Credential Manager 写入或迁移。覆盖 256-bit RNG、不同密码、绑定/revision/拒绝覆盖、原生 buffer 清理、libpq SCRAM 调用、只读预检、取消、部分失败、权限验收、固定目标、SecretRef 兼容与日志脱敏。现有后端/React/E2E/迁移/合同/Mock 验收继续由 CI 执行。最终数量与 CI 链接附 Draft PR。
 
+补充本机原生验证：仅在隔离短时进程内将两个目标替换为随机 `Pathwise/PostgreSQL/native-test-<UUID>/...`，使用公开假值执行新封装的真实 CredWriteW/CredReadW，写读、metadata/revision 绑定和拒绝覆盖均通过。socket/DNS 陷阱开启；finally 删除并逐一确认不存在，无枚举/管理员文件/生产目标访问。源码摘要和结果见[非秘密证据](evaluation/pr18-windows-db-fake-verification.json)。这是新封装的随机假条目验证，不是创建正式角色/数据库或固定生产凭据。
+
 首次真实固定目标写入、真实 SCRAM 建角色、Windows 凭据持久化后的重登录，以及真实 PostgreSQL 权限验收均**尚未执行**，必须在代码审查及下一次用户授权后才进行。既有 PR17 的 DeepSeek 假凭据原生验证不冒充本工具的新密码初始化验证。
