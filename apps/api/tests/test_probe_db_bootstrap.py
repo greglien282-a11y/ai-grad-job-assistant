@@ -235,7 +235,7 @@ def test_unknown_audit_hooks_refuse():
     with pytest.raises(cred.LocalDatabaseError): boot.LocalPostgresAdmin(c).precheck()
 
 
-@pytest.mark.parametrize('database,role', [('pathwise_dev','postgres'),('postgres',cred.ROLES[0]),('elsewhere','postgres')])
+@pytest.mark.parametrize('database,role', [('pathwise_dev','postgres'),('postgres',cred.ROLES[0]),('elsewhere','postgres'),('pathwise_probe','postgres')])
 def test_connect_target_guard(database,role):
     with pytest.raises(cred.LocalDatabaseError): cred.connect_local(database=database,role=role,password=FAKE)
 

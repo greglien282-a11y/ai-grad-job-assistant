@@ -145,7 +145,7 @@ def initialization_mutex():
 
 def connect_local(*, role, password, database, readonly=False):
     if (role not in (*ROLES, 'postgres') or database not in ('postgres', 'pathwise_probe')
-        or (database == 'postgres' and role != 'postgres')):
+        or ((database == 'postgres') != (role == 'postgres'))):
         raise LocalDatabaseError('database_target_rejected')
     with local_private_io():
         return psycopg.connect(host='127.0.0.1', hostaddr='127.0.0.1', port=5432,
