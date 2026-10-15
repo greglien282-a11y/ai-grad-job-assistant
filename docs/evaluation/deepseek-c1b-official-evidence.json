@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-15",
+  "purpose": "documentary research only; not authorization or a runtime price policy",
+  "approved_real_cny": "0",
+  "real_api_requests": 0,
+  "target": {
+    "provider": "deepseek_official",
+    "endpoint": "https://api.deepseek.com/chat/completions",
+    "model": "deepseek-flash",
+    "documented_version": "DeepSeek-V4.1-Flash",
+    "immutable_weights_proven": false,
+    "region": "provider_managed_unverified",
+    "thinking": {"type": "disabled"},
+    "response_format": {"type": "json_object"},
+    "stream": false,
+    "probe_output_cap_proposal": 256
+  },
+  "price_observation": {
+    "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "currency": "USD",
+    "unit_tokens": 1000000,
+    "cache_miss": {"peak": "0.30", "off_peak": "0.15"},
+    "cache_hit": {"peak": "0.006", "off_peak": "0.003"},
+    "output": {"peak": "1.20", "off_peak": "0.60"},
+    "peak_calendar": "Mon-Fri UTC 01:00-04:00 and 06:00-10:00 excluding Chinese public holidays",
+    "reservation": "maximum of every input rate, maximum output rate; never assume cache hit or off-peak",
+    "account_currency_verified": false,
+    "approved_account": null,
+    "approved_valid_until": null,
+    "approved_fx": null,
+    "approved_tax_margin": null,
+    "spending_authority": false
+  },
+  "sources": [
+    {"topic": "chat", "url": "https://api-docs.deepseek.com/api/create-chat-completion/", "retrieval": "public static HTML GET", "sha256": "e7133a7c2a7c2662567cca2e2392b503f97c2fb583009ff85f878744e0a36ba7"},
+    {"topic": "json", "url": "https://api-docs.deepseek.com/guides/json_mode/", "retrieval": "public static HTML GET", "sha256": "f728a4dad99c2328c9c982b08c113f400abcc1a7eba238f08738f51a951d1b30"},
+    {"topic": "cache", "url": "https://api-docs.deepseek.com/guides/kv_cache/", "retrieval": "public static HTML GET", "sha256": "cc415b7cb16bfded974cddd20fc5742ab30858f88257cf9334898876f47af71c"},
+    {"topic": "errors", "url": "https://api-docs.deepseek.com/quick_start/error_codes/", "retrieval": "public static HTML GET", "sha256": "94fb50221dc31d7960ce4aaff6d07d517829d9aca1395c289a8907d3ead87b0e"},
+    {"topic": "prices", "url": "https://api-docs.deepseek.com/quick_start/pricing/", "retrieval": "public static HTML GET; not account invoice", "sha256": "210f102275ccf1a6542f08a3bc9e4b4c7c83278cb74b35217bffa112df6363b2"},
+    {"topic": "tokens", "url": "https://api-docs.deepseek.com/quick_start/token_usage/", "retrieval": "public static HTML GET", "sha256": "08bf766935b9ff92aee592c70bdac0908e3f44f1e3e52e93dd7aeafc9925fd1a"},
+    {"topic": "rate_limit", "url": "https://api-docs.deepseek.com/quick_start/rate_limit/", "retrieval": "public static HTML GET", "sha256": "4697e1893837d2d429dd08235528473e3e4b0e7c198bf014f6c65135fc090330"},
+    {"topic": "privacy", "url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html", "retrieval": "public HTML policy, dated 2026-02-10; API-specific applicability unresolved", "sha256": "339984e36a795843ee2b5b917797072ec249f3c0e9ff7cbbfe754c01caa4f069"}
+  ],
+  "tokenizer_inspection": {
+    "url": "https://cdn.deepseek.com/api-docs/deepseek_v4_tokenizer.zip",
+    "archive_sha256": "e7310d1dafe0a86d8a5629fe78a7c763760f651db9b8682718a1781dcd6fe495",
+    "bytes": 1911504,
+    "files": ["deepseek_tokenizer.py", "tokenizer_config.json", "tokenizer.json"],
+    "inspection_only": true,
+    "downloaded_code_executed": false,
+    "dependencies_installed": false,
+    "sample": "encodes Hello with AutoTokenizer; sample suggests trust_remote_code=True, which was not executed",
+    "chat_template_present": true,
+    "config_tokenizer_class": "LlamaTokenizerFast",
+    "config_model_max_length": 16384,
+    "v4_1_online_template_equivalence_guarantee_found": false,
+    "complete_chat_json_object_framing_upper_bound_proven": false,
+    "supplier_bound_certificate": null,
+    "conclusion": "BLOCK real dispatch; public tokenizer/template alone is not an approved upper-bound guarantee"
+  },
+  "candidate_probe_not_authorized": {
+    "case_id": "S03",
+    "turn_key": "b",
+    "request_sha256": "5cc2def4f875e43760e799678a43c1f2d2072dd4245eaf54457dfe78ee0b373e",
+    "utf8_bytes": 2521,
+    "byte_count_is_not_a_token_bound": true,
+    "input_token_bound": null,
+    "approved_calls": 0,
+    "approved_cny": "0"
+  },
+  "unverified": [
+    "complete online billable input framing and hard upper bound",
+    "account currency, applicable prices, approved FX/tax and invoice semantics",
+    "account/model availability, deployed region, actual model/fingerprint evidence",
+    "actual usage fields/cache hits, timeout/cancellation charges and proxy behavior",
+    "account-specific data retention/training terms and secret injection"
+  ]
+}
