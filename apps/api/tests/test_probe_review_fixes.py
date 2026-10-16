@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from alembic import command
+from alembic.script import ScriptDirectory
 import httpx
 import pytest
 from sqlalchemy import text
@@ -172,6 +173,7 @@ def test_nonempty_ledger_downgrade_refused_in_every_state(experiment,state):
     if state=='reconciled':admin.close_unsent('c'*64)
     from alembic.config import Config
     cfg=Config(str(Path(__file__).resolve().parents[1]/'alembic.ini'))
+    head=ScriptDirectory.from_config(cfg).get_current_head()
     with factory.kw['bind'].connect() as conn:
         conn.execute(text(f'SET search_path TO "{schema}"'));conn.commit()
         before=conn.execute(text('SELECT grant_id,policy,state,dispatch_token_hash,dispatch_claimed_at FROM controlled_probe')).one()
@@ -180,7 +182,7 @@ def test_nonempty_ledger_downgrade_refused_in_every_state(experiment,state):
         with pytest.raises(RuntimeError,match='downgrade_blocked_nonempty_ledger'):
             command.downgrade(cfg,'0008_paid_authority')
         conn.rollback()
-        assert conn.scalar(text('SELECT version_num FROM alembic_version'))=='0009_controlled_probe'
+        assert conn.scalar(text('SELECT version_num FROM alembic_version'))==head
         assert conn.execute(text('SELECT grant_id,policy,state,dispatch_token_hash,dispatch_claimed_at FROM controlled_probe')).one()==before
         assert conn.execute(text('SELECT ledger_id,ceiling,held,spent,frozen FROM paid_funding')).one()==totals
         conn.commit();command.upgrade(cfg,'head');conn.commit()  # no reset/regrant

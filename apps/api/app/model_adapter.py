@@ -60,6 +60,12 @@ class Profile(BaseModel):
 class AdapterError(ValueError): pass
 
 
+class OutputJSONError(AdapterError): pass
+
+
+class OutputSchemaError(AdapterError): pass
+
+
 def unique_pairs(pairs):
     result={}
     for key,value in pairs:
@@ -69,13 +75,15 @@ def unique_pairs(pairs):
 
 
 def parse_output(content):
-    if not isinstance(content,str) or len(content.encode('utf-8'))>64000: raise AdapterError('output_invalid')
     try:
+        if not isinstance(content,str) or len(content.encode('utf-8'))>64000: raise ValueError()
         raw=json.loads(content,object_pairs_hook=unique_pairs,parse_constant=lambda _: (_ for _ in ()).throw(AdapterError('output_invalid')))
+    except (ValueError,TypeError): raise OutputJSONError('output_invalid') from None
+    try:
         if not isinstance(raw,dict) or set(raw)!={'schema_version','candidates','questions','stop','stop_reason'}: raise ValueError()
         # Pydantic UUID parser requires JSON. All numerical fields already strict.
         return MiningOutputV2.model_validate_json(canonical(raw))
-    except (ValueError,TypeError): raise AdapterError('output_invalid') from None
+    except (ValueError,TypeError): raise OutputSchemaError('output_invalid') from None
 
 
 @dataclass(frozen=True)

@@ -16,7 +16,7 @@ import certifi
 import httpx
 
 from app.deepseek_contract import ENDPOINT, MODEL, VERSION, FAKE_SECRET, ProbeError
-from app.model_adapter import parse_output, unique_pairs
+from app.model_adapter import parse_output, unique_pairs, OutputJSONError, OutputSchemaError
 from app.mining_context import MiningContext
 from app.mining_validation import validate_context_v2
 from app.controlled_probe import verify_bytes
@@ -91,6 +91,23 @@ class HTTPFailure(ProbeError):
         super().__init__(code);self.code,self.status=code,status
 
 
+RESPONSE_FAILURE_CODES = frozenset((
+    'controlled_envelope_invalid', 'controlled_model_mismatch',
+    'controlled_usage_invalid', 'controlled_output_json_invalid',
+    'controlled_output_schema_invalid', 'controlled_facts_invalid',
+    'controlled_preview_invalid', 'controlled_output_truncated',
+    'controlled_output_refused', 'controlled_output_mode_invalid',
+))
+
+
+class ResponseFailure(HTTPFailure):
+    """Only locally selected codes; an observed 200 is not business success."""
+    def __init__(self, code):
+        if code not in RESPONSE_FAILURE_CODES:
+            raise ProbeError('controlled_response_invalid')
+        super().__init__(code, 200)
+
+
 def quiet_io(function):
     @wraps(function)
     async def wrapped(*args,**kwargs):
@@ -137,6 +154,7 @@ async def _post_once(body, key, *, mock=None, permit=None):
             key=WindowsCredentialSecret().resolve(p)
             if control.policy(p.execution).sha()!=p.sha():raise ProbeError('controlled_policy_changed')
     transport=mock if mock is not None else httpx.AsyncHTTPTransport(**_https_options())
+    status=None
     try:
         async with asyncio.timeout(45):
             async with httpx.AsyncClient(transport=transport,trust_env=False,follow_redirects=False,
@@ -151,41 +169,61 @@ async def _post_once(body, key, *, mock=None, permit=None):
                         if size>262144:raise HTTPFailure('controlled_body_too_large',status)
                         chunks.append(chunk)
                     result=b''.join(chunks)
-                    if permit is not None and permit.policy.execution=='controlled_live_probe':
-                        # Check against the actual secret BEFORE it leaves this
-                        # scope, including JSON-escaped echoes of that secret.
-                        validate_response(result,body,secret=key)
+                    # Exercise the identical validator for gated live and mock
+                    # HTTP. Check secret echoes before leaving this scope.
+                    validate_response(result,body,secret=key)
                     return status,result
-    except (TimeoutError,httpx.TimeoutException):raise HTTPFailure('controlled_timeout') from None
-    except httpx.HTTPError:raise HTTPFailure('controlled_network_unknown') from None
+    except (TimeoutError,httpx.TimeoutException):raise HTTPFailure('controlled_timeout',status) from None
+    except httpx.HTTPError:raise HTTPFailure('controlled_network_unknown',status) from None
 
 
 def validate_response(body, request_body, *, secret=None):
     """Uses actual usage, NOT an invented hard input bound or TokenCertificate."""
+    stage='controlled_envelope_invalid'
     try:
         raw=json.loads(body,object_pairs_hook=unique_pairs,parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
-        if raw['object']!='chat.completion' or raw['model'] not in (MODEL,VERSION):raise ValueError()
+        if not isinstance(raw,dict) or raw['object']!='chat.completion':raise ValueError()
         if (not isinstance(raw['id'],str) or not 1<=len(raw['id'])<=200 or type(raw['created']) is not int
             or raw['created']<0 or not isinstance(raw['system_fingerprint'],str)):
             raise ValueError()
-        if len(raw['choices'])!=1:raise ValueError()
+        if not isinstance(raw['choices'],list) or len(raw['choices'])!=1:raise ValueError()
         c=raw['choices'][0];m=c['message']
-        if type(c['index']) is not int or c['index']!=0 or c['finish_reason']!='stop' or m['role']!='assistant' or m.get('refusal') or m.get('tool_calls') or m.get('reasoning_content'):
+        finish=c['finish_reason']
+        if (not isinstance(m,dict) or type(c['index']) is not int or c['index']!=0
+            or m['role']!='assistant' or not isinstance(finish,str)):
             raise ValueError()
+        stage='controlled_model_mismatch'
+        if raw['model'] not in (MODEL,VERSION):raise ValueError()
+        stage='controlled_usage_invalid'
         u=raw['usage'];keys=('prompt_tokens','completion_tokens','prompt_cache_hit_tokens','prompt_cache_miss_tokens','total_tokens')
         if any(type(u[k]) is not int or not 0<=u[k]<=10**12 for k in keys):raise ValueError()
         if (u['completion_tokens']>256 or u['prompt_tokens']!=u['prompt_cache_hit_tokens']+u['prompt_cache_miss_tokens']
             or u['total_tokens']!=u['prompt_tokens']+u['completion_tokens']):raise ValueError()
-        reasoning=u.get('completion_tokens_details',{}).get('reasoning_tokens',0)
+        details=u.get('completion_tokens_details',{})
+        if not isinstance(details,dict):raise ValueError()
+        reasoning=details.get('reasoning_tokens',0)
         if type(reasoning) is not int or reasoning!=0:raise ValueError()
-        if 'prompt_tokens_details' in u and u['prompt_tokens_details'].get('cached_tokens')!=u['prompt_cache_hit_tokens']:raise ValueError()
-        output=parse_output(m['content'])
+        if 'prompt_tokens_details' in u and (not isinstance(u['prompt_tokens_details'],dict)
+            or u['prompt_tokens_details'].get('cached_tokens')!=u['prompt_cache_hit_tokens']):raise ValueError()
+        stage='controlled_output_truncated'
+        if finish=='length':raise ValueError()
+        stage='controlled_output_refused'
+        if finish=='content_filter' or m.get('refusal'):raise ValueError()
+        stage='controlled_output_mode_invalid'
+        if finish!='stop' or m.get('tool_calls') or m.get('reasoning_content'):raise ValueError()
+        stage='controlled_output_json_invalid'
+        try:output=parse_output(m['content'])
+        except OutputJSONError:raise ResponseFailure('controlled_output_json_invalid') from None
+        except OutputSchemaError:raise ResponseFailure('controlled_output_schema_invalid') from None
+        stage='controlled_facts_invalid'
         context=MiningContext.model_validate_json(json.loads(request_body)['messages'][1]['content'])
         checked=validate_context_v2(context,output)
+        stage='controlled_preview_invalid'
         preview=safe_output(checked,secret=secret)
         return ({'http_status':200,'validated':True,'safe_code':'controlled_validated',
             'reported_model':raw['model'],'usage':{k:u[k] for k in keys}},preview)
-    except Exception:raise ProbeError('controlled_response_invalid') from None
+    except ResponseFailure:raise
+    except Exception:raise ResponseFailure(stage) from None
 
 
 async def orchestrate(control, *, execution, mock=None, preview_store=None):
@@ -246,7 +284,7 @@ async def orchestrate(control, *, execution, mock=None, preview_store=None):
             try:diagnostic['preview_sha']=preview_store.save(control.read(),preview)
             except Exception:
                 retention_error=True
-                raise ProbeError('controlled_preview_retention_failed') from None
+                raise ResponseFailure('controlled_preview_invalid') from None
         control.action(p,'received',diagnostic)
     except BaseException as error:
         code='controlled_cancelled' if isinstance(error,(asyncio.CancelledError,KeyboardInterrupt)) else 'controlled_result_unknown'
