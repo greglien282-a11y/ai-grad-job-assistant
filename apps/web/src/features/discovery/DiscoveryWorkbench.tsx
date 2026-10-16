@@ -25,6 +25,18 @@ export default function DiscoveryWorkbench({ api = createExperienceApi(), view =
     requestAnimationFrame(() => { const panel = document.getElementById('discovery-facts'); panel?.focus(); panel?.scrollIntoView({ block: 'start', behavior: 'instant' }) })
   }
   const toggle = (id: string) => d.setSelected(ids => ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id].slice(0, 2))
+  const answerQuestion = (id: string) => {
+    const current = [...(s?.mining_runs ?? [])].reverse().find(r => r.state === 'completed')
+    if (blocked || readonly || d.mining.value || s?.mining_status !== 'active' ||
+      !current?.questions.some(q => q.id === id && ['active', 'corrected'].includes(q.state)) ||
+      (!d.selected.includes(id) && d.selected.length >= 2)) return
+    d.setSelected(ids => ids.includes(id) ? ids : [...ids, id])
+    setTab('conversation')
+    requestAnimationFrame(() => {
+      const input = document.getElementById('discovery-answer')
+      input?.focus({ preventScroll: true }); input?.scrollIntoView({ block: 'center', behavior: 'instant' })
+    })
+  }
   return <div className="discovery">
     <header className="discovery-header"><a className="brand" href="/">✦ 启程 <span>Pathwise</span></a><nav><a href="/manual">手工工作台</a><span className="mode-tag">零费用 · 合成测试模式</span></nav></header>
     {view === 'summary' && <SummaryView d={d} copy={copy} />}
@@ -42,7 +54,7 @@ export default function DiscoveryWorkbench({ api = createExperienceApi(), view =
         {d.mining.value && <section className="recovery-panel"><h2>先核对上一条操作</h2><p>当前只读查询不会重新保存回答或运行推理。刷新不会自动重发，回答正文未写入浏览器暂存。</p><button disabled={d.busy} onClick={() => void d.act(d.refresh)}>查询刚才的整理结果</button>{Date.now() >= d.mining.value.expiresAt && <button className="secondary" disabled={d.busy || d.needsReload} onClick={d.abandon}>我已核对，清除过期操作记录</button>}{d.miningNotFound && <><p>未找到原操作。重新输入完全一致的原回答，保留原问题关联，可用同一操作键重试。</p>{d.mining.value.mode !== 'answer' && <button disabled={blocked} onClick={() => void d.act(() => d.submitAnswer())}>同键重试原整理操作</button>}<button className="secondary" disabled={blocked} onClick={d.abandon}>我已核对，放弃未找到的操作</button></>}</section>}
         {!s && <div className="card"><h2>正在恢复会话资料</h2><p>读取成功前不能写入。请确认 API 指向已升级的隔离环境。</p><a href="/manual">使用手工入口</a></div>}
         {s && <><nav className="mobile-tabs" aria-label="工作台视图">{[['conversation', '对话'], ['facts', `事实审核 (${pendingCount})`]].map(([value, label]) => <button key={value} className={tab === value ? 'selected' : 'secondary'} aria-pressed={tab === value} onClick={() => setTab(value)}>{label}</button>)}<DiscoveryLink href="/discovery/summary">整理结果</DiscoveryLink></nav>
-          <div className="discovery-grid"><section className="conversation-panel" data-active={tab === 'conversation'} aria-label="对话工作区"><div className="panel-heading"><h2>一起回忆你的经历</h2><span>每轮最多两题</span></div><Conversation session={s} selected={d.selected} onSelect={toggle} disabled={blocked || !!readonly || Boolean(d.mining.value)} onQuestion={(q, action, content) => d.act(() => d.question(q, action, content))} />
+          <div className="discovery-grid"><section className="conversation-panel" data-active={tab === 'conversation'} aria-label="对话工作区"><div className="panel-heading"><h2>一起回忆你的经历</h2><span>每轮最多两题</span></div><Conversation session={s} selected={d.selected} onSelect={toggle} onAnswer={answerQuestion} disabled={blocked || !!readonly || Boolean(d.mining.value)} onQuestion={(q, action, content) => d.act(() => d.question(q, action, content))} />
             {!s.mining_runs?.length && <button disabled={blocked || !!readonly || Boolean(d.mining.value)} onClick={() => void d.act(d.startInitial)}>根据已保存经历开始合成整理</button>}
             {latest && ['failed', 'unknown', 'stale'].includes(latest.state) && <div className="recovery-panel"><p>本轮回答已保存，整理状态：{latest.state === 'stale' ? '上下文已变化' : latest.state === 'failed' ? '输出未通过校验' : '结果不确定'}。</p><button disabled={manageBlocked || !!readonly || s.mining_status === 'stopped'} onClick={() => setRetry(latest)}>重新整理已保存回答</button></div>}
             {retry && <div className="confirm-box" aria-label="重新整理确认"><p>将明确运行一次零费用合成整理，复用原回答及问题关联，不新增回答。不会自动重试。</p><button disabled={manageBlocked} onClick={() => void d.act(async () => { await d.retrySaved(retry); setRetry(null) })}>确认重新整理</button><button className="secondary" onClick={() => setRetry(null)}>取消重新整理</button></div>}

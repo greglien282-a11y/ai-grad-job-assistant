@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { Question, QuestionAction } from '../../lib/mining-contract'
-export function QuestionCard({ question: q, current, selected, disabled, onSelect, onAction }: {
+export function QuestionCard({ question: q, current, selected, disabled, onSelect, onAnswer, onAction }: {
   question: Question; current: boolean; selected: boolean; disabled: boolean; onSelect: () => void;
+  onAnswer?: () => void;
   onAction: (action: QuestionAction, content?: string) => Promise<boolean>
 }) {
   const [editing, setEditing] = useState(false), [draft, setDraft] = useState(''), [version, setVersion] = useState(q.version)
@@ -9,10 +10,11 @@ export function QuestionCard({ question: q, current, selected, disabled, onSelec
   const answerable = current && ['active', 'corrected'].includes(q.state)
   const label = { active: '待回答', corrected: '已纠正', skipped: '已跳过', hidden: '已隐藏', deleted: '已删除' }[q.state]
   return <article className="question-card" aria-label="合成追问" data-question-id={q.id}>
-    <div className="question-meta"><span>{label}{!current && ' · 历史轮次'}</span><span>问题版本 {q.version}</span></div>
+    <div className="question-meta"><span>{label}{!current && ' · 历史轮次'}</span></div>
     {q.state !== 'hidden' && q.state !== 'deleted' && <p>{q.content}</p>}
     {answerable && <label className="question-choice"><input type="checkbox" checked={selected} disabled={disabled} onChange={onSelect} />将我的下一条回答关联到这题</label>}
-    {q.state !== 'deleted' && <details className="question-options"><summary>问题选项 · 跳过、纠正或隐藏</summary><div className="question-tools">
+    {answerable && onAnswer && <button type="button" className="answer-question" disabled={disabled || editing} onClick={onAnswer}>回答这题</button>}
+    {q.state !== 'deleted' && <details className="question-options"><summary>问题选项 · 跳过、纠正或隐藏</summary><small>问题版本 {q.version}</small><div className="question-tools">
       <button className="secondary" disabled={disabled || editing} onClick={() => { setDraft(q.content ?? ''); setVersion(q.version); setEditing(true) }}>{q.state === 'hidden' ? '显示并纠正' : '纠正问题'}</button>
       <button className="secondary" disabled={disabled || q.state === 'skipped'} onClick={() => void onAction('skip')}>跳过</button>
       <button className="secondary" disabled={disabled || q.state === 'hidden'} onClick={() => void onAction('hide')}>隐藏</button>
