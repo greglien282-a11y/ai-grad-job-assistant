@@ -27,11 +27,14 @@ it('retains a correction draft on newer question version until explicit review',
   expect(onAction).toHaveBeenCalledWith('correct', 'Synthetic retained question draft')
 })
 it('hidden and deleted questions do not show private question content or selection', () => {
-  const props = { current: true, selected: false, disabled: false, onSelect: vi.fn(), onAction: vi.fn(async () => true) }
+  const props = { current: true, selected: false, disabled: false, onSelect: vi.fn(), onAnswer: vi.fn(), onAction: vi.fn(async () => true) }
   const view = render(<QuestionCard question={{ ...q, state: 'hidden' }} {...props} />)
   expect(screen.queryByText(q.content)).not.toBeInTheDocument()
   expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '回答这题' })).not.toBeInTheDocument()
   view.rerender(<QuestionCard question={{ ...q, state: 'deleted', content: null }} {...props} />)
   expect(screen.queryByText(q.content)).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: '纠正问题' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '回答这题' })).not.toBeInTheDocument()
+  expect(screen.getByText('问题版本 1')).toBeVisible()
 })

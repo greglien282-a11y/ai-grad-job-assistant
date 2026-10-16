@@ -10,7 +10,7 @@ export function QuestionCard({ question: q, current, selected, disabled, onSelec
   const answerable = current && ['active', 'corrected'].includes(q.state)
   const label = { active: '待回答', corrected: '已纠正', skipped: '已跳过', hidden: '已隐藏', deleted: '已删除' }[q.state]
   return <article className="question-card" aria-label="合成追问" data-question-id={q.id}>
-    <div className="question-meta"><span>{label}{!current && ' · 历史轮次'}</span></div>
+    <div className="question-meta"><span>{label}{!current && ' · 历史轮次'}</span>{q.state === 'deleted' && <span>问题版本 {q.version}</span>}</div>
     {q.state !== 'hidden' && q.state !== 'deleted' && <p>{q.content}</p>}
     {answerable && <label className="question-choice"><input type="checkbox" checked={selected} disabled={disabled} onChange={onSelect} />将我的下一条回答关联到这题</label>}
     {answerable && onAnswer && <button type="button" className="answer-question" disabled={disabled || editing} onClick={onAnswer}>回答这题</button>}
