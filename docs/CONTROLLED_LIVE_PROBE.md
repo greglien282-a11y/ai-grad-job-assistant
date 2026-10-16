@@ -50,6 +50,8 @@
 
 ## 4. 一次性本机配置（未来人工操作）
 
+更新：本机 DB 初始化优先使用[Windows Credential Manager 初始化工具](PROBE_DATABASE_INITIALIZATION.md)，不再要求负责人记住两份密码或将新密码写入 database_url JSON。工具只创建专库/受限角色，不迁移、不授权。下方手工 SQL/私有 URL 是历史兼容说明；新的默认方案采用固定 DB SecretRef、role、revision，后续 setup/管理/运行脚本均支持，具体格式和恢复边界见新文档。任何执行仍需代码审查及单独授权。
+
 先取得代码审查通过及明确的账户/Key本机配置授权。无需新增系统软件；使用已有PostgreSQL16和Python3.12。下述DB/角色/凭据配置均须负责人另行确认后手动执行，本PR没有执行。
 
 1. 在受控本机目录（例如 `%LOCALAPPDATA%\PathwiseProbe`）保存私有DB配置/审批原件。移除目录继承权限，仅当前操作者可读写；不在仓库、同步共享目录、命令行URL或前端保存秘密。不把管理配置交给运行进程。API Key不进入任何JSON配置。

@@ -16,6 +16,7 @@ from app.deepseek_bridge import synthetic_request
 from app.deepseek_contract import ProbeError
 from app.probe_estimate import estimate
 from app.probe_preview import operator_preview_store
+from app.probe_db_credentials import credential_engine
 
 
 def confirmation(phrase):
@@ -37,11 +38,18 @@ def main():
     engine=None
     try:
         config=json.loads(Path(args.config).read_text(encoding='utf-8-sig'))
-        if set(config)!={'database_url','ledger_id'}:raise ProbeError('controlled_config_invalid')
-        url=make_url(config['database_url'])
-        if url.drivername!='postgresql+psycopg' or url.host not in ('localhost','127.0.0.1') or (url.port or 5432)!=5432 or url.database!='pathwise_probe' or url.query:
-            raise ProbeError('controlled_live_database_required')
-        engine=create_engine(url,hide_parameters=True,echo=False)
+        if set(config)=={'database_credential','ledger_id'}:
+            owner=args.command in ('authorize','revoke','reconcile','close-unsent')
+            engine=credential_engine(config['database_credential'],
+                expected_role='pathwise_probe_owner' if owner else 'pathwise_probe_runner')
+        elif set(config)=={'database_url','ledger_id'}:
+            # Existing protected operator configs remain readable. New setup
+            # uses Credential Manager references, never password-bearing JSON.
+            url=make_url(config['database_url'])
+            if url.drivername!='postgresql+psycopg' or url.host not in ('localhost','127.0.0.1') or (url.port or 5432)!=5432 or url.database!='pathwise_probe' or url.query:
+                raise ProbeError('controlled_live_database_required')
+            engine=create_engine(url,hide_parameters=True,echo=False)
+        else:raise ProbeError('controlled_config_invalid')
         control=ExperimentControl(engine,'public',config['ledger_id'])
         if args.command in ('authorize','revoke','reconcile','close-unsent'):
             admin=ExperimentAdmin(sessionmaker(engine,expire_on_commit=False))

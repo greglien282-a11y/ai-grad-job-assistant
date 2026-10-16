@@ -1,0 +1,19 @@
+{
+  "mode": "windows_native_public_fake_database_credentials",
+  "passed": true,
+  "cleanup_verified": true,
+  "database_connections": 0,
+  "real_administrator_reads": 0,
+  "production_credential_accesses": 0,
+  "provider_requests": 0,
+  "native_write_read": true,
+  "metadata_and_revision_binding": true,
+  "overwrite_refused": true,
+  "native_mutex_acquired": true,
+  "verified_on": "2026-10-15T17:04:11.214702+00:00",
+  "scope": "Two owned random native-test targets; exact production REFS replaced only inside isolated test process; publicly fake values; socket/DNS traps; native named mutex; finally deleted and verified absent. No enumeration.",
+  "source_sha256": {
+    "apps/api/app/probe_db_credentials.py": "0032416a6dc1bcbc8a32fc8786f0589e23b0dd60e6c096d2a2e427556457ca5e",
+    "apps/api/app/probe_db_bootstrap.py": "9f6805c228b246fdbed894def074a22e9adfe314e6f777dd75adc99c2f54ec34"
+  }
+}
