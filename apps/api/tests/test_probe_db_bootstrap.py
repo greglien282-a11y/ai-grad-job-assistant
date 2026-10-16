@@ -273,7 +273,10 @@ def test_lazy_engine_and_role_binding(monkeypatch):
     monkeypatch.setattr(cred,'connect_local',fn)
     cred.credential_engine(metadata(cred.ROLES[1]),expected_role=cred.ROLES[1])
     vault.read.assert_not_called()
-    assert created.call_args.args == ('postgresql+psycopg://',)
+    url=created.call_args.args[0]
+    assert (url.drivername,url.username,url.host,url.port,url.database)==(
+        'postgresql+psycopg',cred.ROLES[1],'127.0.0.1',5432,'pathwise_probe')
+    assert url.password is None and not url.query
     created.call_args.kwargs['creator']()
     vault.read.assert_called_once_with(cred.ROLES[1],123)
     assert fn.call_args.kwargs == {'role':cred.ROLES[1],'password':FAKE,'database':'pathwise_probe'}
