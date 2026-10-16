@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
+      - 'scripts/check_s03b_output_contract.py'
       - 'scripts/run_offline_evaluation.py'
       - 'scripts/check_isolated_migrations.py'
       - 'scripts/controlled_live_probe.py'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
+      - 'scripts/check_s03b_output_contract.py'
       - 'scripts/run_offline_evaluation.py'
       - 'scripts/check_isolated_migrations.py'
       - 'scripts/controlled_live_probe.py'
@@ -70,6 +72,8 @@ jobs:
       - run: python -m pytest -q -ra
       - name: Offline model preparation contracts (no network or keys)
         run: python ../../scripts/check_m12c2_contracts.py
+      - name: S03/b output and versioned prompt contracts (no network or keys)
+        run: python ../../scripts/check_s03b_output_contract.py
       - name: Isolated MOCK evaluation CLI (no vendor HTTP)
         run: python ../../scripts/run_offline_evaluation.py --profile 0 --output ../../mock-evaluation-report.json
 
