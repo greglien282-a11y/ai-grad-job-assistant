@@ -17,7 +17,7 @@ export function FactCard({ fact, index, session, disabled, onMutate }: {
   const history = session.history.filter(item => item.fact_id === fact.id)
   const editConflict = editing && editVersion !== fact.version
   const verificationConflict = verifying && verifyVersion !== fact.version
-  return <article className="card fact-card" aria-label={`事实 ${index}`}>
+  return <article className="card fact-card" data-status={fact.status} aria-label={`事实 ${index}`}>
     <div className="fact-top"><span className="fact-number">{String(index).padStart(2, '0')}</span><span className={`pill ${fact.status}`}>{statusLabels[fact.status]}</span><small>版本 {fact.version}</small></div>
     <h3 className="statement">{fact.statement}</h3>
     {fact.origin === 'ai_extracted' && <p className="fact-origin">{fact.source_kind === 'user_edit' ? '最初由合成流程提取；当前陈述来源为用户编辑。' : '由合成流程引用用户原文整理 · 需用户审核'}</p>}

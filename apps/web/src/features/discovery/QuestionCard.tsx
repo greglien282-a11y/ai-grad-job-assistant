@@ -12,12 +12,12 @@ export function QuestionCard({ question: q, current, selected, disabled, onSelec
     <div className="question-meta"><span>{label}{!current && ' · 历史轮次'}</span><span>问题版本 {q.version}</span></div>
     {q.state !== 'hidden' && q.state !== 'deleted' && <p>{q.content}</p>}
     {answerable && <label className="question-choice"><input type="checkbox" checked={selected} disabled={disabled} onChange={onSelect} />将我的下一条回答关联到这题</label>}
-    {q.state !== 'deleted' && <div className="question-tools">
+    {q.state !== 'deleted' && <details className="question-options"><summary>问题选项 · 跳过、纠正或隐藏</summary><div className="question-tools">
       <button className="secondary" disabled={disabled || editing} onClick={() => { setDraft(q.content ?? ''); setVersion(q.version); setEditing(true) }}>{q.state === 'hidden' ? '显示并纠正' : '纠正问题'}</button>
       <button className="secondary" disabled={disabled || q.state === 'skipped'} onClick={() => void onAction('skip')}>跳过</button>
       <button className="secondary" disabled={disabled || q.state === 'hidden'} onClick={() => void onAction('hide')}>隐藏</button>
       <button className="danger" disabled={disabled} onClick={() => setDeleting(true)}>删除问题</button>
-    </div>}
+    </div></details>}
     {editing && <form onSubmit={async e => { e.preventDefault(); if (!disabled && draft.trim() && version === q.version && await onAction('correct', draft)) setEditing(false) }}>
       <label>纠正后的问题<textarea value={draft} onChange={e => setDraft(e.target.value)} maxLength={500} disabled={disabled} /></label>
       {version !== q.version && <p>问题版本已变化，草稿保留。<button type="button" disabled={disabled} onClick={() => setVersion(q.version)}>我已核对最新问题版本</button></p>}

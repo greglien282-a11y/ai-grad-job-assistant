@@ -8,6 +8,7 @@ it('question selection and cancelled deletion are explicit', async () => {
   render(<QuestionCard question={q} current selected={false} disabled={false} onSelect={onSelect} onAction={onAction} />)
   await userEvent.click(screen.getByRole('checkbox'))
   expect(onSelect).toHaveBeenCalledOnce()
+  await userEvent.click(screen.getByText('问题选项 · 跳过、纠正或隐藏'))
   await userEvent.click(screen.getByRole('button', { name: '删除问题' }))
   await userEvent.click(screen.getByRole('button', { name: '取消删除问题' }))
   expect(onAction).not.toHaveBeenCalled()
@@ -15,6 +16,7 @@ it('question selection and cancelled deletion are explicit', async () => {
 it('retains a correction draft on newer question version until explicit review', async () => {
   const onAction = vi.fn(async () => true), props = { current: true, selected: false, disabled: false, onSelect: vi.fn(), onAction }
   const view = render(<QuestionCard question={q} {...props} />)
+  await userEvent.click(screen.getByText('问题选项 · 跳过、纠正或隐藏'))
   await userEvent.click(screen.getByRole('button', { name: '纠正问题' }))
   fireEvent.change(screen.getByLabelText('纠正后的问题'), { target: { value: 'Synthetic retained question draft' } })
   view.rerender(<QuestionCard question={{ ...q, version: 2, content: 'Synthetic changed by another client?' }} {...props} />)

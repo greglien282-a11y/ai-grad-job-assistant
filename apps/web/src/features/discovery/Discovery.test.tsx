@@ -48,6 +48,44 @@ const posts = (fetcher: ReturnType<typeof setup>['fetcher']) => fetcher.mock.cal
 const waitReady = () => waitFor(() => expect(screen.getByRole('button', { name: '重新读取' })).not.toBeDisabled())
 
 describe('scripted conversation with recorded FastAPI contracts', () => {
+  it('makes association explicit, preserves the answer when clearing, and submits free text without question IDs', async () => {
+    const x = setup();await waitReady()
+    expect(screen.getAllByRole('checkbox').every(box => !(box as HTMLInputElement).checked)).toBe(true)
+    const association = document.getElementById('answer-association')!
+    expect(association).toHaveTextContent('自由补充 · 不绑定问题')
+    await userEvent.click(screen.getAllByRole('checkbox')[0])
+    expect(association).toHaveTextContent(fixtures.initialRun.questions[0].content!)
+    fireEvent.change(screen.getByLabelText('你的回答或自由补充'), { target: { value: 'Synthetic retained free supplement' } })
+    await userEvent.click(screen.getByRole('button', { name: '清除问题关联，作为自由补充' }))
+    expect(screen.getByLabelText('你的回答或自由补充')).toHaveValue('Synthetic retained free supplement')
+    expect(association).toHaveTextContent('自由补充 · 不绑定问题')
+    await userEvent.click(screen.getByRole('button', { name: '保存回答并合成整理' }))
+    await waitFor(() => expect(posts(x.fetcher)).toHaveLength(1))
+    expect(JSON.parse(String(posts(x.fetcher)[0][1]?.body)).answered_question_ids).toBeUndefined()
+  })
+  it('keeps stable fact numbering and edit drafts across confirmation snapshots', async () => {
+    const x = setup('answered');await waitReady()
+    const first = screen.getByRole('article', { name: '事实 1' })
+    await userEvent.click(within(first).getByRole('button', { name: '编辑陈述' }))
+    fireEvent.change(screen.getByLabelText('编辑事实 1'), { target: { value: 'Synthetic retained fact draft' } })
+    // The recorded PATCH returns a snapshot with fact 2 confirmed, fact 1 pending.
+    await userEvent.click(within(screen.getByRole('article', { name: '事实 2' })).getByRole('button', { name: '确认事实' }))
+    await screen.findByRole('heading', { name: '1 条已确认，可以阅读了' })
+    expect(screen.getByLabelText('编辑事实 1')).toHaveValue('Synthetic retained fact draft')
+    expect(within(screen.getByRole('region', { name: '候选事实审核' })).getAllByRole('article')[0]).toHaveAccessibleName('事实 1')
+    expect(posts(x.fetcher)).toHaveLength(0)
+  })
+  it('collapses history without deleting saved answers or question provenance', async () => {
+    setup('answered');await waitReady()
+    const history = screen.getByText('历史描述与回答 1').closest('details')!
+    expect(history).not.toHaveAttribute('open')
+    await userEvent.click(screen.getByText('历史描述与回答 1'))
+    expect(history).toHaveAttribute('open')
+    expect(history).toHaveTextContent(fixtures.initial.turns[0].content)
+    await userEvent.click(screen.getByText('已保存的历史追问 · 2 题'))
+    expect(within(history).getAllByRole('article', { name: '合成追问' })).toHaveLength(2)
+    expect(screen.getByText('已关联 1 个问题')).toBeInTheDocument()
+  })
   it('creates then mines the initial user turn, and labels synthetic mode', async () => {
     const { fetcher } = setup(null)
     await userEvent.type(screen.getByLabelText('描述一段经历'), 'Synthetic project: I built the filter UI.')
@@ -239,6 +277,7 @@ describe('scripted conversation with recorded FastAPI contracts', () => {
     fireEvent.change(screen.getByLabelText('编辑事实 1'), { target: { value: 'Synthetic retained edit draft' } })
     x.conflict();await userEvent.click(within(card).getByRole('button', { name: '保存编辑' }))
     await waitFor(() => expect(screen.getByRole('button', { name: '结束会话' })).toBeDisabled())
+    expect(screen.getByRole('button', { name: '只读恢复最新资料' })).toBeEnabled()
     expect(screen.getByLabelText('编辑事实 1')).toHaveValue('Synthetic retained edit draft')
   })
   it('disabled AI gives manual fallback without fake questions', async () => {
