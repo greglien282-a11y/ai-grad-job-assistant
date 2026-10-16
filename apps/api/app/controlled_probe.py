@@ -183,6 +183,20 @@ class ExperimentControl:
         elif u.database not in ('pathwise_test','pathwise_e2e') or not re.fullmatch('test_(?:eval_)?[a-f0-9]{32}',self.schema):
             raise ProbeError('controlled_test_database_required')
         with self.engine.connect() as conn:
+            database,current_role,login_role,address,port=conn.execute(text(
+                'SELECT current_database(),current_user,session_user,'
+                'host(inet_server_addr()),inet_server_port()')).one()
+            # URL metadata declares intent; independently verify this actual
+            # session on the same Connection used for the privilege check.
+            # This does not attest every future connection in the pool.
+            if (database!=u.database or current_role!=login_role
+                or (u.username is not None and login_role!=u.username)
+                # Offline CI may forward a loopback URL to a container IP/port.
+                # Keep its existing test DB/schema/role isolation; only live
+                # requires this exact server endpoint and fixed LOGIN.
+                or (live and ((address,port)!=('127.0.0.1',5432)
+                    or (u.username,current_role,login_role)!=('pathwise_probe_runner',)*3))):
+                raise ProbeError('controlled_session_identity_mismatch')
             ok=conn.scalar(text('''SELECT current_user=session_user AND NOT
                 (r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolbypassrls
                 OR EXISTS(SELECT 1 FROM pg_auth_members WHERE member=r.oid)

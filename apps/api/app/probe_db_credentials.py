@@ -6,6 +6,7 @@ import logging
 import os
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 import psycopg
 
 ROLES = ('pathwise_probe_owner', 'pathwise_probe_runner')
@@ -174,4 +175,6 @@ def credential_engine(value, *, expected_role):
         finally:
             password = None
     # No secret in SQLAlchemy URL, engine repr, exception args or JSON.
-    return create_engine('postgresql+psycopg://', creator=creator, hide_parameters=True, echo=False)
+    url = URL.create('postgresql+psycopg', username=config['role'],
+        host='127.0.0.1', port=5432, database='pathwise_probe')
+    return create_engine(url, creator=creator, hide_parameters=True, echo=False)
