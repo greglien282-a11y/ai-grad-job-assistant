@@ -22,7 +22,9 @@ ROOT = Path(__file__).resolve().parents[3]
 HISTORICAL_SHA = '5cc2def4f875e43760e799678a43c1f2d2072dd4245eaf54457dfe78ee0b373e'
 TURN = '1144cfca-8c37-5d49-bc83-8f4d45bc266f'
 TEXT = '我实现了本地筛选。'
-PROMPT_VERSION = 's03b-prompt-v2-offline'
+PROMPT_VERSION = 's03b-prompt-v2.1-offline'
+STOP_TURN = '33333333-3333-4333-8333-333333333333'
+STOP_TEXT = '我记不清更多细节，先停止追问。'
 
 
 @dataclass(frozen=True, repr=False)
@@ -53,6 +55,54 @@ def prompt_v2():
 
 def question(text='你本人如何实现本地筛选？', purpose='detail'):
     return dict(text=text, purpose=purpose, source_turn_ids=[TURN])
+
+
+def verification_question():
+    return question('是否有能帮助核对本地筛选实现的材料？没有也可以说明。', 'verification')
+
+
+def stopping_context():
+    """Separate synthetic user-requested stop, never the S03/b first round."""
+    context = json.loads(json.loads(historical_body())['messages'][1]['content'])
+    context['user_turns'] = [dict(context['user_turns'][0], turn_id=STOP_TURN, content=STOP_TEXT)]
+    context['input_turn_id'] = STOP_TURN
+    context['stop']['user_stopped'] = True
+    return MiningContext.model_validate(context)
+
+
+def s03b_gold():
+    dataset = json.loads((ROOT/'docs/evaluation/m12c2-synthetic-cases.json').read_text(encoding='utf-8'))
+    case = next(c for c in dataset['cases'] if c['id']=='S03')
+    return next(s for s in case['steps'] if s.get('turn_key')=='b')
+
+
+def validity_axes(content, context, *, gold=None):
+    """Independent offline checks, not a runtime acceptance rule or quality score.
+
+    Null means not assessed (a prerequisite failed or no applicable rubric).
+    Rubric covers exact gold citations, stop permission and purpose coverage;
+    it cannot prove a question's semantic usefulness. Human grading remains.
+    """
+    axes = dict(schema_valid=False, source_valid=None, rubric_aligned=None)
+    try:
+        parsed = parse_output(content)
+    except ValueError:
+        return axes
+    axes['schema_valid'] = True
+    try:
+        validate_context_v2(context, parsed)
+    except ValueError:
+        axes['source_valid'] = False
+        return axes
+    axes['source_valid'] = True
+    if gold is not None:
+        citations = [dict(quote=c.citation.quote, start=c.citation.start, end=c.citation.end)
+                     for c in parsed.candidates]
+        axes['rubric_aligned'] = (
+            (gold['allow_stop'] or not parsed.stop)
+            and citations == gold['gold_candidates']
+            and set(gold['question_goals']).issubset({q.purpose for q in parsed.questions}))
+    return axes
 
 
 def output(text=TEXT, *, questions=(), stop=True, reason='no_new_information', candidate=True):
@@ -98,12 +148,14 @@ def cases():
             packet = envelope(content if content is not None else canonical(value if value is not None else output()))
         result.append(Case(name, condition, expected, request, canonical(packet).encode('utf-8'), source_kind))
 
-    add('exact_stop', '完整原句、正确UUID、[0,9)、合法停止')
+    add('exact_stop', '完整原句、正确UUID、[0,9)、结构合法但S03/b过早停止')
     continuing = output(questions=[question()], stop=False, reason=None)
     add('exact_continue', '一个完整事实与一个合法追问', value=continuing)
+    add('verification_continue', '完整原文事实与verification追问，符合S03/b金标准',
+        value=output(questions=[verification_question()], stop=False, reason=None))
     add('empty_candidates_continue', '没有候选事实但一个合法追问',
         value=output(candidate=False, questions=[question()], stop=False, reason=None))
-    add('empty_candidates_stop', '无新信息时空候选与合法停止', value=output(candidate=False))
+    add('empty_candidates_stop', '空候选停止结构合法，但没有S03/b停止依据且缺少金标准事实', value=output(candidate=False))
     add('two_questions', '一个事实与两个不重复且有来源的追问', value=output(
         questions=[question(), question('这段筛选逻辑由你独立完成吗？', 'contribution')], stop=False, reason=None))
     add('version_alias', '允许的公开版本标识', packet=envelope(canonical(output()), model=VERSION))
@@ -172,6 +224,7 @@ def cases():
 
 def evaluate():
     rows=[]
+    gold=s03b_gold()
     for case in cases():
         scope='controlled_probe' if case.source_kind=='fixed_s03b' else 'snapshot_source_guard'
         if scope=='controlled_probe':
@@ -192,7 +245,12 @@ def evaluate():
                 actual='source_guard_validated'
             except ValueError:
                 actual='source_guard_rejected'
+        packet=json.loads(case.response_body)
+        context=MiningContext.model_validate_json(json.loads(case.request_body)['messages'][1]['content'])
+        axes=validity_axes(packet['choices'][0]['message']['content'], context,
+                           gold=gold if scope=='controlled_probe' else None)
         rows.append(dict(case=case.name, input_condition=case.condition, source_kind=case.source_kind,
+            **axes,
             validation_scope=scope,
             code_origin='runtime_response_validator' if scope=='controlled_probe' else 'offline_snapshot_audit_label',
             full_response_validated=actual=='controlled_validated',
@@ -202,6 +260,8 @@ def evaluate():
     draft=prompt_v2()
     return dict(mode='offline_synthetic_contract_only', historical_request_sha=HISTORICAL_SHA,
         prompt_version=draft.version, draft_request_sha=draft.sha, historical_request_changed=False,
+        s03b_gold=gold, rubric_scope='exact_gold_citations_stop_permission_question_purpose_coverage_not_semantic_quality',
+        null_axis_means='not_assessed', s03b_is_in_prompt_example=True, generalization_evaluated=False,
         real_provider_requests=0, credentials_accessed=False, actual_model_quality=None,
         supplier_latency_ms=None, actual_cost_cny=None, fixture_usage_is_measured=False,
         cases=rows, all_expectations_met=all(r['expectation_met'] for r in rows))
@@ -223,7 +283,7 @@ def length_analysis(archive_path):
     samples={
         'empty_stop':output(candidate=False),
         'one_fact_stop':output(),
-        'one_fact_one_question':output(questions=[question()],stop=False,reason=None),
+        'one_fact_one_question':output(questions=[verification_question()],stop=False,reason=None),
         'one_fact_two_questions':output(questions=[question(),question('其中你本人完成了什么？','contribution')],stop=False,reason=None),
         'schema_length_boundary_not_quality':output(questions=[
             question('请说明'+('你本人实际完成的步骤和限制。'*25)),
@@ -237,6 +297,7 @@ def length_analysis(archive_path):
         ctx=MiningContext.model_validate_json(json.loads(historical_body())['messages'][1]['content'])
         validate_context_v2(ctx,parse_output(compact.decode('utf-8')))
         measured[name]=dict(utf8_bytes=len(compact), unicode_characters=len(compact.decode('utf-8')),
+            **validity_axes(compact.decode('utf-8'),ctx,gold=s03b_gold()),
             estimated_output_tokens=count_json(tokenizer,compact),
             pretty_json_estimated_tokens=count_json(tokenizer,json.dumps(value,ensure_ascii=False,indent=2).encode('utf-8')))
     return dict(status='LOCAL_ESTIMATE_NOT_VENDOR_MEASUREMENT', tokenizer_archive_sha=TOKENIZER_ARCHIVE_SHA,

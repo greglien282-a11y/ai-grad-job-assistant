@@ -17,7 +17,8 @@ from app.deepseek_contract import FAKE_SECRET, ProbeError
 from app.mining_context import MiningContext
 from app.model_adapter import parse_output
 from app.offline_output_contract import (HISTORICAL_SHA, PROMPT_VERSION, TEXT, TURN,
-    ROOT, cases, envelope, evaluate, historical_body, length_analysis, output, prompt_v2)
+    ROOT, STOP_TEXT, STOP_TURN, cases, envelope, evaluate, historical_body, length_analysis,
+    output, prompt_v2, s03b_gold, stopping_context, validity_axes, verification_question)
 from test_controlled_probe import experiment, run
 from test_cost_ledger import ledger_stack
 from test_deepseek_bridge import role_capability
@@ -67,13 +68,68 @@ def test_new_prompt_is_versioned_and_legacy_bytes_are_unchanged():
     with pytest.raises(ProbeError,match='controlled_request_changed'):verify_bytes(draft.body)
 
 
-@pytest.mark.parametrize('example_index',[0,1])
-def test_both_complete_prompt_examples_pass_existing_chain(example_index):
+def prompt_examples():
     prompt=(ROOT/'docs/evaluation/s03b-prompt-v2.txt').read_text(encoding='utf-8')
     examples=[json.loads(line) for line in prompt.splitlines() if line.startswith('{')]
     assert len(examples)==2
-    diagnostic,preview=validate_response(json.dumps(envelope(json.dumps(examples[example_index]))).encode(),prompt_v2().body)
-    assert diagnostic['validated'] and preview==examples[example_index]
+    return prompt,examples
+
+
+def test_s03b_prompt_example_passes_chain_and_gold_rubric():
+    _,examples=prompt_examples()
+    value=examples[0]
+    assert value==output(questions=[verification_question()],stop=False,reason=None)
+    diagnostic,preview=validate_response(json.dumps(envelope(json.dumps(value))).encode(),prompt_v2().body)
+    assert diagnostic['validated'] and preview==value
+    ctx=MiningContext.model_validate_json(json.loads(historical_body())['messages'][1]['content'])
+    assert validity_axes(json.dumps(value),ctx,gold=s03b_gold())==dict(
+        schema_valid=True,source_valid=True,rubric_aligned=True)
+
+
+def test_stop_example_is_independent_user_requested_stop_not_s03b():
+    prompt,examples=prompt_examples()
+    ctx=stopping_context()
+    assert STOP_TEXT!=TEXT and STOP_TURN!=TURN and STOP_TEXT in prompt and STOP_TURN in prompt
+    assert ctx.stop.user_stopped and not ctx.stop.session_ended
+    assert str(ctx.input_turn_id)==STOP_TURN and ctx.user_turns[0].content==STOP_TEXT
+    assert examples[1]==output(candidate=False,reason='user_uncertain')
+    assert validity_axes(json.dumps(examples[1]),ctx)==dict(
+        schema_valid=True,source_valid=True,rubric_aligned=None)
+
+
+@pytest.mark.parametrize('name',['exact_stop','exact_continue','empty_candidates_stop',
+                                'empty_candidates_continue','two_questions'])
+def test_schema_and_source_success_cannot_mask_s03b_rubric_failure(name,matrix_report):
+    gold=s03b_gold()
+    assert gold['allow_stop'] is False and gold['question_goals']==['verification']
+    row=next(r for r in matrix_report['cases'] if r['case']==name)
+    assert row['full_response_validated'] and row['schema_valid'] and row['source_valid']
+    assert row['rubric_aligned'] is False
+
+
+@pytest.mark.parametrize('name,axes',[
+    ('verification_continue',(True,True,True)),
+    ('missing_stop_reason',(False,None,None)),
+    ('rewritten_quote',(True,False,None)),
+    ('negative_preserved',(True,True,None)),
+    ('bad_usage_total',(True,True,False)),
+])
+def test_report_separates_schema_source_rubric_and_transport(name,axes,matrix_report):
+    row=next(r for r in matrix_report['cases'] if r['case']==name)
+    assert tuple(row[k] for k in ('schema_valid','source_valid','rubric_aligned'))==axes
+
+
+def test_verification_purpose_alone_cannot_replace_gold_fact():
+    ctx=MiningContext.model_validate_json(json.loads(historical_body())['messages'][1]['content'])
+    value=output(candidate=False,questions=[verification_question()],stop=False,reason=None)
+    assert validity_axes(json.dumps(value),ctx,gold=s03b_gold())==dict(
+        schema_valid=True,source_valid=True,rubric_aligned=False)
+
+
+def test_in_prompt_input_is_not_claimed_as_held_out_generalization(matrix_report):
+    assert matrix_report['s03b_is_in_prompt_example'] is True
+    assert matrix_report['generalization_evaluated'] is False
+    assert matrix_report['actual_model_quality'] is None
 
 
 def test_new_prompt_and_supplemental_inputs_cannot_enter_existing_http_gate():
@@ -86,7 +142,8 @@ def test_new_prompt_and_supplemental_inputs_cannot_enter_existing_http_gate():
     assert forbidden==[]
 
 
-@pytest.mark.parametrize('name',['exact_continue','empty_candidates_continue','missing_stop_reason','rewritten_quote','stop_with_questions'])
+@pytest.mark.parametrize('name',['exact_continue','verification_continue','empty_candidates_continue',
+                                'missing_stop_reason','rewritten_quote','stop_with_questions'])
 def test_original_probe_http_and_postgres_still_enforce_contract(experiment,name):
     case=next(c for c in cases() if c.name==name)
     calls=[]
@@ -120,6 +177,8 @@ def test_report_reproduction_and_unknown_real_metrics():
 
 
 def test_pure_matrix_cannot_read_private_files_credentials_db_or_network():
+    # Load package metadata before restricting audit file reads. No connection.
+    import psycopg
     original=Path.read_text
     allowed={'m12c2-synthetic-cases.json','provider-wire-output.schema.json',
              'm12c2-profile-drafts.json','s03b-prompt-v2.txt'}
@@ -128,7 +187,7 @@ def test_pure_matrix_cannot_read_private_files_credentials_db_or_network():
         assert path.name in allowed
         return original(path,*args,**kwargs)
     with patch.object(Path,'read_text',public_text), \
-         patch('psycopg.connect',side_effect=AssertionError('DB forbidden')), \
+         patch.object(psycopg,'connect',side_effect=AssertionError('DB forbidden')), \
          patch('sqlalchemy.create_engine',side_effect=AssertionError('engine forbidden')), \
          patch.object(ctypes,'WinDLL',side_effect=AssertionError('native credential API forbidden'),create=True), \
          patch('socket.create_connection',side_effect=AssertionError('socket forbidden')), \
