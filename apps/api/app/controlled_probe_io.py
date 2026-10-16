@@ -8,6 +8,7 @@ from ctypes import wintypes
 import json
 import logging
 import os
+import re
 import ssl
 import sys
 
@@ -36,6 +37,12 @@ class WindowsCredentialSecret:
     """Current Windows user's Credential Manager; never environment or .env."""
     def resolve(self, policy):
         if os.name!='nt':raise ProbeError('controlled_windows_required')
+        account=getattr(policy,'account_ref',None)
+        revision=getattr(policy,'secret_revision',None)
+        if (not isinstance(account,str) or not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}',account)
+            or getattr(policy,'secret_ref',None)!='Pathwise/DeepSeek/'+account
+            or type(revision) is not int or revision<=0):
+            raise ProbeError('controlled_secret_binding_changed')
         class Credential(ctypes.Structure):
             _fields_=[('Flags',wintypes.DWORD),('Type',wintypes.DWORD),('TargetName',wintypes.LPWSTR),
                 ('Comment',wintypes.LPWSTR),('LastWritten',wintypes.FILETIME),('CredentialBlobSize',wintypes.DWORD),
@@ -47,21 +54,32 @@ class WindowsCredentialSecret:
         api.CredReadW.restype=wintypes.BOOL
         api.CredFree.argtypes=[ctypes.c_void_p]
         ptr=ctypes.POINTER(Credential)()
-        if not api.CredReadW(policy.secret_ref,1,0,ctypes.byref(ptr)):
-            raise ProbeError('controlled_secret_unavailable')
         try:
+            if not api.CredReadW(policy.secret_ref,1,0,ctypes.byref(ptr)):
+                raise ProbeError('controlled_secret_unavailable')
+            if not ptr:raise ProbeError('controlled_secret_binding_changed')
             c=ptr.contents
             revision=(c.LastWritten.dwHighDateTime<<32)|c.LastWritten.dwLowDateTime
-            if (c.TargetName!=policy.secret_ref or c.UserName!=policy.account_ref or revision!=policy.secret_revision
-                    or not 8<=c.CredentialBlobSize<=2048):raise ProbeError('controlled_secret_binding_changed')
+            if (c.Type!=1 or c.TargetName!=policy.secret_ref or c.UserName!=policy.account_ref
+                or revision!=policy.secret_revision or not c.CredentialBlob
+                or not 16<=c.CredentialBlobSize<=2048 or c.CredentialBlobSize%2):
+                raise ProbeError('controlled_secret_binding_changed')
             key=ctypes.string_at(c.CredentialBlob,c.CredentialBlobSize).decode('utf-16-le')
-            if not key.isascii() or any(ord(ch)<=32 or ord(ch)>=127 for ch in key):
+            if not 8<=len(key)<=1024 or not key.isascii() or any(ord(ch)<=32 or ord(ch)>=127 for ch in key):
                 raise ProbeError('controlled_secret_invalid')
             return key
+        except ProbeError:raise
+        except Exception:
+            raise ProbeError('controlled_secret_invalid') from None
         finally:
             if ptr:
-                if ptr.contents.CredentialBlob:ctypes.memset(ptr.contents.CredentialBlob,0,ptr.contents.CredentialBlobSize)
-                api.CredFree(ptr)
+                try:
+                    try:
+                        if ptr.contents.CredentialBlob:
+                            ctypes.memset(ptr.contents.CredentialBlob,0,ptr.contents.CredentialBlobSize)
+                    finally:api.CredFree(ptr)
+                except Exception:
+                    raise ProbeError('controlled_secret_cleanup_failed') from None
 
 
 class FakeExperimentSecret:

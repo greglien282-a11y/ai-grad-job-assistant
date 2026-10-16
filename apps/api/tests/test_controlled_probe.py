@@ -360,7 +360,7 @@ def test_windows_secret_protocol_with_fake_native_memory_only(mismatch):
     class Read:
         def __call__(self,target,kind,flags,output):
             struct=self.argtypes[-1]._type_._type_
-            c=struct();c.TargetName=p.secret_ref if mismatch!='target' else 'other'
+            c=struct();c.Type=1;c.TargetName=p.secret_ref if mismatch!='target' else 'other'
             c.UserName=p.account_ref if mismatch!='account' else 'other'
             c.LastWritten.dwHighDateTime=1;c.LastWritten.dwLowDateTime=2 if mismatch!='revision' else 3
             raw=FAKE_SECRET.encode('utf-16-le');blob=(ctypes.c_byte*len(raw)).from_buffer_copy(raw)
