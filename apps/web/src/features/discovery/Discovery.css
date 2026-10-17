@@ -130,6 +130,14 @@
 .result-disclaimer { font-size:14px!important; }
 .saved-description>summary { min-height:44px; padding:10px 0; cursor:pointer; color:#adb9d0; }
 .answer-question { width:100%; margin:0 0 4px; }
+.interaction-state { border-left:3px solid #a899e4; background:#20263b; padding:14px 16px; border-radius:8px; margin:16px 0; }
+.interaction-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+.interaction-heading h3 { margin:0; }
+.interaction-heading span { font-size:14px; color:#b8b0d7; }
+.interaction-state p { margin:8px 0 0; }
+.interaction-state .interaction-next { color:#ddd8ed; }
+.interaction-state button { margin-top:12px; }
+.interaction-state[data-state=unknown],.interaction-state[data-state=conflict],.interaction-state[data-state=stale],.interaction-state[data-state=failed],.interaction-state[data-state=recovery_required] { border-color:#e9ba86; }
 .discovery .conversation-panel,.discovery .fact-review-panel { overflow-wrap:anywhere; }
 .discovery button:focus-visible,.discovery summary:focus-visible,.discovery a:focus-visible { outline:2px solid #c6b7ff; outline-offset:3px; }
 @container(max-width:720px) {
