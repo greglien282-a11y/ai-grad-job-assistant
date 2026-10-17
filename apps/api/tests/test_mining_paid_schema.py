@@ -25,6 +25,7 @@ from app.mining_paid_models import MiningPaidIdentity, MiningPaidLimit, MiningPa
 TABLES=('mining_paid_identities','mining_paid_limits','mining_paid_plans','mining_paid_bindings')
 OLD='0010_response_diagnostics'
 NEW='0011_mining_paid_metadata'
+HEAD='0012_request_manifest'
 
 
 def candidate(e, run=None, plan_changes=None):
@@ -62,7 +63,7 @@ def migration_config(e, conn):
 
 def test_candidate_head_empty_roundtrip_and_no_authority(migrated_connection):
     conn,cfg=migrated_connection
-    assert ScriptDirectory.from_config(cfg).get_current_head()==NEW
+    assert ScriptDirectory.from_config(cfg).get_current_head()==HEAD
     funding=conn.execute(text('SELECT * FROM paid_funding')).one()
     assert funding.ceiling==funding.held==funding.spent==0 and not funding.frozen
     for t in (*TABLES,'paid_grants','paid_scopes','paid_calls','paid_audit','controlled_probe'):
@@ -71,7 +72,7 @@ def test_candidate_head_empty_roundtrip_and_no_authority(migrated_connection):
     command.check(cfg);conn.commit()
     command.downgrade(cfg,OLD);conn.commit()
     assert not set(TABLES).intersection(inspect(conn).get_table_names());conn.commit()
-    command.upgrade(cfg,NEW);conn.commit();command.check(cfg)
+    command.upgrade(cfg,'head');conn.commit();command.check(cfg)
     assert conn.execute(text('SELECT * FROM paid_funding')).one()==funding
 
 
@@ -146,7 +147,7 @@ def test_any_candidate_record_blocks_dangerous_downgrade(binding,table):
         cfg=migration_config(e,conn)
         with pytest.raises(RuntimeError,match='mining_paid_nonempty_downgrade_blocked'):
             with conn.begin(): command.downgrade(cfg,OLD)
-        assert conn.scalar(text('SELECT version_num FROM alembic_version'))==NEW
+        assert conn.scalar(text('SELECT version_num FROM alembic_version'))==HEAD
         assert set(TABLES).issubset(inspect(conn).get_table_names())
 
 
@@ -235,7 +236,7 @@ def test_failed_upgrade_rolls_back_tables_functions_triggers_and_version(migrate
     assert not set(TABLES).intersection(inspect(conn).get_table_names())
     assert conn.scalar(text("SELECT count(*) FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND proname LIKE 'mining_paid_%'"))==0
     assert conn.execute(text('SELECT * FROM paid_funding')).one()==before
-    conn.commit();command.upgrade(cfg,NEW);conn.commit();command.check(cfg)
+    conn.commit();command.upgrade(cfg,'head');conn.commit();command.check(cfg)
 
 
 def test_default_privilege_grants_do_not_leak_to_candidate(binding):
@@ -310,7 +311,7 @@ def test_plan_cannot_forge_root_receipt_ledger_or_account(binding,field,code):
 def test_busy_migration_stops_without_partial_schema(api,migrated_connection,direction):
     _,factory=api;conn,cfg=migrated_connection
     if direction=='upgrade': command.downgrade(cfg,OLD);conn.commit()
-    version=OLD if direction=='upgrade' else NEW
+    version=OLD if direction=='upgrade' else HEAD
     with factory.kw['bind'].begin() as busy:
         busy.execute(text('SELECT * FROM paid_funding FOR UPDATE'))
         with pytest.raises(DBAPIError,match='could not obtain lock'):

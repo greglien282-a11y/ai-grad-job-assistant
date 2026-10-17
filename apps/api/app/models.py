@@ -320,3 +320,4 @@ class ProbeAttempt(Record, Base):
 from app import paid_models  # noqa: E402,F401
 from app import controlled_probe_models  # noqa: E402,F401
 from app import mining_paid_models  # noqa: E402,F401
+from app import request_manifest_models  # noqa: E402,F401
