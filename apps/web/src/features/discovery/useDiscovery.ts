@@ -4,6 +4,7 @@ import { checkBody, clearPending, newPending, readPending, storePending, type Pe
 import { createMiningApi, type Summary } from '../../lib/mining'
 import { clearMining, newMining, originalBody, readMining, storeMining, verifyMining, type PendingMining } from '../../lib/pending-mining'
 import type { MiningBody, MiningRun, Question, QuestionAction } from '../../lib/mining-contract'
+import type { RequestPhase } from './interactionState'
 
 export function useDiscovery(api: ExperienceApi) {
   const apiRef = useRef(api), mineRef = useRef(createMiningApi(api))
@@ -16,11 +17,14 @@ export function useDiscovery(api: ExperienceApi) {
   const [mining, setMining] = useState(readMining)
   const [createNotFound, setCreateNotFound] = useState(false), [miningNotFound, setMiningNotFound] = useState(false)
   const [busy, setBusy] = useState(false), [needsReload, setNeedsReload] = useState(false)
+  const [phase, setPhase] = useState<RequestPhase>('idle')
+  const [failureCode, setFailureCode] = useState<string | null>(null)
   const [error, setError] = useState(creation.error || mining.error), [notice, setNotice] = useState('')
   const locked = useRef(false)
   function ensureWrite() {
     if (needsReload || mining.error || creation.error) throw new Error('请先恢复并核对最新资料，写入已暂停。')
     if (session?.status === 'ended') throw new Error('会话已结束，资料只读。')
+    if (['reserved', 'running', 'unknown'].includes(session?.mining_runs?.at(-1)?.state ?? '')) throw new Error('本轮结果尚未确定，请先只读查询；不会重新提交或推理。')
   }
   async function load(c = credentials, active = () => true) {
     if (!c) return
@@ -58,24 +62,27 @@ export function useDiscovery(api: ExperienceApi) {
   async function acceptRun(c: Credentials, p: PendingMining, result: MiningRun) {
     if (result.session_id !== c.sessionId || result.project_id !== p.project_id) throw new Error('恢复资料归属不一致。')
     await load(c)
-    if (!['running', 'reserved'].includes(result.state)) {
-      clearMining(); setMining({ value: null, error: '' }); setMiningNotFound(false); setAnswer(''); setSelected([])
-      setNotice(result.state === 'completed' ? '回答已保存，候选事实仍需你逐条核对。' : '回答已保存，本轮整理未完成。可以查看原回答，并明确选择重新整理；不会自动执行。')
-    } else setNotice('回答已保存，合成整理仍在运行。请查询状态，不要再次提交。')
+    if (!['running', 'reserved', 'unknown'].includes(result.state)) {
+      clearMining(); setMining({ value: null, error: '' }); setMiningNotFound(false)
+      if (p.mode === 'answer') { setAnswer(''); setSelected([]) }
+      setNotice(result.state === 'completed' ? '本轮整理记录已读取，请核对实际候选事实和问题。' : '回答已保存，本轮整理未完成。可以查看原回答，并明确选择重新整理；不会自动执行。')
+    } else setNotice(result.state === 'unknown' ? '本轮结果不确定，保留原操作记录；只能先只读查询，不会重新推理。' : '回答已保存，合成整理仍在运行。请查询状态，不要再次提交。')
   }
   async function recoverMine(c = credentials, p = mining.value) {
     if (!c || !p) return
     if (c.sessionId !== p.sessionId) throw new Error('暂存操作与会话不一致，已停止恢复。')
+    setPhase('recovering')
     try { await acceptRun(c, p, await mineRef.current.recover(c, p.key)) }
     catch (cause) {
       if (cause instanceof ApiError && cause.code === 'mining_operation_not_found') setMiningNotFound(true)
       throw cause
     }
+    finally { setPhase('idle') }
   }
   useEffect(() => {
     let active = true
     async function boot() {
-      locked.current = true; setBusy(true)
+      locked.current = true; setBusy(true); setPhase('reading')
       let loaded = false
       try {
         let c = credentials
@@ -90,16 +97,17 @@ export function useDiscovery(api: ExperienceApi) {
         const absent = !credentials && creation.value && !creation.error && Date.now() < creation.value.expiresAt && cause instanceof ApiError && cause.status === 404 && cause.code === 'idempotency_creation_not_found'
         setNeedsReload(!(absent || (loaded && cause instanceof ApiError && cause.code === 'mining_operation_not_found')))
         setError(cause instanceof Error ? cause.message : '恢复失败，请只读查询。')
-      } finally { if (active) { locked.current = false; setBusy(false) } }
+      } finally { if (active) { locked.current = false; setBusy(false); setPhase('idle') } }
     }
     void boot()
     return () => { active = false }
   }, [])
   async function act(work: () => Promise<void>) {
     if (locked.current) return false
-    locked.current = true; setBusy(true); setError(''); setNotice('')
+    locked.current = true; setBusy(true); setError(''); setNotice(''); setFailureCode(null)
     try { await work(); return true }
     catch (cause) {
+      if (cause instanceof ApiError) setFailureCode(cause.code)
       if (cause instanceof ApiError && ['ai_disabled', 'ai_provider_unapproved'].includes(cause.code)) {
         setError('合成挖掘未启用。真实模型尚未接入；原始经历已保存，可使用手工工作台继续。')
       } else if (cause instanceof ApiError && cause.code === 'idempotency_payload_mismatch') {
@@ -107,13 +115,16 @@ export function useDiscovery(api: ExperienceApi) {
       } else {
         if (credentials) {
           setNeedsReload(true)
-          try { await load(); setNotice('已读取当前资料，请核对操作是否保存。未保存输入保留，不会自动覆盖或重发。') }
+          try {
+            await load(); setNotice('已读取当前资料，请核对操作是否保存。未保存输入保留，不会自动覆盖或重发。')
+            if (cause instanceof ApiError && ['context_conflict', 'version_conflict'].includes(cause.code)) setNeedsReload(true)
+          }
           catch { setNotice('最新资料读取失败。请先重新读取，结束、删除和复制已暂停。') }
         }
         setError(cause instanceof Error ? cause.message : '请求结果不确定，请只读查询。')
       }
       return false
-    } finally { locked.current = false; setBusy(false) }
+    } finally { locked.current = false; setBusy(false); setPhase('idle') }
   }
   function body(data: ExperienceSession, opts: Partial<MiningBody>): MiningBody {
     return { project_id: data.projects[0].id, base_revision: data.context_revision!, content: null, input_turn_id: null, retry_of: null, confirm_retry: false, ...opts }
@@ -122,7 +133,12 @@ export function useDiscovery(api: ExperienceApi) {
     const record = p ?? await newMining(c, payload)
     await verifyMining(c, record, payload)
     storeMining(record); setMining({ value: record, error: '' }); setMiningNotFound(false)
-    try { await acceptRun(c, record, await mineRef.current.start(c, payload, record.key)) }
+    setPhase('submitting')
+    try {
+      const result = await mineRef.current.start(c, payload, record.key)
+      setPhase('reading')
+      await acceptRun(c, record, result)
+    }
     catch (cause) {
       if (cause instanceof ApiError && ['ai_disabled', 'ai_provider_unapproved'].includes(cause.code)) {
         clearMining(); setMining({ value: null, error: '' }); throw cause
@@ -130,6 +146,7 @@ export function useDiscovery(api: ExperienceApi) {
       // POST uncertainty is reconciled only with a GET; never another inference/write.
       try { await recoverMine(c, record) } catch { throw cause }
     }
+    finally { setPhase('idle') }
   }
   async function create() {
     if (needsReload || creation.error || mining.error) throw new Error('暂存异常，请先核对恢复记录。')
@@ -154,6 +171,7 @@ export function useDiscovery(api: ExperienceApi) {
   async function submitAnswer() {
     ensureWrite()
     if (!credentials || !session) return
+    if (!mining.value && ['failed', 'stale'].includes(session.mining_runs?.at(-1)?.state ?? '')) throw new Error('本轮未完成，请先核对；重新整理已保存回答必须明确确认。')
     if (mining.value) {
       if (!miningNotFound) throw new Error('请先查询上次结果，不会重复写入回答。')
       await send(credentials, originalBody(mining.value, answer), mining.value)
@@ -165,9 +183,12 @@ export function useDiscovery(api: ExperienceApi) {
     await send(credentials, body(session, { retry_of: run.id, confirm_retry: true }))
   }
   async function refresh() {
-    if (!credentials) {
-      if (creation.value) { const c = adopt(await recoverCreation(creation.value), creation.value); await load(c) }
-    } else { await load(); if (mining.value) await recoverMine() }
+    setPhase('reading')
+    try {
+      if (!credentials) {
+        if (creation.value) { const c = adopt(await recoverCreation(creation.value), creation.value); await load(c) }
+      } else { await load(); if (mining.value) await recoverMine() }
+    } finally { setPhase('idle') }
   }
   async function mutate(fact: Fact, mutation: Mutation) {
     ensureWrite()
@@ -181,11 +202,12 @@ export function useDiscovery(api: ExperienceApi) {
     setSelected(ids => ids.filter(id => id !== q.id)); await load()
   }
   async function manage(action: 'stop' | 'end' | 'delete') {
-    if (!credentials || !session || needsReload || mining.value || mining.error || creation.error) return
+    if (!credentials || !session || needsReload || mining.value || mining.error || creation.error || ['reserved', 'running', 'unknown'].includes(session.mining_runs?.at(-1)?.state ?? '')) return
     if (action === 'delete') {
       await apiRef.current.remove(credentials)
       clearMining(); clearPending(); sessionStorage.removeItem(SESSION_KEY)
       setCredentials(null); setSession(null); setSummary(null); setNotice('会话及业务资料已删除。')
+      setAnswer(''); setSelected([])
     } else {
       if (action === 'stop') await mineRef.current.stop(credentials, session.context_revision!)
       else await apiRef.current.end(credentials)
@@ -197,7 +219,7 @@ export function useDiscovery(api: ExperienceApi) {
     clearMining(); setMining({ value: null, error: '' }); setMiningNotFound(false)
     setNotice('已明确清除本页操作记录；没有删除已保存回答，也不会自动提交。')
   }
-  return { credentials, session, summary, raw, setRaw, answer, setAnswer, selected, setSelected, busy, needsReload, error, notice,
+  return { credentials, session, summary, raw, setRaw, answer, setAnswer, selected, setSelected, busy, phase, failureCode, needsReload, error, notice,
     creation, createNotFound, mining, miningNotFound, act, create, refresh, startInitial, submitAnswer, retrySaved, mutate, question, manage, abandon,
     api: apiRef.current }
 }

@@ -151,5 +151,7 @@ jobs:
             apps/web/test-results/**/discovery_desktop.png
             apps/web/test-results/**/discovery_mobile.png
             apps/web/test-results/**/discovery_zoom.png
+            apps/web/test-results/**/review02_*.png
+            apps/web/test-results/**/lifecycle_*.png
           if-no-files-found: ignore
           retention-days: 7
