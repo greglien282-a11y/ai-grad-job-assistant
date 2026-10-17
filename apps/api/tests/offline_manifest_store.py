@@ -36,7 +36,8 @@ def install(db):
 
 def put(db,current,prepared,*,crash_at=None):
     guard(db)
-    db.scalar(select(ExperienceSession).where(ExperienceSession.id==current.session_id).with_for_update())
+    db.scalar(select(ExperienceSession).where(ExperienceSession.id==current.session_id)
+        .with_for_update().execution_options(populate_existing=True))
     prior=db.get(RequestManifest,current.run_id)
     row=persist_metadata(db,current,prepared)
     body=db.scalar(text('SELECT body FROM test_synthetic_request_bodies WHERE run_id=:r'),{'r':row.run_id})
@@ -56,16 +57,21 @@ def recover(db,sid,token,rid,root,operation):
     Session SHARE -> Run SHARE -> Manifest SHARE serializes with deletion.
     Returned memory is a point-in-time copy, not revocable future dispatch power.
     """
+    # SELECT ORM queries would otherwise autoflush an unrelated dirty caller.
+    if db.new or db.dirty or db.deleted: raise ManifestError('manifest_unavailable')
     guard(db)
-    session=db.scalar(select(ExperienceSession).where(ExperienceSession.id==sid).with_for_update(read=True))
+    session=db.scalar(select(ExperienceSession).where(ExperienceSession.id==sid)
+        .with_for_update(read=True).execution_options(populate_existing=True))
     if session is None: raise ManifestError('manifest_unavailable')
     try: facts.authorize(db,sid,token)
     except Exception: raise ManifestError('manifest_unavailable') from None
-    run=db.scalar(select(MiningRun).where(MiningRun.id==rid).with_for_update(read=True))
+    run=db.scalar(select(MiningRun).where(MiningRun.id==rid)
+        .with_for_update(read=True).execution_options(populate_existing=True))
     if (run is None or run.session_id!=sid or run.state!='running' or run.lease_until<=utcnow()
         or session.status!='active' or session.mining_status!='active'
         or session.context_revision!=run.reserved_revision): raise ManifestError('manifest_business_inactive')
-    row=db.scalar(select(RequestManifest).where(RequestManifest.run_id==rid).with_for_update(read=True))
+    row=db.scalar(select(RequestManifest).where(RequestManifest.run_id==rid)
+        .with_for_update(read=True).execution_options(populate_existing=True))
     if (row is None or row.session_id!=sid or row.root_run_id!=root or row.operation_hash!=operation
         or row.context_revision!=session.context_revision): raise ManifestError('manifest_unavailable')
     body=db.scalar(text('SELECT body FROM test_synthetic_request_bodies WHERE run_id=:r'),{'r':rid})

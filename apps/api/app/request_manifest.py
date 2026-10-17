@@ -65,8 +65,9 @@ def persist_metadata(db,current,prepared):
     """
     try:
         session=db.scalar(select(ExperienceSession).where(
-            ExperienceSession.id==current.session_id).with_for_update())
-        run=db.scalar(select(MiningRun).where(MiningRun.id==current.run_id).with_for_update(read=True,key_share=True))
+            ExperienceSession.id==current.session_id).with_for_update().execution_options(populate_existing=True))
+        run=db.scalar(select(MiningRun).where(MiningRun.id==current.run_id)
+            .with_for_update(read=True,key_share=True).execution_options(populate_existing=True))
         if (session is None or run is None or run.session_id!=session.id
             or session.status!='active' or session.mining_status!='active' or run.state!='running'
             or run.lease_until<=utcnow() or session.context_revision!=run.reserved_revision

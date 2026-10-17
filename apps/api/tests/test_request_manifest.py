@@ -558,3 +558,41 @@ def test_actual_web_login_erases_without_manifest_body_or_funding_grants(stored,
         with owner.begin() as db:
             db.execute(text(f'DROP OWNED BY "{role}"'))
             db.execute(text(f'DROP ROLE "{role}"'))
+
+
+@pytest.mark.parametrize('change',['stop','end','revision','unknown','lease'])
+@pytest.mark.parametrize('action',['recover','persist'])
+def test_locked_reads_refresh_preexisting_identity_map(stored,change,action):
+    e,rid,request,current,_=stored
+    with e.factory() as db:
+        cached_session=db.get(ExperienceSession,e.sid)
+        cached_run=db.get(MiningRun,rid)
+        with e.factory.begin() as other:
+            if change=='stop': other.get(ExperienceSession,e.sid).mining_status='stopped'
+            elif change=='end': facts.end_session(other,e.sid,e.token)
+            elif change=='revision': facts.add_turn(other,e.sid,e.token,'合成：新的上下文。')
+            elif change=='unknown': other.get(MiningRun,rid).state='unknown'
+            else: other.get(MiningRun,rid).lease_until=utcnow()-timedelta(seconds=1)
+        assert cached_session is not None and cached_run is not None
+        with pytest.raises(ManifestError):
+            if action=='recover': recover(db,e.sid,e.token,rid,current.root_run_id,current.operation_hash)
+            else: persist_metadata(db,current,request)
+
+
+@pytest.mark.parametrize('pending',['new','dirty','deleted'])
+def test_recovery_refuses_pending_autoflush_before_any_sql(stored,pending):
+    e,rid,_,current,_=stored
+    engine=e.factory.kw['bind'];statements=[]
+    def record(c,cu,s,p,ctx,m): statements.append(s)
+    with e.factory() as db:
+        session=db.get(ExperienceSession,e.sid)
+        if pending=='new': db.add(ExperienceSession(access_token_hash='f'*64))
+        elif pending=='dirty': session.status='ended'
+        else: db.delete(session)
+        event.listen(engine,'before_cursor_execute',record)
+        try:
+            with pytest.raises(ManifestError): recover(db,e.sid,e.token,rid,current.root_run_id,current.operation_hash)
+        finally: event.remove(engine,'before_cursor_execute',record)
+    assert statements==[]
+    with e.factory() as db:
+        assert db.get(ExperienceSession,e.sid).status=='active' and db.get(MiningRun,rid) is not None
