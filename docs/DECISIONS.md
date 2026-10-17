@@ -45,3 +45,9 @@
 **当前状态**：设计方向已记录，**未实现**；不构成任何模型/供应商选择、真实 API 调用、费用开支或自动路由开发授权。现阶段 M1-2C-2 仍按零费用评测设计与后续单独审批推进。
 
 **参照**：[技术架构](TECH_ARCHITECTURE_MVP_v0.1.md) · [M1-2C-1 上下文合同](M1_2C_1_CONTEXT_CONTRACT.md) · [M1-2C-2 供应商预研](M1_2C_2_PROVIDER_RESEARCH.md)
+
+## D-007 · 同库中央费用绑定的数据库候选（待独立审查）
+
+V0.3推荐业务与唯一中央账本同一PostgreSQL数据库，以受限角色和短事务保证绑定原子性；跨库outbox/Broker方案另审。正式ADR及边界见[ADR-007](ADR_007_MINING_PAID_DATABASE.md)。
+
+0011仅建立惰性元数据、审计及删除墓碑，不创建新资金池、正额度、审批或可发送运行函数，不改变Provider准入。已有pathwise_probe实验与费用责任、0009排他保护保持；canonical ledger部署身份及历史负债处置需独立批准，不能另库/另Schema复制预算。实际迁移只在随机测试Schema验证，持久库部署、生产角色和真实付费启用继续BLOCK。
