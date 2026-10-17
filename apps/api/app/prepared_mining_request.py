@@ -95,7 +95,9 @@ def checked_context(context):
         texts=[t.content for t in current.user_turns]+[q.content or '' for q in current.questions]+[f.statement or '' for f in current.facts]
         if any(PRIVATE.search(t) or CREDENTIAL_TEXT.search(t) for t in texts): raise ValueError()
         stop=current.stop
-        if (stop.user_stopped or stop.session_ended or stop.round_count>=stop.maximum_rounds
+        # Existing reserve/complete admits round six, then stops after handling
+        # that answer. Do not reject the already-admitted terminal round.
+        if (stop.user_stopped or stop.session_ended or stop.round_count>stop.maximum_rounds
             or stop.consecutive_empty_rounds>=2 or min(stop.round_count,stop.consecutive_empty_rounds,
             current.omitted_turns,current.omitted_facts,current.omitted_questions)<0): raise ValueError()
         return current

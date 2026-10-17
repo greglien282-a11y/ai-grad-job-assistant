@@ -114,3 +114,5 @@ pins写在版本化代码中，由独立验证器重新检查实际文件；不�
 附加长度观察（完全合成、仅字节，非质量/Token/费用证明）：1/4/8个user turns的context bytes分别为508/907/1439，完整request bytes为4362/4791/5363；actual_tokens、actual_cost、real_latency均null。该观察不适用于任意用户材料，也不代表供应商硬上界。
 
 专项阶段104 passed；补充legacy content getter拒读和固定诊断码边界后总106项。最终完整后端及CI结果以本PR记录为准；全部真实调用、密钥访问、费用继续0。
+
+收尾追加的边界回归先失败，确认新builder曾用round_count>=6误拒原reserve已准入的第六轮。仅在新模块修正为>6；末轮可处理当前回答并由原complete停止，不生成下一轮问题，之后fresh检查拒绝。新增真实六轮正向用例及停止/结束/超限/连续空轮/负轮次拒绝，未修改旧业务规则。最终新专项112项，失败历史保留于本段及PR。

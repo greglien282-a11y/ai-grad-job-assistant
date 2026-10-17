@@ -152,7 +152,8 @@ def test_changed_artifacts_require_new_reviewed_version(prepared,monkeypatch,nam
     with pytest.raises(RequestContractError,match='dynamic_artifact_mismatch'): validate_prepared(request,current)
 
 
-@pytest.mark.parametrize('field',['hidden','deleted','rejected','credential','contact','duplicate_turn','budget'])
+@pytest.mark.parametrize('field',['hidden','deleted','rejected','credential','contact','duplicate_turn','budget',
+    'stopped','ended','round_limit','empty_rounds','negative_rounds'])
 def test_context_privacy_and_state_contract(prepared,field):
     _,_,_,current=prepared
     ctx=current.context
@@ -161,6 +162,10 @@ def test_context_privacy_and_state_contract(prepared,field):
             dedup_fingerprint=None,answered_turn_id=None,answered_version=None,answer_matches_current_version=False),)})
     elif field=='rejected':
         bad=ctx.model_copy(update={'facts':(FactContext(fact_id=uuid4(),version=1,status='rejected',statement='must not leave',memory_state='unspecified',source_kind='conversation_turns'),)})
+    elif field in ('stopped','ended','round_limit','empty_rounds','negative_rounds'):
+        change={'stopped':{'user_stopped':True},'ended':{'session_ended':True},'round_limit':{'round_count':7},
+            'empty_rounds':{'consecutive_empty_rounds':2},'negative_rounds':{'round_count':-1}}[field]
+        bad=ctx.model_copy(update={'stop':ctx.stop.model_copy(update=change)})
     else:
         text={'credential':'Bearer synthetic-secret-for-test','contact':'synthetic.person@example.invalid','budget':'x'*10001}.get(field,TEXT)
         turns=ctx.user_turns*2 if field=='duplicate_turn' else (ctx.user_turns[0].model_copy(update={'content':text}),)
@@ -440,3 +445,22 @@ def test_legacy_content_is_never_read(env):
 def test_unknown_error_text_is_never_a_diagnostic_code():
     assert str(RequestContractError('synthetic private payload'))=='dynamic_contract_invalid'
     assert str(RequestContractError({'private':'synthetic'}))=='dynamic_contract_invalid'
+
+
+def test_sixth_admitted_round_preserves_original_final_round_semantics(env):
+    for number in range(1,6):
+        rid,_,_=start(env,f'我测试了第{number}个校验器。')
+        context=read_snapshot(env.factory,env.sid,env.token,rid).context
+        mining.complete(env.factory,env.sid,env.token,rid,
+            output(context,question=f'是否有第{number}项记录可供核对？'),context=context)
+    rid,_,_=start(env,'我维护了最后一个校验器。')
+    request,current=frozen(env,rid)
+    assert current.context.stop.round_count==6
+    assert admit_offline(env.factory,env.sid,env.token,rid,request).offline_contract_valid
+    result=output(current.context);result.update(questions=[],stop=True,stop_reason='enough_information')
+    mining.complete(env.factory,env.sid,env.token,rid,result,context=current.context)
+    with env.factory() as db:
+        assert db.get(ExperienceSession,env.sid).mining_status=='stopped'
+        assert db.scalar(select(ExperienceFact).where(ExperienceFact.ai_run_id==rid)).status=='pending'
+        assert db.scalar(select(MiningQuestion).where(MiningQuestion.run_id==rid)) is None
+    with pytest.raises(RequestContractError): admit_offline(env.factory,env.sid,env.token,rid,request)
