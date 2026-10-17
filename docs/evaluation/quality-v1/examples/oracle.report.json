@@ -1,0 +1,2025 @@
+{
+  "report_version": "mining-quality-report-v1",
+  "dataset_version": "grad-mining-quality-v1-draft",
+  "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+  "split": "development",
+  "reference_labels": "DRAFT_NOT_HUMAN_GOLD",
+  "provenance": {
+    "output_origin": "authored_oracle",
+    "provider_generated": false,
+    "provider": null,
+    "model": "offline-authored-example-not-a-model",
+    "prompt_version": "dynamic-mining-prompt-v1-offline",
+    "prompt_file_sha": "d9d7b2a4303c58004cbbf97fbc50e57ac195270182b73e760aefb575d8ee5273",
+    "schema_sha": "a55afacc5c0e570a4c86dc6eaa723f8d8b43e58c455bef0308fe57e8834db736",
+    "generation_verified": false
+  },
+  "output_bundle_sha": "2b061281a422f367f3cac49ed4b9d524caa1a3595f640c3d00b025179948021a",
+  "planned_outputs": 12,
+  "provided_outputs": 12,
+  "missing_outputs": 0,
+  "citation_unscorable_outputs": 0,
+  "empty_candidate_outputs": 5,
+  "metrics": {
+    "strict_schema": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "planned_outputs",
+      "denominator_includes_unscorable": true
+    },
+    "runtime_validation": {
+      "numerator": 11,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 0.9166666666666666,
+      "unit": "planned_outputs",
+      "denominator_includes_unscorable": true
+    },
+    "literal_citations": {
+      "numerator": 9,
+      "denominator": 9,
+      "unscorable": 0,
+      "not_applicable": 5,
+      "ratio": 1.0,
+      "unit": "raw_candidates",
+      "denominator_includes_unscorable": true
+    },
+    "draft_candidate_precision": {
+      "numerator": 9,
+      "denominator": 9,
+      "unscorable": 0,
+      "not_applicable": 5,
+      "ratio": 1.0,
+      "unit": "raw_candidates",
+      "denominator_includes_unscorable": true
+    },
+    "draft_candidate_recall": {
+      "numerator": 9,
+      "denominator": 9,
+      "unscorable": 0,
+      "not_applicable": 5,
+      "ratio": 1.0,
+      "unit": "draft_reference_facts",
+      "denominator_includes_unscorable": true
+    },
+    "draft_positive_recall": {
+      "numerator": 8,
+      "denominator": 8,
+      "unscorable": 0,
+      "not_applicable": 6,
+      "ratio": 1.0,
+      "unit": "draft_positive_facts",
+      "denominator_includes_unscorable": true
+    },
+    "draft_boundary_recall": {
+      "numerator": 1,
+      "denominator": 1,
+      "unscorable": 0,
+      "not_applicable": 11,
+      "ratio": 1.0,
+      "unit": "draft_boundary_facts",
+      "denominator_includes_unscorable": true
+    },
+    "draft_runtime_accepted_recall": {
+      "numerator": 8,
+      "denominator": 9,
+      "unscorable": 0,
+      "not_applicable": 5,
+      "ratio": 0.8888888888888888,
+      "unit": "draft_reference_facts",
+      "denominator_includes_unscorable": true
+    },
+    "stop_structure": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "planned_outputs",
+      "denominator_includes_unscorable": true
+    },
+    "draft_stop_alignment": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "planned_outputs",
+      "denominator_includes_unscorable": true
+    },
+    "draft_question_purpose": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "raw_questions",
+      "denominator_includes_unscorable": true
+    },
+    "draft_goal_coverage": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "draft_question_goals",
+      "denominator_includes_unscorable": true
+    },
+    "exact_nonduplicate_questions": {
+      "numerator": 12,
+      "denominator": 12,
+      "unscorable": 0,
+      "not_applicable": 0,
+      "ratio": 1.0,
+      "unit": "raw_questions",
+      "denominator_includes_unscorable": true
+    },
+    "supported_numeric_tokens": {
+      "numerator": 1,
+      "denominator": 1,
+      "unscorable": 0,
+      "not_applicable": 11,
+      "ratio": 1.0,
+      "unit": "numeric_tokens",
+      "denominator_includes_unscorable": true
+    }
+  },
+  "rows": [
+    {
+      "case_id": "GQ01",
+      "split": "development",
+      "category": "course_without_internship",
+      "output_id": "GQ01-oracle",
+      "output_sha": "387483936164bed72408c14ba55f828e344b2a02c72d5ce4c781c12d4cf19e32",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ02",
+      "split": "development",
+      "category": "unclear_team_role",
+      "output_id": "GQ02-oracle",
+      "output_sha": "b6e1737532bc2e11f0d1fab5e0d4090b16a77a62e26c2b5f3009c130b122fd19",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 0,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ03",
+      "split": "development",
+      "category": "basic_data_cleaning",
+      "output_id": "GQ03-oracle",
+      "output_sha": "0862386b8d5e0c88773254f0ea4c1b4516bc168ac8da660dc55c3291c6db1ea8",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_validation_rejected",
+      "schema_valid": true,
+      "runtime_valid": false,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 0,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 0.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 0.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ04",
+      "split": "development",
+      "category": "basic_manual_testing",
+      "output_id": "GQ04-oracle",
+      "output_sha": "fb6849bdbcd193b25047c02be5295ed46f3f8a133aaa7ba9e42ce0a3c96c94e6",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ05",
+      "split": "development",
+      "category": "we_not_individual",
+      "output_id": "GQ05-oracle",
+      "output_sha": "a9cc30401b8a04b554a963b54437872343494cb22dda4ed4cdedb563f2f86fba",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 0,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ06",
+      "split": "development",
+      "category": "no_measured_result",
+      "output_id": "GQ06-oracle",
+      "output_sha": "7611e6604d7b462e8fa9b7af18d629c1bc616f90067024fc1bf02394f7e9bb5f",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ07",
+      "split": "development",
+      "category": "forgotten_dataset_size",
+      "output_id": "GQ07-oracle",
+      "output_sha": "3b79b1292f20662e7dfd800cd794f7da135cf24bf02534b85b3d25f3dbca0af3",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 0,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ08",
+      "split": "development",
+      "category": "unfinished_plan",
+      "output_id": "GQ08-oracle",
+      "output_sha": "f6596f68bc762d23aff912c77fc703791a19d8ef528fb0fe7896f4a6e84d143d",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 0,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ09",
+      "split": "development",
+      "category": "explicit_denial",
+      "output_id": "GQ09-oracle",
+      "output_sha": "e8d8cfa694a53a2594d518107f8edcda00becd55fd1de3f262c64c5c87fffbe1",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ10",
+      "split": "development",
+      "category": "course_learning_not_project",
+      "output_id": "GQ10-oracle",
+      "output_sha": "1bcdaad05089dfc31ad4a5bd36646c692941ff5eb53a31c473d134ed19b3126c",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 0,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ11",
+      "split": "development",
+      "category": "multiple_atomic_steps",
+      "output_id": "GQ11-oracle",
+      "output_sha": "2c446c52e457eabda4553d7b501d508d338deb6146c0f59e3a3d154a46c8b8a6",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 3,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 3,
+          "denominator": 3,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 3,
+          "denominator": 3,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 3,
+          "denominator": 3,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 3,
+          "denominator": 3,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 3,
+          "denominator": 3,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    },
+    {
+      "case_id": "GQ12",
+      "split": "development",
+      "category": "history_correction",
+      "output_id": "GQ12-oracle",
+      "output_sha": "4f15eec725a22479368639a8ff434479b947a0c9bb5bbf1374cac6652871feb9",
+      "present": true,
+      "safety_redacted": false,
+      "validation_code": "runtime_valid",
+      "schema_valid": true,
+      "runtime_valid": true,
+      "raw_candidate_count": 1,
+      "duplicate_question_count": 0,
+      "reference_label_status": "DRAFT",
+      "metrics": {
+        "strict_schema": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "runtime_validation": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "literal_citations": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_precision": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_candidates",
+          "denominator_includes_unscorable": true
+        },
+        "draft_candidate_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_positive_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_positive_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_boundary_recall": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "draft_boundary_facts",
+          "denominator_includes_unscorable": true
+        },
+        "draft_runtime_accepted_recall": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_reference_facts",
+          "denominator_includes_unscorable": true
+        },
+        "stop_structure": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_stop_alignment": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "planned_outputs",
+          "denominator_includes_unscorable": true
+        },
+        "draft_question_purpose": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "draft_goal_coverage": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "draft_question_goals",
+          "denominator_includes_unscorable": true
+        },
+        "exact_nonduplicate_questions": {
+          "numerator": 1,
+          "denominator": 1,
+          "unscorable": 0,
+          "not_applicable": 0,
+          "ratio": 1.0,
+          "unit": "raw_questions",
+          "denominator_includes_unscorable": true
+        },
+        "supported_numeric_tokens": {
+          "numerator": 0,
+          "denominator": 0,
+          "unscorable": 0,
+          "not_applicable": 1,
+          "ratio": null,
+          "unit": "numeric_tokens",
+          "denominator_includes_unscorable": true
+        }
+      },
+      "critical_rule_signals": [],
+      "safety_review_required": false,
+      "human_quality": {
+        "faithfulness": null,
+        "individual_contribution": null,
+        "question_effectiveness": null,
+        "context_and_non_repetition": null,
+        "uncertainty_and_autonomy": null,
+        "stopping": null
+      },
+      "human_review_status": "unreviewed"
+    }
+  ],
+  "critical_rule_signal_count": 0,
+  "safety_review_required": false,
+  "semantic_quality_status": "UNREVIEWED_NO_RELEASE_DECISION",
+  "human_semantic_scores": null,
+  "real_model_holdout_quality": null,
+  "evidence_layers": {
+    "engineering": "MECHANICAL_CHECKS_ONLY",
+    "oracle": "DRAFT_REFERENCE_FIT_NOT_GENERALIZATION",
+    "human_semantics": "UNREVIEWED",
+    "real_model_quality": "NOT_MEASURED_OR_AUTHENTICATED"
+  },
+  "tool_provider_requests": 0,
+  "tool_cost_cny": "0.000000",
+  "actual_model_tokens": null,
+  "provider_latency_ms": null,
+  "limitations": [
+    "Exact reference matching uses Codex DRAFT labels, not human truth/quality.",
+    "Runtime atomicity is a conservative lexical guard; mismatches are reported, not fixed.",
+    "Purpose/numeric-token/exact-duplicate checks do not score semantic question usefulness.",
+    "Missing outputs stay in planned-output denominators; unknown candidate counts are separate.",
+    "Empty/no-reference denominators yield null, never perfect accuracy.",
+    "All generation provenance is supplied, not independently authenticated; no real quality claims.",
+    "Public DRAFT holdout is frozen and excluded from examples; not a secret/blind benchmark."
+  ]
+}

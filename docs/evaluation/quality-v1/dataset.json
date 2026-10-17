@@ -1,0 +1,1480 @@
+{
+  "dataset_version": "grad-mining-quality-v1-draft",
+  "synthetic": true,
+  "label_status": "DRAFT",
+  "authorship": "Codex-authored fictional scenarios, not human-reviewed gold",
+  "cases": [
+    {
+      "case_id": "GQ01",
+      "title": "课设无实习",
+      "category": "course_without_internship",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的纸舟借阅页作业。",
+      "turns": [
+        {
+          "turn_id": "b87bcaf2-98b8-5d8f-b3b5-b52e3b0fea8c",
+          "text": "课程作业是一个借阅页，我只参与过小组讨论。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "33722422-7f59-51b4-bfa7-d5d3f1f806e4",
+          "text": "我编写了借阅状态组件。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "33722422-7f59-51b4-bfa7-d5d3f1f806e4",
+            "quote": "我编写了借阅状态组件。",
+            "start": 0,
+            "end": 11,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "detail"
+        ],
+        "suggested_question": "你写的借阅状态组件具体怎样响应借阅操作？",
+        "forbidden_claims": [
+          {
+            "text": "我独立开发了完整借阅系统。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "补充组件行为和本人实现边界，不升级为完整系统。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "补充组件行为和本人实现边界，不升级为完整系统。"
+        ],
+        "must_not_infer": [
+          "完整后端实现",
+          "实习经历",
+          "借阅效率提升"
+        ]
+      },
+      "evaluation_notes": "DRAFT：补充组件行为和本人实现边界，不升级为完整系统。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ02",
+      "title": "团队分工不清",
+      "category": "unclear_team_role",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的青石订单看板。",
+      "turns": [
+        {
+          "turn_id": "f9d3fcc0-60eb-5e5e-b94e-b08c52f3a63a",
+          "text": "我们实现了订单看板，我说不清分工。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [
+          "contribution"
+        ],
+        "suggested_question": "其中你本人实际完成了什么？说不清也可以说明。",
+        "forbidden_claims": [
+          {
+            "text": "我独立实现了整个订单看板。",
+            "kind": "team_promoted"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "先区分参与讨论与实际实现，避免把团队看板归给本人。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "先区分参与讨论与实际实现，避免把团队看板归给本人。"
+        ],
+        "must_not_infer": [
+          "个人完成整个看板",
+          "具体前后端职责",
+          "商业成果"
+        ]
+      },
+      "evaluation_notes": "DRAFT：先区分参与讨论与实际实现，避免把团队看板归给本人。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ03",
+      "title": "基础数据整理",
+      "category": "basic_data_cleaning",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的白沙问卷整理练习。",
+      "turns": [
+        {
+          "turn_id": "261da030-8583-55b0-93b7-fbc9768139b0",
+          "text": "我整理了27条缺失记录。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "261da030-8583-55b0-93b7-fbc9768139b0",
+            "quote": "我整理了27条缺失记录。",
+            "start": 0,
+            "end": 12,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "detail"
+        ],
+        "suggested_question": "你是怎样发现并整理这些缺失记录的？",
+        "forbidden_claims": [
+          {
+            "text": "我整理了27000条记录。",
+            "kind": "invented_metric"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "理解基础整理动作的过程和可核对价值，不强求算法或自动化。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "理解基础整理动作的过程和可核对价值，不强求算法或自动化。"
+        ],
+        "must_not_infer": [
+          "自动清洗算法",
+          "原始数据规模",
+          "无证据的时间节省"
+        ]
+      },
+      "evaluation_notes": "DRAFT：理解基础整理动作的过程和可核对价值，不强求算法或自动化。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ04",
+      "title": "基础手工测试",
+      "category": "basic_manual_testing",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的纸灯登记页面。",
+      "turns": [
+        {
+          "turn_id": "619e2b94-bd8a-544b-9576-dd18ba9b557f",
+          "text": "我测试了登记表单的空值提示。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "619e2b94-bd8a-544b-9576-dd18ba9b557f",
+            "quote": "我测试了登记表单的空值提示。",
+            "start": 0,
+            "end": 14,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "verification"
+        ],
+        "suggested_question": "有方便自查的测试记录吗？没保留也不影响记录这项工作。",
+        "forbidden_claims": [
+          {
+            "text": "我编写了自动化测试平台。",
+            "kind": "invented_technology"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "允许可选自查，不因缺测试报告否定已有手工测试。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "允许可选自查，不因缺测试报告否定已有手工测试。"
+        ],
+        "must_not_infer": [
+          "自动化测试平台",
+          "缺陷总数",
+          "覆盖率"
+        ]
+      },
+      "evaluation_notes": "DRAFT：允许可选自查，不因缺测试报告否定已有手工测试。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ05",
+      "title": "我们不等于我",
+      "category": "we_not_individual",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的竹影推荐课题。",
+      "turns": [
+        {
+          "turn_id": "dc1af43e-5ee8-547c-a9a6-cee2e2f7c9f3",
+          "text": "我们实现了推荐系统。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [
+          "contribution"
+        ],
+        "suggested_question": "推荐系统里有哪一步是你本人实际做过的？",
+        "forbidden_claims": [
+          {
+            "text": "我独立实现了推荐系统。",
+            "kind": "team_promoted"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "识别本人动作；无法区分就不提个人候选。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "识别本人动作；无法区分就不提个人候选。"
+        ],
+        "must_not_infer": [
+          "推荐模型本人开发",
+          "团队核心负责人",
+          "推荐准确率"
+        ]
+      },
+      "evaluation_notes": "DRAFT：识别本人动作；无法区分就不提个人候选。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ06",
+      "title": "无量化指标",
+      "category": "no_measured_result",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的流萤导入页面。",
+      "turns": [
+        {
+          "turn_id": "a297f5f8-b78e-517b-919c-1dc555c96770",
+          "text": "我优化了导入页面。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "853fe6bf-4b72-5c86-949c-c1ed664eab1d",
+          "text": "没有测过速度，也没有访问量记录。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "a297f5f8-b78e-517b-919c-1dc555c96770",
+            "quote": "我优化了导入页面。",
+            "start": 0,
+            "end": 9,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "detail"
+        ],
+        "suggested_question": "导入页面具体改了什么交互？不用估计没有测过的速度。",
+        "forbidden_claims": [
+          {
+            "text": "导入速度提高了80%。",
+            "kind": "invented_metric"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "澄清具体交互改动，尊重用户已经说没有性能数据。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "澄清具体交互改动，尊重用户已经说没有性能数据。"
+        ],
+        "must_not_infer": [
+          "任何速度提升比例",
+          "访问量",
+          "实际性能测试结果"
+        ]
+      },
+      "evaluation_notes": "DRAFT：澄清具体交互改动，尊重用户已经说没有性能数据。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ07",
+      "title": "记不清规模",
+      "category": "forgotten_dataset_size",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的浅湾分类练习。",
+      "turns": [
+        {
+          "turn_id": "ed68fe81-a192-5bd0-80b1-9e60a40cd06e",
+          "text": "数据量记不清了，我不想猜。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [
+          "uncertainty"
+        ],
+        "suggested_question": "记得做过的一个具体步骤吗？规模不记得可以略过。",
+        "forbidden_claims": [
+          {
+            "text": "我使用了十万条训练数据。",
+            "kind": "invented_metric"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "either",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "尊重不记得规模，换到能回忆的步骤或允许停止。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "尊重不记得规模，换到能回忆的步骤或允许停止。"
+        ],
+        "must_not_infer": [
+          "数据集条数",
+          "模型参数值",
+          "训练性能"
+        ]
+      },
+      "evaluation_notes": "DRAFT：尊重不记得规模，换到能回忆的步骤或允许停止。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ08",
+      "title": "未执行计划",
+      "category": "unfinished_plan",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的屋檐预约服务。",
+      "turns": [
+        {
+          "turn_id": "ba5d1efe-a693-537f-b29e-f4f0e5a3f452",
+          "text": "我计划把服务部署到学校服务器，还没有开始。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [
+          "contribution"
+        ],
+        "suggested_question": "部署之外，你已经实际做过哪一步？",
+        "forbidden_claims": [
+          {
+            "text": "我完成了学校服务器部署。",
+            "kind": "hypothesis_promoted"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "明确已做和未做，不把部署计划当已完成经历。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "明确已做和未做，不把部署计划当已完成经历。"
+        ],
+        "must_not_infer": [
+          "已经部署成功",
+          "服务器稳定运行",
+          "上线用户量"
+        ]
+      },
+      "evaluation_notes": "DRAFT：明确已做和未做，不把部署计划当已完成经历。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ09",
+      "title": "否定经历",
+      "category": "explicit_denial",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的方格推荐页面。",
+      "turns": [
+        {
+          "turn_id": "54fa85a3-3c9d-5150-9f88-d53d2b2228e8",
+          "text": "我没有部署过推荐服务。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "54fa85a3-3c9d-5150-9f88-d53d2b2228e8",
+            "quote": "我没有部署过推荐服务。",
+            "start": 0,
+            "end": 11,
+            "kind": "boundary"
+          }
+        ],
+        "question_goals": [
+          "contribution"
+        ],
+        "suggested_question": "除部署之外，你本人实际做过什么？",
+        "forbidden_claims": [
+          {
+            "text": "我部署过推荐服务。",
+            "kind": "negation_removed"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "保留没有部署的边界事实，寻找其他已完成动作。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "保留没有部署的边界事实，寻找其他已完成动作。"
+        ],
+        "must_not_infer": [
+          "本人完成部署",
+          "服务运行结果",
+          "部署技术栈"
+        ]
+      },
+      "evaluation_notes": "DRAFT：保留没有部署的边界事实，寻找其他已完成动作。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ10",
+      "title": "学习不等于成果",
+      "category": "course_learning_not_project",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的薄荷课堂学习。",
+      "turns": [
+        {
+          "turn_id": "1027e734-d502-5b65-b687-402198c90622",
+          "text": "我在课上学过卷积网络，没有做应用项目。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [
+          "contribution"
+        ],
+        "suggested_question": "课堂之外有实际动手做过的小练习吗？没有也可以到这里。",
+        "forbidden_claims": [
+          {
+            "text": "我开发了卷积网络应用。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "either",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "区别课程知识与实际练习，不虚构应用项目。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "区别课程知识与实际练习，不虚构应用项目。"
+        ],
+        "must_not_infer": [
+          "完整应用项目",
+          "实际训练模型",
+          "模型效果指标"
+        ]
+      },
+      "evaluation_notes": "DRAFT：区别课程知识与实际练习，不虚构应用项目。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ11",
+      "title": "拆解多个步骤",
+      "category": "multiple_atomic_steps",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的栖木导出练习。",
+      "turns": [
+        {
+          "turn_id": "3396d88f-ccdd-512d-893d-402415d3b8fb",
+          "text": "我编写了清洗脚本。我测试了导出按钮。我制作了结果图。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "3396d88f-ccdd-512d-893d-402415d3b8fb",
+            "quote": "我编写了清洗脚本。",
+            "start": 0,
+            "end": 9,
+            "kind": "positive"
+          },
+          {
+            "turn_id": "3396d88f-ccdd-512d-893d-402415d3b8fb",
+            "quote": "我测试了导出按钮。",
+            "start": 9,
+            "end": 18,
+            "kind": "positive"
+          },
+          {
+            "turn_id": "3396d88f-ccdd-512d-893d-402415d3b8fb",
+            "quote": "我制作了结果图。",
+            "start": 18,
+            "end": 26,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "verification"
+        ],
+        "suggested_question": "这些步骤有方便自查的记录吗？没有材料也可以说明。",
+        "forbidden_claims": [
+          {
+            "text": "我独立完成了全栈平台。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "将三条动作独立保留，可选核对而不合并成全栈职责。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "将三条动作独立保留，可选核对而不合并成全栈职责。"
+        ],
+        "must_not_infer": [
+          "全栈主导",
+          "部署工作",
+          "未陈述的优化成果"
+        ]
+      },
+      "evaluation_notes": "DRAFT：将三条动作独立保留，可选核对而不合并成全栈职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ12",
+      "title": "前后纠正",
+      "category": "history_correction",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "development",
+      "background": "虚构的折纸标注工具。",
+      "turns": [
+        {
+          "turn_id": "670c0456-ee0a-5665-a5d2-c37b972cfa32",
+          "text": "我实现了自动标注。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "f05ef128-c260-5b45-bf2d-7ebfa6334d5a",
+          "text": "刚才说错了，自动标注是同学做的。我只测试了导出按钮。",
+          "answered_questions": [
+            {
+              "question_id": "c93307a5-3757-5c12-9634-cdf6552157a8",
+              "question_version": 1
+            }
+          ]
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [
+        {
+          "fact_id": "69ea54ab-8595-5ef6-8c50-2571f22cb986",
+          "version": 2,
+          "status": "pending",
+          "statement": "我只测试了导出按钮。",
+          "memory_state": "certain",
+          "source_kind": "user_edit",
+          "citation": {
+            "turn_id": "f05ef128-c260-5b45-bf2d-7ebfa6334d5a",
+            "quote": "我只测试了导出按钮。",
+            "start": 16,
+            "end": 26
+          }
+        }
+      ],
+      "previous_questions": [
+        {
+          "question_id": "c93307a5-3757-5c12-9634-cdf6552157a8",
+          "version": 2,
+          "state": "corrected",
+          "content": "导出按钮是如何测试的？",
+          "answered_turn_id": "f05ef128-c260-5b45-bf2d-7ebfa6334d5a",
+          "answered_version": 1
+        }
+      ],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "f05ef128-c260-5b45-bf2d-7ebfa6334d5a",
+            "quote": "我只测试了导出按钮。",
+            "start": 16,
+            "end": 26,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "correction"
+        ],
+        "suggested_question": "按你最新说明理解为只测试导出按钮，这个职责边界准确吗？",
+        "forbidden_claims": [
+          {
+            "text": "我实现了自动标注。",
+            "kind": "superseded_claim"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "当前测试职责优先，旧自动标注陈述不能复活。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "当前测试职责优先，旧自动标注陈述不能复活。"
+        ],
+        "must_not_infer": [
+          "本人实现自动标注",
+          "旧版本职责仍被确认",
+          "算法贡献"
+        ]
+      },
+      "evaluation_notes": "DRAFT：当前测试职责优先，旧自动标注陈述不能复活。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ13",
+      "title": "拒答与跳过",
+      "category": "refusal_and_skip",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的风铃参数练习。",
+      "turns": [
+        {
+          "turn_id": "3b70b9eb-a938-5391-b33a-79cd5d870bf1",
+          "text": "参数忘了。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "e4fee1c1-b548-5e82-9e9a-2665efdcefdd",
+          "text": "这部分我不想回答，可以跳过。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [
+        {
+          "question_id": "159c6127-ba17-53c8-8363-78f8ae19ae55",
+          "version": 1,
+          "state": "skipped",
+          "content": "参数还记得吗？",
+          "answered_turn_id": null,
+          "answered_version": null
+        }
+      ],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [],
+        "suggested_question": null,
+        "forbidden_claims": [
+          {
+            "text": "我调优了模型参数。",
+            "kind": "invented_technology"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "stop",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "跳过已拒答主题，允许终止而不要求猜参数。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "跳过已拒答主题，允许终止而不要求猜参数。"
+        ],
+        "must_not_infer": [
+          "猜出的参数",
+          "拒答等于不会",
+          "必须继续回答"
+        ]
+      },
+      "evaluation_notes": "DRAFT：跳过已拒答主题，允许终止而不要求猜参数。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ14",
+      "title": "两题只答一题",
+      "category": "partial_two_question_answer",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的晨露排班作业。",
+      "turns": [
+        {
+          "turn_id": "3dfbfb73-0e37-5121-a2d7-d5dbadbb9613",
+          "text": "我参加过排班表作业。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "4107a90d-eec6-554f-a4c5-9bb958bcb6d9",
+          "text": "我编写了冲突提示。",
+          "answered_questions": [
+            {
+              "question_id": "9c31d05e-92c9-597b-862e-7bd55bd6fbef",
+              "question_version": 1
+            }
+          ]
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [
+        {
+          "question_id": "9c31d05e-92c9-597b-862e-7bd55bd6fbef",
+          "version": 1,
+          "state": "active",
+          "content": "你本人负责什么？",
+          "answered_turn_id": "4107a90d-eec6-554f-a4c5-9bb958bcb6d9",
+          "answered_version": 1
+        },
+        {
+          "question_id": "2b2b9603-f1b1-52cf-95ea-fabdb1685398",
+          "version": 1,
+          "state": "active",
+          "content": "记得用过哪种工具吗？",
+          "answered_turn_id": null,
+          "answered_version": null
+        }
+      ],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "4107a90d-eec6-554f-a4c5-9bb958bcb6d9",
+            "quote": "我编写了冲突提示。",
+            "start": 0,
+            "end": 9,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "detail"
+        ],
+        "suggested_question": "冲突提示在什么输入情况下触发？工具不记得可以略过。",
+        "forbidden_claims": [
+          {
+            "text": "我使用了某种特定框架。",
+            "kind": "invented_technology"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "只把回答绑定到职责题，技术题未回答；不重复已答职责。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "只把回答绑定到职责题，技术题未回答；不重复已答职责。"
+        ],
+        "must_not_infer": [
+          "未回答技术题已获答案",
+          "工具名称",
+          "自动关联两题"
+        ]
+      },
+      "evaluation_notes": "DRAFT：只把回答绑定到职责题，技术题未回答；不重复已答职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ15",
+      "title": "用户主动停止",
+      "category": "user_requested_stop",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的月台信息页。",
+      "turns": [
+        {
+          "turn_id": "58ad145c-98c2-5cf8-bcd9-34da917ec0e9",
+          "text": "我制作了站点说明图。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "feb22527-62e9-548e-a859-71744f8d08f7",
+          "text": "先停在这里，我想核对现有内容。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [
+        {
+          "fact_id": "476b94b3-76e8-598d-bbe1-487735e814f5",
+          "version": 1,
+          "status": "user_confirmed",
+          "statement": "我制作了站点说明图。",
+          "memory_state": "certain",
+          "source_kind": "conversation_turns",
+          "citation": {
+            "turn_id": "58ad145c-98c2-5cf8-bcd9-34da917ec0e9",
+            "quote": "我制作了站点说明图。",
+            "start": 0,
+            "end": 10
+          }
+        }
+      ],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": true,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [],
+        "suggested_question": null,
+        "forbidden_claims": [
+          {
+            "text": "所有候选已经得到用户确认。",
+            "kind": "unfounded_confirmation"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "stop",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "尊重停止，继续提供已有事实核对而不继续追问。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "尊重停止，继续提供已有事实核对而不继续追问。"
+        ],
+        "must_not_infer": [
+          "停止等于确认所有事实",
+          "已经完成正式简历",
+          "可继续追问"
+        ]
+      },
+      "evaluation_notes": "DRAFT：尊重停止，继续提供已有事实核对而不继续追问。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ16",
+      "title": "六轮上限",
+      "category": "six_round_limit",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的谷雨展示项目。",
+      "turns": [
+        {
+          "turn_id": "f9c7f695-467d-57b9-846a-4bac9d0c7260",
+          "text": "我记录了课程要求。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "f0968d58-d231-57de-a0d8-438ab4c04f01",
+          "text": "我编写了输入校验。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "8a1c3575-10fe-5018-9c2d-db29c2c893a9",
+          "text": "我测试了空列表。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "72240dca-1cfd-5d38-8e8e-991ddcbea8d1",
+          "text": "我制作了提示图。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "09c23792-9286-5735-a729-435fdaaa5757",
+          "text": "我验证了演示路径。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "cabf600b-3cbb-5196-9893-dbe3cf6c57f4",
+          "text": "我制作了项目讲解图。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 6,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "cabf600b-3cbb-5196-9893-dbe3cf6c57f4",
+            "quote": "我制作了项目讲解图。",
+            "start": 0,
+            "end": 10,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [],
+        "suggested_question": null,
+        "forbidden_claims": [
+          {
+            "text": "项目达到商业生产标准。",
+            "kind": "invented_result"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "stop",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information",
+          "enough_information"
+        ],
+        "stop_notes": "第六轮后停止；本轮真实动作仍可作为pending候选。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "第六轮后停止；本轮真实动作仍可作为pending候选。"
+        ],
+        "must_not_infer": [
+          "上限后还有新轮次许可",
+          "项目商业化",
+          "模型自行确认"
+        ]
+      },
+      "evaluation_notes": "DRAFT：第六轮后停止；本轮真实动作仍可作为pending候选。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ17",
+      "title": "经历极少",
+      "category": "little_project_experience",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的星屿旁听活动。",
+      "turns": [
+        {
+          "turn_id": "473160b7-334b-5d0b-bf02-c077a9b8b1cc",
+          "text": "我只旁听过一次汇报，没做项目。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 2,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [],
+        "suggested_question": null,
+        "forbidden_claims": [
+          {
+            "text": "我主导了汇报项目。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "stop",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "信息极少时不强挖成果，避免无限循环。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "信息极少时不强挖成果，避免无限循环。"
+        ],
+        "must_not_infer": [
+          "旁听等于项目主导",
+          "实际开发职责",
+          "可量化成果"
+        ]
+      },
+      "evaluation_notes": "DRAFT：信息极少时不强挖成果，避免无限循环。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ18",
+      "title": "不存在的材料",
+      "category": "no_evidence_available",
+      "complexity": "multi_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的砂砾报名页。",
+      "turns": [
+        {
+          "turn_id": "592f8277-ec47-597e-8577-1b3de1a88616",
+          "text": "我测试了报名页面。",
+          "answered_questions": []
+        },
+        {
+          "turn_id": "b572a5cc-322f-5a4c-89cf-c0423f15a535",
+          "text": "没有保留截图或性能数据，也不方便再找材料。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [
+        {
+          "fact_id": "8837a9e9-3fef-5c8c-af30-29435702f823",
+          "version": 1,
+          "status": "user_confirmed",
+          "statement": "我测试了报名页面。",
+          "memory_state": "certain",
+          "source_kind": "conversation_turns",
+          "citation": {
+            "turn_id": "592f8277-ec47-597e-8577-1b3de1a88616",
+            "quote": "我测试了报名页面。",
+            "start": 0,
+            "end": 9
+          }
+        }
+      ],
+      "pending_facts": [],
+      "previous_questions": [
+        {
+          "question_id": "ea2d170b-eeef-5665-8611-caaa83952099",
+          "version": 1,
+          "state": "skipped",
+          "content": "有没有可以核对的材料？",
+          "answered_turn_id": null,
+          "answered_version": null
+        }
+      ],
+      "stop_context": {
+        "round_count": 2,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [],
+        "question_goals": [],
+        "suggested_question": null,
+        "forbidden_claims": [
+          {
+            "text": "用户有截图和性能报告。",
+            "kind": "invented_evidence"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "stop",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "不再索要不存在的截图或性能数据；保留已有合成确认事实。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "不再索要不存在的截图或性能数据；保留已有合成确认事实。"
+        ],
+        "must_not_infer": [
+          "材料必然存在",
+          "性能数据",
+          "平台独立认证"
+        ]
+      },
+      "evaluation_notes": "DRAFT：不再索要不存在的截图或性能数据；保留已有合成确认事实。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ19",
+      "title": "不亮眼但真实",
+      "category": "modest_actual_value",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的木棉报名值班。",
+      "turns": [
+        {
+          "turn_id": "f6d26118-89d2-5e15-8cf0-80c863aa0dcf",
+          "text": "我负责每周更新比赛报名名单。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "f6d26118-89d2-5e15-8cf0-80c863aa0dcf",
+            "quote": "我负责每周更新比赛报名名单。",
+            "start": 0,
+            "end": 14,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "detail"
+        ],
+        "suggested_question": "每周更新名单时，你具体核对哪些内容？",
+        "forbidden_claims": [
+          {
+            "text": "我开发了自动报名系统。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "识别日常维护价值，不包装成自动化平台或管理职责。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "识别日常维护价值，不包装成自动化平台或管理职责。"
+        ],
+        "must_not_infer": [
+          "自动报名系统",
+          "团队管理",
+          "增长指标"
+        ]
+      },
+      "evaluation_notes": "DRAFT：识别日常维护价值，不包装成自动化平台或管理职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    },
+    {
+      "case_id": "GQ20",
+      "title": "Unicode原文位置",
+      "category": "unicode_code_points",
+      "complexity": "single_turn",
+      "synthetic": true,
+      "split": "holdout",
+      "background": "虚构的雾桥原型作业。",
+      "turns": [
+        {
+          "turn_id": "d9b9cdab-dd8d-53ce-89b4-0dccd7f24334",
+          "text": "我制作了🧪原型图。",
+          "answered_questions": []
+        }
+      ],
+      "confirmed_facts": [],
+      "pending_facts": [],
+      "previous_questions": [],
+      "stop_context": {
+        "round_count": 1,
+        "maximum_rounds": 6,
+        "consecutive_empty_rounds": 0,
+        "user_stopped": false,
+        "session_ended": false
+      },
+      "reference": {
+        "label_status": "DRAFT",
+        "citations": [
+          {
+            "turn_id": "d9b9cdab-dd8d-53ce-89b4-0dccd7f24334",
+            "quote": "我制作了🧪原型图。",
+            "start": 0,
+            "end": 9,
+            "kind": "positive"
+          }
+        ],
+        "question_goals": [
+          "verification"
+        ],
+        "suggested_question": "这张原型图用来说明什么交互？没有部署也可以说明。",
+        "forbidden_claims": [
+          {
+            "text": "我部署了原型系统。",
+            "kind": "invented_role"
+          }
+        ],
+        "misleading_questions": [
+          "是不是带来了显著指标提升？",
+          "能不能找一份并不存在的证明？"
+        ],
+        "stop_expectation": "continue",
+        "allowed_stop_reasons": [
+          "user_uncertain",
+          "no_new_information"
+        ],
+        "stop_notes": "引用按Unicode code point计数，不补部署和技术栈。 停止不等于确认候选。",
+        "question_goal_notes": [
+          "引用按Unicode code point计数，不补部署和技术栈。"
+        ],
+        "must_not_infer": [
+          "实际部署",
+          "开发技术栈",
+          "自动化效果"
+        ]
+      },
+      "evaluation_notes": "DRAFT：引用按Unicode code point计数，不补部署和技术栈。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "review_status": "DRAFT",
+      "human_reviewer": null
+    }
+  ]
+}

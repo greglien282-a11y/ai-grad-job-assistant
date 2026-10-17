@@ -7,6 +7,7 @@ on:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
       - 'scripts/check_s03b_output_contract.py'
+      - 'scripts/evaluate_mining_quality.py'
       - 'scripts/run_offline_evaluation.py'
       - 'scripts/check_isolated_migrations.py'
       - 'scripts/controlled_live_probe.py'
@@ -22,6 +23,7 @@ on:
       - 'apps/**'
       - 'scripts/check_m12c2_contracts.py'
       - 'scripts/check_s03b_output_contract.py'
+      - 'scripts/evaluate_mining_quality.py'
       - 'scripts/run_offline_evaluation.py'
       - 'scripts/check_isolated_migrations.py'
       - 'scripts/controlled_live_probe.py'
@@ -74,6 +76,8 @@ jobs:
         run: python ../../scripts/check_m12c2_contracts.py
       - name: S03/b output and versioned prompt contracts (no network or keys)
         run: python ../../scripts/check_s03b_output_contract.py
+      - name: DRAFT quality scaffolding (supplied fictional outputs only)
+        run: python ../../scripts/evaluate_mining_quality.py --outputs ../../docs/evaluation/quality-v1/oracle.outputs.json --output-dir "$RUNNER_TEMP/pathwise-quality-v1"
       - name: Isolated MOCK evaluation CLI (no vendor HTTP)
         run: python ../../scripts/run_offline_evaluation.py --profile 0 --output ../../mock-evaluation-report.json
 
