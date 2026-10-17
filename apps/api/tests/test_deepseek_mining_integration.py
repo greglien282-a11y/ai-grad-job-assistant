@@ -36,10 +36,18 @@ TEXT = '我编写了离线校验器。'  # independent synthetic integration fix
 def offline_guard(monkeypatch):
     def forbidden(*args, **kwargs):
         raise AssertionError('External network or native credential access forbidden')
+    numeric_lookup = socket.getaddrinfo
+    database_port = (make_url(os.environ['TEST_DATABASE_URL']).port or 5432) if os.getenv('TEST_DATABASE_URL') else 5432
+    def test_database_address(host, port, *args, **kwargs):
+        if host not in ('localhost', '127.0.0.1') or str(port) != str(database_port):
+            return forbidden()
+        # psycopg resolves CI's localhost in Python. Map ONLY the approved DB
+        # address to numeric loopback, never consult DNS or the hosts file.
+        return numeric_lookup('127.0.0.1', port, *args, **kwargs)
     # libpq connects only to the explicit disposable TEST_DATABASE_URL below.
     # HTTPX MockTransport needs neither Python sockets nor native credential APIs.
     monkeypatch.setattr(socket, 'create_connection', forbidden)
-    monkeypatch.setattr(socket, 'getaddrinfo', forbidden)
+    monkeypatch.setattr(socket, 'getaddrinfo', test_database_address)
     monkeypatch.setattr(httpx.AsyncHTTPTransport, 'handle_async_request', forbidden)
     monkeypatch.setattr(httpx.HTTPTransport, 'handle_request', forbidden)
     import ctypes
@@ -292,6 +300,14 @@ def test_no_factory_admission_or_nonmock_transport(monkeypatch):
     monkeypatch.setenv('AI_ENABLED', 'true')
     monkeypatch.setenv('AI_PROVIDER', 'deepseek_official')
     with pytest.raises(mining.MiningError, match='ai_provider_unapproved'): get_provider()
+
+
+def test_network_guard_allows_only_numeric_test_database_resolution():
+    port = (make_url(os.environ['TEST_DATABASE_URL']).port or 5432) if os.getenv('TEST_DATABASE_URL') else 5432
+    assert all(item[4][0] == '127.0.0.1' for item in socket.getaddrinfo('localhost', port))
+    with pytest.raises(AssertionError): socket.getaddrinfo('api.deepseek.com', 443)
+    with pytest.raises(AssertionError): socket.getaddrinfo('localhost', port + 1)
+    with pytest.raises(AssertionError): socket.create_connection(('127.0.0.1', port))
 
 
 def test_payload_only_ignores_legacy_raw_input():

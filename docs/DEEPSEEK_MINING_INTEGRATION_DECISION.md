@@ -21,7 +21,7 @@
 
 链路：测试直接调用原 `reserve → execute → claim`；测试支持类把受约束 context 交给现有 Adapter 请求构建，复用 PR22 的 v2.1 离线提示词/原 wire Schema；以不可变 UTF-8 bytes 和新版本 `deepseek-mining-integration-v1-offline` 记录 request/prompt SHA；精确 MockTransport 经过原离线 Transport → decode_official → validate_context_v2 → 原 complete/validate_v2 → pending事实。聚合、事实确认与03文本通过现有 HTTP 接口核验，数据库由独立连接读取。
 
-请求、响应只在合成测试进程内存在。无环境密钥解析、Windows凭据、真实HTTP、付费授权或费用落库。测试阻断原生凭据 API、Python DNS/连接和真实 HTTPTransport；libpq 只连接显式指定的本机测试数据库。场景回调仅是测试故障注入，不是外部模型输出。所有 usage 是虚构夹具，不计为实际 Token/费用/延迟。
+请求、响应只在合成测试进程内存在。无环境密钥解析、Windows凭据、真实HTTP、付费授权或费用落库。测试阻断原生凭据 API、Python外部DNS/连接和真实 HTTPTransport；仅将明确测试库的localhost/端口映射到数值127.0.0.1，libpq 只连接该测试数据库。其他域名/端口均拒绝。场景回调仅是测试故障注入，不是外部模型输出。所有 usage 是虚构夹具，不计为实际 Token/费用/延迟。
 
 **兼容边界刻意可见**：测试 run 仍按旧数据库默认/DTO 显示 scripted/synthetic，assistant仍是固定合成标记，prompt_version仍由 complete 写 context-v2。这是未改变生产合同的测试落点，**不可拿此 DTO 表示真实 DeepSeek**。真实 Provider 的 provider/synthetic/prompt元数据、准入和 assistant语义必须先版本化，不能用继承 ScriptedProvider 或改一个环境变量绕过。
 
@@ -110,3 +110,5 @@ PR22历史SHA、提示词v2.1文件和历史报告保持不变。本测试使用
 覆盖正常候选→pending→HTTP聚合/原文引用→用户确认→summary；空候选；JSON/Schema/usage/model/引用/Unicode/否定/团队归属/重复追问/截断拒绝；超时/断线/取消未知；revision/lease/stop/end导致迟到结果不发布；同键重放/重复execute不再调用Mock；多轮回答关联和历史context；纯快照通过但跨会话DB来源拒绝；非Mock及正式工厂拒绝。
 
 完整既有后端、React、Chromium、离线合同、隔离迁移和Mock CLI结果以本PR CI记录为准。本地故障记录：首次临时集群启动遗漏端口参数，连接15487被拒绝；已停止该测试进程并显式绑定127.0.0.1:15487，未转用正常服务。新测试曾误用枚举.value、扫描UUID为隐私文本，修正测试实现后重跑；不修改原业务断言。
+
+专项离线回归最终30项。本机额外复现CI的localhost路径时发现全DNS拦截误伤psycopg的本地解析；改为仅将固定测试库地址/端口映射数值loopback，新增供应商域名、其他端口及socket连接拒绝断言。这是测试隔离兼容修正，未修改任何生产代码或业务断言。
