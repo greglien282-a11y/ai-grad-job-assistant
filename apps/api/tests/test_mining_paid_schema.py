@@ -329,3 +329,47 @@ def test_plan_and_binding_times_are_database_assigned(binding):
     with e.factory() as db:
         assert db.get(MiningPaidPlan,run.rid).created_at>untrusted
         assert db.get(MiningPaidBinding,run.rid).created_at>untrusted
+
+
+def test_business_login_can_erase_without_any_paid_or_metadata_write_permission(binding):
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import NullPool
+    from app.experience_api import delete_session
+    e=binding;run,values=candidate(e);insert_binding(e,values)
+    role='metadata_web_'+uuid4().hex
+    password=uuid4().hex  # isolated TEST LOGIN only, never a supplier credential
+    owner=e.factory.kw['bind']
+    with owner.begin() as conn:
+        conn.execute(text("SELECT set_config('pathwise.fixture_password',:p,true)"),{'p':password})
+        conn.execute(text(f'''DO $$ BEGIN EXECUTE format('CREATE ROLE %I LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT PASSWORD %L',
+          '{role}',current_setting('pathwise.fixture_password')); END $$'''))
+    runtime=None
+    try:
+        with owner.begin() as conn:
+            conn.execute(text(f'GRANT USAGE ON SCHEMA "{e.schema}" TO "{role}"'))
+            # Only original business tables. All paid/probe/cost/binding tables
+            # and all their functions remain outside this Web role's grants.
+            business=('experience_sessions','experience_projects','conversation_turns',
+                'experience_facts','fact_sources','fact_evidence','fact_changes',
+                'idempotency_operations','ai_mining_runs','ai_mining_receipts',
+                'ai_mining_questions','ai_answer_questions','ai_mining_capacity')
+            conn.execute(text('GRANT SELECT,UPDATE,DELETE ON '+','.join(f'"{e.schema}".{t}' for t in business)+f' TO "{role}"'))
+            for table in (*TABLES,'paid_funding','paid_calls','paid_grants','paid_audit'):
+                assert not conn.scalar(text('SELECT has_table_privilege(:r,:t,\'INSERT,UPDATE,DELETE\')'),dict(r=role,t=f'"{e.schema}".{table}'))
+        runtime=create_engine(owner.url.set(username=role,password=password),poolclass=NullPool,
+            connect_args={'options':f'-csearch_path={e.schema}'},hide_parameters=True)
+        factory=sessionmaker(runtime,expire_on_commit=False)
+        with factory() as db,db.begin():
+            assert db.scalar(text('SELECT current_user=session_user AND session_user=:r'),{'r':role})
+            assert delete_session(run.sid,run.token,db).status_code==204
+        with e.factory() as db:
+            assert db.get(MiningPaidBinding,run.rid).binding_state=='tombstoned'
+            assert db.get(MiningPaidPlan,run.rid) is None
+            assert db.get(MiningPaidIdentity,run.sid) is None
+        assert e.control.read(run.rid)[1]=='reserved' and audit(e) is True
+    finally:
+        if runtime is not None: runtime.dispose()
+        with owner.begin() as conn:
+            conn.execute(text(f'DROP OWNED BY "{role}"'))
+            conn.execute(text(f'DROP ROLE "{role}"'))
