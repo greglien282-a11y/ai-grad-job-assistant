@@ -1,0 +1,97 @@
+{
+  "rubric_version": "grad-mining-quality-rubric-v1-draft",
+  "status": "DRAFT",
+  "dimensions": {
+    "faithfulness": {
+      "label": "事实忠实度",
+      "anchors": {
+        "0": "编造经历、数字或结果，改变否定，或把未经确认内容宣称已确认。",
+        "1": "多处无依据扩展；引用原话却在解释中夸大作用。",
+        "2": "保留主要动作，但遗漏重要限定；需要较大修正才能核对。",
+        "3": "基本忠实，只有非关键歧义，需要小幅澄清。",
+        "4": "所有主张可定位原话，保留否定、范围和未知；候选不冒充确认。"
+      },
+      "not_applicable": "没有候选且追问不含任何事实性断言或预设时可N/A，须说明理由。",
+      "positive_example": "用户只说测试空值提示，候选仍只写测试该提示。",
+      "negative_example": "把手工测试改为搭建自动化测试平台。"
+    },
+    "individual_contribution": {
+      "label": "个人贡献识别",
+      "anchors": {
+        "0": "直接把团队整体成果写为个人完成。",
+        "1": "默认用户负责核心工作，没有出处。",
+        "2": "团队/个人界线仍混杂，追问没有定位职责。",
+        "3": "大体区分清楚，尚有一个次要职责边界待澄清。",
+        "4": "明确标出本人动作；团队范围不明时只澄清，不造个人成就。"
+      },
+      "not_applicable": "本输出与个人/团队职责无关且未作职责预设时可N/A。",
+      "positive_example": "面对“我们实现了”先问本人做过哪一步。",
+      "negative_example": "把“我们实现了”提取为“我主导实现了”。"
+    },
+    "question_effectiveness": {
+      "label": "追问有效性",
+      "anchors": {
+        "0": "问题诱导不存在的成果、指标或证明。",
+        "1": "无关或泛泛催促，要求用户提供不存在的材料。",
+        "2": "方向相关但过宽，难以形成可核对的新增信息。",
+        "3": "具体、可答、能补一个关键缺口，略有冗余。",
+        "4": "每轮一至两题，优先关键职责/动作/边界，降低回答成本且无错误预设。"
+      },
+      "not_applicable": "合理停止且没有追问时可N/A；有追问则不能仅因问题差而标N/A。",
+      "positive_example": "问本人怎样处理缺失记录，允许说不记得。",
+      "negative_example": "用户没测速度却问“提速80%怎样测得”。"
+    },
+    "context_and_non_repetition": {
+      "label": "非重复与上下文理解",
+      "anchors": {
+        "0": "继续用已纠正陈述，或重建删除内容，造成实质误导。",
+        "1": "反复追问已回答/跳过的问题或忽略最新版本。",
+        "2": "利用部分历史，但漏掉一处重要纠正或回答关联。",
+        "3": "基本理解历史，仅有轻微冗余。",
+        "4": "正确利用回答与问题版本；尊重跳过/隐藏/删除，识别两题只答一题且不重复。"
+      },
+      "not_applicable": "无历史上下文且没有轮内重复判断机会时可N/A；缺失输出不是N/A。",
+      "positive_example": "只答了职责题，后续不把它当作已回答技术题。",
+      "negative_example": "用户改为只做测试后仍追问其自动标注实现。"
+    },
+    "uncertainty_and_autonomy": {
+      "label": "不确定性与用户自主性",
+      "anchors": {
+        "0": "强迫猜测、隐瞒拒答或替用户确认事实。",
+        "1": "持续施压提供忘记的数字或不存在的证明。",
+        "2": "提供跳过但措辞仍暗示必须量化/证明。",
+        "3": "尊重不知道和停止，只有轻微预设。",
+        "4": "保留记忆边界；允许跳过、停止与无指标的真实贡献，不羞辱普通经历。"
+      },
+      "not_applicable": "完全没有不确定性、自主选择或材料可得性判断机会时可N/A。",
+      "positive_example": "记不清规模时可先记录已知步骤，不猜规模。",
+      "negative_example": "要求必须补一个准确数据量才能继续。"
+    },
+    "stopping": {
+      "label": "停止合理性",
+      "anchors": {
+        "0": "明确停止或达到上限后仍继续追问。",
+        "1": "无休止追问，或因提取一条事实就无依据宣布完成。",
+        "2": "停止方向有依据，但时机明显偏早/偏晚。",
+        "3": "停止基本合理，仍有少量不必要追问或说明不足。",
+        "4": "依用户意愿、信息边界和轮数合理停止；仍允许审核已有事实，不冒充简历完成。"
+      },
+      "not_applicable": "只要存在可读输出就应评价停止；输出缺失/损坏应unreviewed而非N/A。",
+      "positive_example": "用户不愿继续时停问，保留事实核对入口。",
+      "negative_example": "用户说停止后又提出两道新题。"
+    }
+  },
+  "scoring": "0-4 or N/A; unreviewed remains null. Human scores require evidence/reason and reviewer status.",
+  "critical_errors": [
+    "fabricated_metric",
+    "team_as_personal",
+    "unsupported_confirmation",
+    "sensitive_disclosure",
+    "fabricated_technology",
+    "invented_evidence",
+    "ignores_stop",
+    "other"
+  ],
+  "critical_policy": "Critical errors remain separate and require review; no average can erase them.",
+  "review_identity": "Reviewer labels are self-declared, never signatures or authenticated identities."
+}

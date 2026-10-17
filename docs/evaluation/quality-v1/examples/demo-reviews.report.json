@@ -1,0 +1,343 @@
+{
+  "report_version": "quality-manual-review-summary-v1",
+  "rubric_version": "grad-mining-quality-rubric-v1-draft",
+  "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+  "output_bundle_sha": "0e096b4549afb947572b678e78b5e7e2076ddd7614e076625b5ac01cf6eb66d7",
+  "generation_provenance": {
+    "output_origin": "authored_counterexample",
+    "provider_generated": false,
+    "provider": null,
+    "model": "offline-authored-example-not-a-model",
+    "prompt_version": "dynamic-mining-prompt-v1-offline",
+    "prompt_file_sha": "d9d7b2a4303c58004cbbf97fbc50e57ac195270182b73e760aefb575d8ee5273",
+    "schema_sha": "a55afacc5c0e570a4c86dc6eaa723f8d8b43e58c455bef0308fe57e8834db736",
+    "generation_verified": false
+  },
+  "human_reviews": null,
+  "demonstration_reviews": {
+    "status": "DEMONSTRATION_NOT_HUMAN_RESULTS",
+    "submitted_reviews": 2,
+    "dimensions": {
+      "faithfulness": {
+        "mean": 1.5,
+        "scored": 2,
+        "not_applicable": 0
+      },
+      "individual_contribution": {
+        "mean": 4.0,
+        "scored": 2,
+        "not_applicable": 0
+      },
+      "question_effectiveness": {
+        "mean": 0.0,
+        "scored": 2,
+        "not_applicable": 0
+      },
+      "context_and_non_repetition": {
+        "mean": 0.0,
+        "scored": 2,
+        "not_applicable": 0
+      },
+      "uncertainty_and_autonomy": {
+        "mean": 0.0,
+        "scored": 2,
+        "not_applicable": 0
+      },
+      "stopping": {
+        "mean": 3.0,
+        "scored": 2,
+        "not_applicable": 0
+      }
+    },
+    "critical_errors": [
+      {
+        "case_id": "GQ06",
+        "output_id": "GQ06-adversarial",
+        "reviewer_ref": "DEMO_A_NOT_A_PERSON",
+        "code": "fabricated_metric",
+        "reason": "演示：追问预设用户从未提供的比例。",
+        "evidence": [
+          {
+            "source": "output",
+            "source_id": "GQ06-adversarial",
+            "quote": "80%",
+            "start": 222,
+            "end": 225
+          }
+        ]
+      },
+      {
+        "case_id": "GQ06",
+        "output_id": "GQ06-adversarial",
+        "reviewer_ref": "DEMO_B_NOT_A_PERSON",
+        "code": "fabricated_metric",
+        "reason": "演示：追问预设用户从未提供的比例。",
+        "evidence": [
+          {
+            "source": "output",
+            "source_id": "GQ06-adversarial",
+            "quote": "80%",
+            "start": 222,
+            "end": 225
+          }
+        ]
+      }
+    ],
+    "severe_errors_block_acceptance": true,
+    "disagreements": [
+      {
+        "output_id": "GQ06-adversarial",
+        "dimension": "faithfulness",
+        "ratings": [
+          {
+            "reviewer_ref": "DEMO_A_NOT_A_PERSON",
+            "applicability": "applicable",
+            "score": 1
+          },
+          {
+            "reviewer_ref": "DEMO_B_NOT_A_PERSON",
+            "applicability": "applicable",
+            "score": 2
+          }
+        ]
+      }
+    ],
+    "second_review_requested": 2,
+    "acceptance_decision": "NOT_ISSUED",
+    "reviewer_agreement_rate": null
+  },
+  "draft_reviews": 0,
+  "validated_records": [
+    {
+      "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+      "output_sha": "54b5594cb181e8082bdf8dfeb0fc6505241b127243db92672dacef7c46ab7599",
+      "output_id": "GQ06-adversarial",
+      "case_id": "GQ06",
+      "rubric_version": "grad-mining-quality-rubric-v1-draft",
+      "demonstration": true,
+      "reviewer_ref": "DEMO_A_NOT_A_PERSON",
+      "reviewer_status": "demonstration",
+      "submission_status": "submitted",
+      "ratings": {
+        "faithfulness": {
+          "score": 1,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "individual_contribution": {
+          "score": 4,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "question_effectiveness": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "context_and_non_repetition": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "uncertainty_and_autonomy": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "stopping": {
+          "score": 3,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        }
+      },
+      "severe_errors": [
+        {
+          "code": "fabricated_metric",
+          "reason": "演示：追问预设用户从未提供的比例。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        }
+      ],
+      "needs_second_review": true
+    },
+    {
+      "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+      "output_sha": "54b5594cb181e8082bdf8dfeb0fc6505241b127243db92672dacef7c46ab7599",
+      "output_id": "GQ06-adversarial",
+      "case_id": "GQ06",
+      "rubric_version": "grad-mining-quality-rubric-v1-draft",
+      "demonstration": true,
+      "reviewer_ref": "DEMO_B_NOT_A_PERSON",
+      "reviewer_status": "demonstration",
+      "submission_status": "submitted",
+      "ratings": {
+        "faithfulness": {
+          "score": 2,
+          "applicability": "applicable",
+          "reason": "演示分歧：候选本身忠实，但提问预设错误；需复核维度归属。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "individual_contribution": {
+          "score": 4,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "question_effectiveness": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "context_and_non_repetition": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "uncertainty_and_autonomy": {
+          "score": 0,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        },
+        "stopping": {
+          "score": 3,
+          "applicability": "applicable",
+          "reason": "演示：用户已说没有测过速度，追问却预设提升比例；本维度按Rubric演示打分，不是真实人工评审。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        }
+      },
+      "severe_errors": [
+        {
+          "code": "fabricated_metric",
+          "reason": "演示：追问预设用户从未提供的比例。",
+          "evidence": [
+            {
+              "source": "output",
+              "source_id": "GQ06-adversarial",
+              "quote": "80%",
+              "start": 222,
+              "end": 225
+            }
+          ]
+        }
+      ],
+      "needs_second_review": true
+    }
+  ],
+  "real_model_quality": null,
+  "limitations": [
+    "No reviewer authentication or signatures; never synthesize agreement statistics.",
+    "Demonstrations never enter human scores; serious errors are not averaged away."
+  ]
+}

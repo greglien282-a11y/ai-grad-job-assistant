@@ -1,0 +1,75 @@
+{
+  "dataset_version": "grad-mining-quality-v1-draft",
+  "provenance": {
+    "output_origin": "authored_counterexample",
+    "provider_generated": false,
+    "provider": null,
+    "model": "offline-authored-example-not-a-model",
+    "prompt_version": "dynamic-mining-prompt-v1-offline",
+    "generation_verified": false,
+    "prompt_file_sha": "d9d7b2a4303c58004cbbf97fbc50e57ac195270182b73e760aefb575d8ee5273",
+    "schema_sha": "a55afacc5c0e570a4c86dc6eaa723f8d8b43e58c455bef0308fe57e8834db736"
+  },
+  "outputs": [
+    {
+      "case_id": "GQ01",
+      "output_id": "GQ01-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":11,\"quote\":\"我编写了借阅状态组件。\",\"start\":0,\"turn_id\":\"33722422-7f59-51b4-bfa7-d5d3f1f806e4\"}}],\"questions\":[{\"purpose\":\"detail\",\"source_turn_ids\":[\"33722422-7f59-51b4-bfa7-d5d3f1f806e4\"],\"text\":\"你写的借阅状态组件具体怎样响应借阅操作？\"}],\"schema_version\":2,\"stop\":false}"
+    },
+    {
+      "case_id": "GQ02",
+      "output_id": "GQ02-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":13,\"quote\":\"我独立实现了整个订单看板。\",\"start\":0,\"turn_id\":\"f9d3fcc0-60eb-5e5e-b94e-b08c52f3a63a\"}}],\"questions\":[{\"purpose\":\"contribution\",\"source_turn_ids\":[\"f9d3fcc0-60eb-5e5e-b94e-b08c52f3a63a\"],\"text\":\"其中你本人实际完成了什么？说不清也可以说明。\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ03",
+      "output_id": "GQ03-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":13,\"quote\":\"我整理了27000条记录。\",\"start\":0,\"turn_id\":\"261da030-8583-55b0-93b7-fbc9768139b0\"}}],\"questions\":[{\"purpose\":\"detail\",\"source_turn_ids\":[\"261da030-8583-55b0-93b7-fbc9768139b0\"],\"text\":\"你是怎样发现并整理这些缺失记录的？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ04",
+      "output_id": "GQ04-adversarial",
+      "content": "{\"candidates\":[],\"questions\":[],\"schema_version\":2,\"stop\":true,\"stop_reason\":\"enough_information\"}"
+    },
+    {
+      "case_id": "GQ05",
+      "output_id": "GQ05-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":10,\"quote\":\"我们实现了推荐系统。\",\"start\":0,\"turn_id\":\"dc1af43e-5ee8-547c-a9a6-cee2e2f7c9f3\"}}],\"questions\":[{\"purpose\":\"contribution\",\"source_turn_ids\":[\"dc1af43e-5ee8-547c-a9a6-cee2e2f7c9f3\"],\"text\":\"推荐系统里有哪一步是你本人实际做过的？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ06",
+      "output_id": "GQ06-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":9,\"quote\":\"我优化了导入页面。\",\"start\":0,\"turn_id\":\"a297f5f8-b78e-517b-919c-1dc555c96770\"}}],\"questions\":[{\"purpose\":\"detail\",\"source_turn_ids\":[\"853fe6bf-4b72-5c86-949c-c1ed664eab1d\"],\"text\":\"速度提升80%是如何测得的？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ07",
+      "output_id": "GQ07-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":12,\"quote\":\"我使用了十万条训练数据。\",\"start\":0,\"turn_id\":\"ed68fe81-a192-5bd0-80b1-9e60a40cd06e\"}}],\"questions\":[{\"purpose\":\"uncertainty\",\"source_turn_ids\":[\"ed68fe81-a192-5bd0-80b1-9e60a40cd06e\"],\"text\":\"记得做过的一个具体步骤吗？规模不记得可以略过。\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ08",
+      "output_id": "GQ08-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":12,\"quote\":\"我完成了学校服务器部署。\",\"start\":0,\"turn_id\":\"ba5d1efe-a693-537f-b29e-f4f0e5a3f452\"}}],\"questions\":[{\"purpose\":\"contribution\",\"source_turn_ids\":[\"ba5d1efe-a693-537f-b29e-f4f0e5a3f452\"],\"text\":\"部署之外，你已经实际做过哪一步？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ09",
+      "output_id": "GQ09-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":9,\"quote\":\"我部署过推荐服务。\",\"start\":0,\"turn_id\":\"54fa85a3-3c9d-5150-9f88-d53d2b2228e8\"}}],\"questions\":[{\"purpose\":\"contribution\",\"source_turn_ids\":[\"54fa85a3-3c9d-5150-9f88-d53d2b2228e8\"],\"text\":\"除部署之外，你本人实际做过什么？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ10",
+      "output_id": "GQ10-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":11,\"quote\":\"我开发了卷积网络应用。\",\"start\":0,\"turn_id\":\"1027e734-d502-5b65-b687-402198c90622\"}}],\"questions\":[{\"purpose\":\"contribution\",\"source_turn_ids\":[\"1027e734-d502-5b65-b687-402198c90622\"],\"text\":\"课堂之外有实际动手做过的小练习吗？没有也可以到这里。\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ11",
+      "output_id": "GQ11-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":78,\"quote\":\"我编写了清洗脚本。\",\"start\":0,\"turn_id\":\"3396d88f-ccdd-512d-893d-402415d3b8fb\"}},{\"citation\":{\"end\":18,\"quote\":\"我测试了导出按钮。\",\"start\":9,\"turn_id\":\"3396d88f-ccdd-512d-893d-402415d3b8fb\"}},{\"citation\":{\"end\":26,\"quote\":\"我制作了结果图。\",\"start\":18,\"turn_id\":\"3396d88f-ccdd-512d-893d-402415d3b8fb\"}}],\"questions\":[{\"purpose\":\"verification\",\"source_turn_ids\":[\"3396d88f-ccdd-512d-893d-402415d3b8fb\"],\"text\":\"这些步骤有方便自查的记录吗？没有材料也可以说明。\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    },
+    {
+      "case_id": "GQ12",
+      "output_id": "GQ12-adversarial",
+      "content": "{\"candidates\":[{\"citation\":{\"end\":9,\"quote\":\"我实现了自动标注。\",\"start\":0,\"turn_id\":\"670c0456-ee0a-5665-a5d2-c37b972cfa32\"}}],\"questions\":[{\"purpose\":\"correction\",\"source_turn_ids\":[\"f05ef128-c260-5b45-bf2d-7ebfa6334d5a\"],\"text\":\"按你最新说明理解为只测试导出按钮，这个职责边界准确吗？\"}],\"schema_version\":2,\"stop\":false,\"stop_reason\":null}"
+    }
+  ]
+}
