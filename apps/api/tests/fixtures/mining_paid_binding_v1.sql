@@ -86,6 +86,7 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
 DECLARE f __SCHEMA__.paid_funding%ROWTYPE; p __SCHEMA__.binding_plans%ROWTYPE;
   b __SCHEMA__.mining_call_bindings%ROWTYPE; c __SCHEMA__.paid_calls%ROWTYPE;
   g __SCHEMA__.paid_grants%ROWTYPE; ident __SCHEMA__.binding_identity%ROWTYPE;
+  s __SCHEMA__.experience_sessions%ROWTYPE;
   r __SCHEMA__.ai_mining_runs%ROWTYPE; lim __SCHEMA__.binding_limits%ROWTYPE;
   answer jsonb; cid uuid; stamp timestamptz; k text; v text; used numeric; n integer; active integer;
 BEGIN
@@ -129,14 +130,16 @@ BEGIN
     WHERE x.call_id IS NULL) THEN RAISE EXCEPTION 'binding_unattributed_call'; END IF;
   IF b.binding_state='tombstoned' THEN RAISE EXCEPTION 'binding_business_deleted'; END IF;
   SELECT * INTO p FROM __SCHEMA__.binding_plans WHERE run_id=rid;
-  -- Hold a key-share lock until allocation/permit commits. A concurrent DELETE
-  -- must either finish first (no allocation), or run its tombstone trigger after
-  -- this binding is visible; never leave an unmarked orphan due to a race.
+  -- Funding -> Session -> Run -> user/session sub-caps. Lock Session BEFORE
+  -- Run, matching business mutation/deletion's Session -> child-row order.
+  -- KEY SHARE alone does not exclude non-key status/revision updates. Recheck
+  -- the locked Session tuple after any wait and hold through permit COMMIT.
+  -- Business deletion/erasure never acquires Funding; no reverse lock edge.
+  SELECT * INTO s FROM __SCHEMA__.experience_sessions WHERE id=p.session_id FOR UPDATE;
   SELECT * INTO r FROM __SCHEMA__.ai_mining_runs WHERE id=rid FOR KEY SHARE;
   SELECT * INTO ident FROM __SCHEMA__.binding_identity WHERE session_id=p.session_id;
   IF p.run_id IS NULL OR r.id IS NULL OR ident.session_id IS NULL OR p.ledger_id<>ledger OR r.session_id<>p.session_id
-    OR NOT EXISTS(SELECT 1 FROM __SCHEMA__.experience_sessions s WHERE s.id=p.session_id AND s.status='active'
-      AND s.mining_status='active' AND s.context_revision=r.reserved_revision)
+    OR s.id IS NULL OR s.status<>'active' OR s.mining_status<>'active' OR s.context_revision<>r.reserved_revision
     OR r.state<>'running' OR r.lease_until<=clock_timestamp() THEN RAISE EXCEPTION 'binding_business_inactive'; END IF;
   SELECT * INTO g FROM __SCHEMA__.paid_grants WHERE id=p.grant_id;
   IF g.id IS NULL OR g.policy_hash<>p.policy_sha OR encode(sha256(convert_to(g.policy->>'account_ref','UTF8')),'hex')<>p.account_sha

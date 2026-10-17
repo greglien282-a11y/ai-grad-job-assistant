@@ -10,6 +10,7 @@ from decimal import Decimal
 import json
 import multiprocessing
 import os
+from queue import Queue
 from pathlib import Path
 import secrets
 import time
@@ -615,3 +616,98 @@ def test_original_0009_exclusivity_survives_even_reconciled_fixture(binding):
             policy={'execution':'offline_mock'},revoked=False,state='reconciled',reserved=Decimal('.1'),actual_cny=Decimal(0)))
     with pytest.raises(DBAPIError,match='controlled_exclusive_pool'): e.control.invoke('bind',run.rid)
     assert held(e)==0 and count(e,PaidCall)==0
+
+
+def mutate_business_on_connection(e, run, change, conn):
+    """Real business implementation, SAVEPOINT inside a controlled outer txn."""
+    from app.experience_api import close_session, delete_session
+    from app.mining_api import ContextAction, stop
+    factory = sessionmaker(bind=conn, expire_on_commit=False, join_transaction_mode='create_savepoint')
+    if change == 'stop':
+        with factory() as db:
+            revision = db.get(ExperienceSession, run.sid).context_revision
+        stop(run.sid, ContextAction(base_revision=revision), run.token, factory)
+    else:
+        with factory() as db, db.begin():
+            if change == 'end': close_session(run.sid, run.token, db)
+            elif change == 'delete': delete_session(run.sid, run.token, db)
+            else:
+                assert change == 'revision'
+                facts.add_turn(db, run.sid, run.token, 'Synthetic correction: only local filtering.')
+
+
+def wait_for_specific_blocker(conn, waiter, blocker):
+    """Observe the *two participating backends*, not an unrelated lock/sleep."""
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        if blocker in conn.scalar(text('SELECT pg_blocking_pids(:pid)'), {'pid': waiter}):
+            return
+        time.sleep(.01)
+    raise AssertionError('Expected participant lock was not observed')
+
+
+@pytest.mark.parametrize('change', ['stop', 'end', 'revision', 'delete'])
+def test_business_commit_before_permit_cannot_send(binding, change):
+    e=binding; run=new_run(e); claim_plan(e,run); e.control.invoke('bind',run.rid)
+    pids=Queue()
+    with e.factory.kw['bind'].connect() as conn, ThreadPoolExecutor(max_workers=1) as pool:
+        transaction=conn.begin()
+        try:
+            assert conn.scalar(text('SHOW transaction_isolation'))=='read committed'
+            owner_pid=conn.scalar(text('SELECT pg_backend_pid()'))
+            mutate_business_on_connection(e,run,change,conn)
+            # Old implementation can read the pre-update Session snapshot and
+            # reach this later lock. Force mutation COMMIT before permit resumes.
+            conn.execute(text(f'''SELECT scope FROM "{e.schema}".binding_limits
+                WHERE kind='user' AND scope=:s FOR UPDATE'''), {'s':run.actor_scope})
+            def permit():
+                with e.control.engine.begin() as runtime:
+                    pids.put(runtime.scalar(text('SELECT pg_backend_pid()')))
+                    return runtime.scalar(e.control.statement(),e.control.payload('permit',run.rid))
+            future=pool.submit(permit)
+            wait_for_specific_blocker(conn,pids.get(timeout=5),owner_pid)
+            transaction.commit()
+        finally:
+            if transaction.is_active: transaction.rollback()
+        with pytest.raises(DBAPIError,match='binding_business_inactive|binding_business_deleted'):
+            future.result(timeout=5)
+    metadata,state,_,actual=e.control.read(run.rid)
+    assert state=='reserved' and actual is None
+    assert metadata.binding_state==('tombstoned' if change=='delete' else 'bound')
+    assert held(e)==Decimal('.014910') and count(e,PaidCall)==1
+    assert e.control.invoke('bind',run.rid)['created'] is False
+    with pytest.raises(DBAPIError,match='binding_business_inactive|binding_business_deleted'):
+        e.control.invoke('permit',run.rid)
+
+
+@pytest.mark.parametrize('change', ['stop', 'end', 'revision', 'delete'])
+def test_permit_commit_before_business_change_retains_sent_liability(binding, change):
+    e=binding; run=new_run(e); claim_plan(e,run); e.control.invoke('bind',run.rid)
+    pids=Queue()
+    with e.control.engine.connect() as conn, ThreadPoolExecutor(max_workers=1) as pool:
+        transaction=conn.begin()
+        try:
+            assert conn.scalar(text('SHOW transaction_isolation'))=='read committed'
+            runtime_pid=conn.scalar(text('SELECT pg_backend_pid()'))
+            assert conn.scalar(e.control.statement(),e.control.payload('permit',run.rid))['permitted']
+            def mutate():
+                with e.factory.kw['bind'].begin() as owner:
+                    pids.put(owner.scalar(text('SELECT pg_backend_pid()')))
+                    mutate_business_on_connection(e,run,change,owner)
+            future=pool.submit(mutate)
+            wait_for_specific_blocker(conn,pids.get(timeout=5),runtime_pid)
+            transaction.commit()
+        finally:
+            if transaction.is_active: transaction.rollback()
+        future.result(timeout=5)
+    metadata,state,_,actual=e.control.read(run.rid)
+    assert state=='sent' and actual is None
+    assert metadata.binding_state==('tombstoned' if change=='delete' else 'bound')
+    assert held(e)==Decimal('.014910') and count(e,PaidCall)==1
+    assert e.control.invoke('bind',run.rid)['created'] is False
+    with pytest.raises(DBAPIError,match='binding_business_inactive|binding_business_deleted'):
+        e.control.invoke('permit',run.rid)
+    # Outcome recording survives all business changes, without refund or resend.
+    e.control.invoke('unknown',run.rid)
+    assert e.control.read(run.rid)[1]=='unknown'
+    assert held(e)==Decimal('.014910') and count(e,PaidCall)==1

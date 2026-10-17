@@ -42,9 +42,9 @@
 
 1. 校验session_user为指定独立LOGIN，拒绝owner/超级用户、INHERIT、角色成员、CREATE及任何持久表DML；也拒绝可直接EXECUTE旧paid_runtime的角色，防止绕过归属子限额。
 2. 锁中央paid_funding(1)，核对唯一ledger UUID；已有binding先核对PaidCall的operation/request/policy/grant/provider/model。相同bind只返回既有call，不重派发、不重复预留。
-3. 对新bind/permit检查业务run=running、session/mining active、revision/lease，服务端plan与grant账户/配置/证书对应；Run加KEY SHARE行锁直到事务提交，防止分配/删除并发留下未标记的绑定。存在未归属中央paid_call则拒绝分配。存在sent/unknown/response_received未核销时保守阻断新调用。非实验总池的held/spent与中央调用求和不一致时拒绝，不自动修账。
+3. 对新bind/permit检查业务run=running、session/mining active、revision/lease，服务端plan与grant账户/配置/证书对应；先锁Session FOR UPDATE，再锁Run KEY SHARE，直到事务提交；等待后重新验证锁定的Session状态/版本，防止停止/结束/版本更新被普通快照读漏掉，以及分配/删除并发留下未标记的绑定。存在未归属中央paid_call则拒绝分配。存在sent/unknown/response_received未核销时保守阻断新调用。非实验总池的held/spent与中央调用求和不一致时拒绝，不自动修账。
 4. 在同一事务内调用**原0008 paid_runtime reserve**，其检查grant时效/撤销、价格/FX/完整输入证书、provider/model/单次/grant/全局次数及预算；原0009触发器继续生效。随后写唯一binding。任意插入/约束/子限额失败，整笔paid_call、held、audit及binding一起ROLLBACK。
-5. 完整锁顺序是中央总池→Run KEY SHARE→user→session子限额，从中央记录累计费用、次数和未核销并发；没有批准的子限额拒绝。全局锁已串行化不同进程/批次，子限额不形成第二套预算。原0008的provider/model查询在同一全局锁内，不再获取独立互相冲突的锁。业务删除只执行原级联和绑定tombstone，不反向获取资金锁；后续不要添加Session→Funding的事务路径造成反向死锁。
+5. 完整锁顺序是中央总池→Session FOR UPDATE→Run KEY SHARE→user→session子限额，从中央记录累计费用、次数和未核销并发；没有批准的子限额拒绝。全局锁已串行化不同进程/批次，子限额不形成第二套预算。原0008的provider/model查询在同一全局锁内，不再获取独立互相冲突的锁。业务删除只执行原级联和绑定tombstone，不反向获取资金锁；后续不要添加Session→Funding的事务路径造成反向死锁。
 6. permit前重新核验撤销、配置、lease及限额，再调用原paid_runtime取得唯一一次sent许可。预算不足/审批改变不释放预留，也不回退模型或换key。
 7. received/unknown允许业务删除后更新既有账单状态（不能新增call）；只接收原paid_runtime允许的规范usage。只读`read()`强制READ ONLY，不调用任何状态函数或模型。显式人工对账仍只走原PaidAdmin；核账不恢复permit。
 
@@ -116,3 +116,22 @@
 本地初期SQL安装器曾因psycopg把固定SQL中的百分号当占位符失败，改为SQLAlchemy明确no_parameters（DDL不含数据参数）；localhost启动曾无输出，停止后改用带连接超时的明确127.0.0.1测试URL。未改用正常数据库或放宽安全检查。最终测试数量及完整CI结果以本PR检查记录为准。
 
 删除竞态新增用例最初因观察器错误地用pg_locks.database过滤transactionid（该字段为NULL）没有观察到锁；改用pg_stat_activity归属测试数据库后维持原等待断言。删除先行用例最初直接删ORM会话遗漏原receipt擦除，已复用完整原delete_session函数，未放宽原FK或删除语义。两种竞态都用真实事务等待验证；无真实用户库操作。
+
+
+## 10. PR26 并发复审：Session 与发送许可的线性化
+
+旧原型确有竞态，不仅是假设：在本机一次性 PostgreSQL 16（127.0.0.1:15487、pathwise_test、每项随机schema）上，用两个独立真实连接复现。新增测试在修复前得到 **3 failed / 1 passed**：stop、end、revision 的“业务提交先行必须拒绝”断言均失败，delete已由原Run锁保护。失败原因是 Session 普通SELECT能读到未提交更新之前的active/revision；Run KEY SHARE不与Session的非键更新互斥。没有保存或调用真实供应商请求。
+
+受控时序与证据：
+
+- **业务先行**：连接A调用原`mining_api.stop`、`experience_api.close_session`、`facts.add_turn`或`experience_api.delete_session`，通过SAVEPOINT纳入受控外层事务；再锁user子限额作为旧代码检查后的阻挡点。连接B以受限LOGIN执行permit。A用`pg_blocking_pids(B)`确认B确实被A阻塞，然后A COMMIT，最后等待B结果。旧代码在子限额处等待，恢复后错误批准；修复后B在Session行处等待，恢复后重新读取最新元组，拒绝许可。不是靠sleep推测先后或Mock身份检查。
+- **许可先行**：连接B执行permit获得true但不提交；连接A调用上述原业务操作。B用`pg_blocking_pids(A)`确认A等待B的Session锁，然后B COMMIT，A才继续提交。提交后的费用仍sent、held保留；再次permit拒绝，bind重放不新建call。之后unknown记录仍可落库，不退款、不重发。内存true或回滚事务不等于已提交许可，原rollback测试保留。
+- 两种时序各覆盖stop/end/revision/delete，共新增8项，原47项未删除、跳过或放宽。均检查只有一个PaidCall、完整预留不变、actual仍NULL；删除时审计绑定必须tombstoned，其余仍bound。只观察两个参与者PID，不会把无关等待误认为证明。
+
+本机修复后绑定专项为55 passed；最终显式READ COMMITTED断言补齐后，8项双连接测试再次全部通过（原47项未重写）。完整后端与CI结果记录于PR检查，不把尚未完成的检查写成已通过。前端回归首次因沙箱临时缓存重命名EPERM而未运行用例；正常权限重跑91项与构建通过，无前端源码变更。
+
+修复仅改变测试DDL：Funding→Session FOR UPDATE→Run KEY SHARE→user→session子限额。Session锁必须先于Run，否则与原删除的Session→子Run锁序反转。现有业务修改/删除会锁Session及其子行、绑定墓碑，但**不获取Funding或子限额锁**；binding_erasure只更新审计绑定，且permit在Session之前只普通读binding，不持其行锁。故在已审查路径内不存在Session→Funding或Run→Session的反向边。received/unknown、bind只读重放仍可不依赖已删除的业务行，只按原Funding路径处理既有责任。子限额阻挡仅用于受控测试，不新增业务路径；测试业务先持Session再持子限额，也没有等待Funding。
+
+线性化以**持Session行锁的事务提交**为边界：停止/结束/版本更新/删除先提交，后续不得得到sent许可；permit先提交，后续停止/删除不能追溯撤销sent账单责任。锁不跨HTTP，不保证供应商绝对只执行一次，也不保证停用按钮取消已经提交的许可。
+
+证明范围仅为本PR同库、READ COMMITTED、现有业务事务和该测试函数。正式迁移/角色部署仍未批准；跨库协调、未来任何Session→Funding事务、新的直接Run更新器、真实Transport的可消耗许可仍是上线BLOCK，必须重新审查锁图并做故障测试。不能将本轮结果称为正式Provider已经可收费运行。
