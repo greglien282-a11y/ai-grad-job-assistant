@@ -192,7 +192,7 @@ def test_purpose_match_and_number_match_are_not_semantic_scores():
     assert any(f['code']=='unsupported_numeric_token' for f in row['critical_rule_signals'])
 
 
-@pytest.mark.parametrize('case_index',[14,15,16,17])
+@pytest.mark.parametrize('case_index',[15,17])
 def test_holdout_stop_rules_have_separate_offline_checks(case_index):
     _,cases=load_dataset();case=cases[case_index]
     from app.mining_quality_evaluation import score_case,SuppliedOutput
@@ -203,6 +203,71 @@ def test_holdout_stop_rules_have_separate_offline_checks(case_index):
     v.update(stop=False,stop_reason=None,questions=[dict(text='还有什么需要补充？',purpose='detail',source_turn_ids=[str(case.turns[-1].turn_id)])])
     bad=score_case(case,entry.model_copy(update={'content':canonical(v)}))
     assert bad['schema_valid'] and bad['metrics']['draft_stop_alignment']['ratio']==0
+
+
+def holdout_bundle():
+    b=bundle();b['outputs']=[]
+    b['provenance']['output_origin']='mock'
+    return b
+
+
+@pytest.mark.parametrize('case_id',['GQ15','GQ17'])
+def test_business_gate_rejects_model_scoring_before_parsing(case_id,monkeypatch):
+    from app import mining_quality_evaluation as scoring
+    _,cases=load_dataset();case=next(c for c in cases if c.case_id==case_id)
+    def never_parse(*args): raise AssertionError('Business gate cannot parse model output')
+    monkeypatch.setattr(scoring,'parse_output',never_parse)
+    e=scoring.SuppliedOutput(case_id=case_id,output_id='forbidden-output',content='{}')
+    with pytest.raises(QualityInputError):scoring.score_case(case,e)
+    b=holdout_bundle();b['outputs']=[e.model_dump()]
+    r=scoring.evaluate(b,split='holdout')
+    assert r['planned_cases']==8 and r['planned_outputs']==6 and r['missing_outputs']==6
+    assert r['metrics']['strict_schema']['denominator']==6
+    assert r['unexpected_business_gate_outputs']==1
+    row=next(x for x in r['rows'] if x['case_id']==case_id)
+    assert row['validation_code']=='unexpected_output_rejected' and row['metrics']=={}
+    assert row['schema_valid'] is row['runtime_valid'] is row['output_sha'] is None
+    assert not templates(r)['reviews']
+    assert r['human_semantic_scores'] is r['real_model_holdout_quality'] is None
+
+
+def test_no_dispatch_is_not_a_model_stop_success_or_missing_model_output():
+    r=evaluate(holdout_bundle(),split='holdout')
+    assert len(r['business_gate_checks'])==2 and r['unexpected_business_gate_outputs']==0
+    assert all(g['status']=='no_output_expected' and g['actual_dispatch']=='NOT_MEASURED' for g in r['business_gate_checks'])
+    assert r['metrics']['draft_stop_alignment']['denominator']==6
+    assert r['metrics']['strict_schema']['numerator']==0
+    packet=review_packet(r,holdout_bundle())
+    assert packet.count('business-gate / no-dispatch')==2
+
+
+@pytest.mark.parametrize('field,value',[('round_count',1),('consecutive_empty_rounds',1),('user_stopped',False)])
+def test_gq17_impossible_gate_history_rejected(field,value):
+    _,cases=load_dataset();c=cases[16];raw=c.model_dump(mode='json')
+    assert len(c.gate_history)==2 and len(c.turns)==2
+    assert c.stop_context['round_count']==c.stop_context['consecutive_empty_rounds']==2
+    raw['stop_context'][field]=value
+    with pytest.raises(ValueError):Case.model_validate(raw)
+
+
+@pytest.mark.parametrize('which',['prompt','schema','schema_whitespace'])
+@pytest.mark.parametrize('sync_claim',[False,True])
+def test_same_version_file_drift_rejected_even_with_synced_output_sha(monkeypatch,which,sync_claim):
+    from app.mining_quality_data import digest
+    b=bundle();original_text=Path.read_text;original_bytes=Path.read_bytes
+    if which=='prompt':
+        target=ROOT/'docs/evaluation/dynamic-mining-prompt-v1.txt'
+        changed=original_bytes(target)+b'\nChanged without a new version\n'
+        monkeypatch.setattr(Path,'read_bytes',lambda p,*a,**k:changed if p==target else original_bytes(p,*a,**k))
+        if sync_claim:b['provenance']['prompt_file_sha']=text_sha(changed.decode('utf8'))
+    else:
+        target=ROOT/'docs/evaluation/provider-wire-output.schema.json'
+        changed=json.loads(original_text(target,encoding='utf8'))
+        if which=='schema':changed['title']='Changed without a new version'
+        changed_bytes=json.dumps(changed,indent=3).encode('utf8')
+        monkeypatch.setattr(Path,'read_bytes',lambda p,*a,**k:changed_bytes if p==target else original_bytes(p,*a,**k))
+        if sync_claim:b['provenance']['schema_sha']=digest(changed)
+    with pytest.raises(QualityInputError):evaluate(b)
 
 
 def test_unicode_index_not_utf16_or_bytes():

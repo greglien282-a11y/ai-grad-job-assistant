@@ -11,7 +11,7 @@ from app.mining_provider import AtomicCitation
 
 ROOT=Path(__file__).resolve().parents[3]
 DATA_DIR=ROOT/'docs/evaluation/quality-v1'
-DATASET_SHA='ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329'
+DATASET_SHA='e0af925ad6b431ff5d50eb7f59aaa42bd3b2598c2d51edfc878b6bdf59bb6fd7'
 PURPOSE=Literal['contribution','detail','uncertainty','verification','correction']
 DIMENSIONS=('faithfulness','individual_contribution','question_effectiveness',
     'context_and_non_repetition','uncertainty_and_autonomy','stopping')
@@ -77,9 +77,15 @@ class Reference(Strict):
     suggested_question: str|None
     forbidden_claims: tuple[ForbiddenClaim,...]
     misleading_questions: tuple[str,...]
-    stop_expectation: Literal['continue','stop','either']
+    stop_expectation: Literal['continue','stop','either','not_applicable']
     allowed_stop_reasons: tuple[Literal['enough_information','user_uncertain','no_new_information'],...]
     stop_notes: str
+
+
+class GateRound(Strict):
+    input_turn_id: UUID
+    state: Literal['completed']
+    added_facts: int=Field(strict=True,ge=0)
 
 
 class Case(Strict):
@@ -89,6 +95,8 @@ class Case(Strict):
     complexity: Literal['single_turn','multi_turn']
     synthetic: Literal[True]
     split: Literal['development','holdout']
+    evaluation_kind: Literal['model_output','business_gate']
+    gate_history: tuple[GateRound,...]=()
     background: str
     turns: tuple[Turn,...]=Field(min_length=1,max_length=8)
     confirmed_facts: tuple[Fact,...]
@@ -123,6 +131,22 @@ class Case(Strict):
         if any(f.status!='user_confirmed' for f in self.confirmed_facts): raise ValueError()
         if any(f.status!='pending' for f in self.pending_facts): raise ValueError()
         if any(PRIVATE.search(t.text) for t in self.turns): raise ValueError()
+        if self.evaluation_kind=='business_gate':
+            # These snapshots are already stopped, NOT inputs for a model to
+            # decide whether to stop. Reference model-output targets are N/A.
+            if not self.stop_context.get('user_stopped') or self.reference.stop_expectation!='not_applicable': raise ValueError()
+            if self.reference.citations or self.reference.question_goals or self.reference.allowed_stop_reasons: raise ValueError()
+        elif self.reference.stop_expectation=='not_applicable': raise ValueError()
+        if self.gate_history:
+            if self.evaluation_kind!='business_gate' or any(r.input_turn_id not in turns for r in self.gate_history): raise ValueError()
+            # build_context counts distinct input IDs, then scans the latest
+            # two completed runs for facts. Fixtures are chronological.
+            rounds=len({r.input_turn_id for r in self.gate_history})
+            empty=0
+            for r in reversed(self.gate_history[-2:]):
+                if r.added_facts: break
+                empty+=1
+            if self.stop_context['round_count']!=rounds or self.stop_context['consecutive_empty_rounds']!=empty: raise ValueError()
         return self
 
 

@@ -81,6 +81,11 @@ def review_packet(report,bundle_data):
         'case/output SHA 必须与同次报告绑定；严重错误单独记录，不能用平均分冲抵。','']
     for r in report['rows']:
         c=by_id[r['case_id']];e=entries.get(c.case_id)
+        if c.evaluation_kind=='business_gate':
+            lines+=[f'## {c.case_id} — business-gate / no-dispatch',
+                '业务已禁止模型调用；模型输出评分不适用，不展示或接受意外响应。',
+                f"门禁结果：{r['validation_code']}；仅凭无导入输出不能证明实际没有发送。",'']
+            continue
         lines+=[f'## {c.case_id} — {escape(c.title)}',f'划分 {c.split}；背景：{escape(c.background)}。',
             f"输出ID {r['output_id']}；输出SHA {r['output_sha']}；标签审核状态DRAFT。",'','用户原话（全部虚构）：']
         for t in c.turns:

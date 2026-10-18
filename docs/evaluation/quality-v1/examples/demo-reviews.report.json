@@ -1,8 +1,8 @@
 {
   "report_version": "quality-manual-review-summary-v1",
   "rubric_version": "grad-mining-quality-rubric-v1-draft",
-  "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
-  "output_bundle_sha": "0e096b4549afb947572b678e78b5e7e2076ddd7614e076625b5ac01cf6eb66d7",
+  "dataset_sha": "e0af925ad6b431ff5d50eb7f59aaa42bd3b2598c2d51edfc878b6bdf59bb6fd7",
+  "output_bundle_sha": "813e20a82049e5ac372cfd40f71d0f0f6c56223dad9fc8e77bae6e85e4bfb33d",
   "generation_provenance": {
     "output_origin": "authored_counterexample",
     "provider_generated": false,
@@ -109,7 +109,7 @@
   "draft_reviews": 0,
   "validated_records": [
     {
-      "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+      "dataset_sha": "e0af925ad6b431ff5d50eb7f59aaa42bd3b2598c2d51edfc878b6bdf59bb6fd7",
       "output_sha": "54b5594cb181e8082bdf8dfeb0fc6505241b127243db92672dacef7c46ab7599",
       "output_id": "GQ06-adversarial",
       "case_id": "GQ06",
@@ -222,7 +222,7 @@
       "needs_second_review": true
     },
     {
-      "dataset_sha": "ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329",
+      "dataset_sha": "e0af925ad6b431ff5d50eb7f59aaa42bd3b2598c2d51edfc878b6bdf59bb6fd7",
       "output_sha": "54b5594cb181e8082bdf8dfeb0fc6505241b127243db92672dacef7c46ab7599",
       "output_id": "GQ06-adversarial",
       "case_id": "GQ06",

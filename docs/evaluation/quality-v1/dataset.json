@@ -1,5 +1,5 @@
 {
-  "dataset_version": "grad-mining-quality-v1-draft",
+  "dataset_version": "grad-mining-quality-v1-draft-r2",
   "synthetic": true,
   "label_status": "DRAFT",
   "authorship": "Codex-authored fictional scenarios, not human-reviewed gold",
@@ -76,7 +76,9 @@
       },
       "evaluation_notes": "DRAFT：补充组件行为和本人实现边界，不升级为完整系统。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ02",
@@ -137,7 +139,9 @@
       },
       "evaluation_notes": "DRAFT：先区分参与讨论与实际实现，避免把团队看板归给本人。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ03",
@@ -206,7 +210,9 @@
       },
       "evaluation_notes": "DRAFT：理解基础整理动作的过程和可核对价值，不强求算法或自动化。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ04",
@@ -275,7 +281,9 @@
       },
       "evaluation_notes": "DRAFT：允许可选自查，不因缺测试报告否定已有手工测试。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ05",
@@ -336,7 +344,9 @@
       },
       "evaluation_notes": "DRAFT：识别本人动作；无法区分就不提个人候选。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ06",
@@ -410,7 +420,9 @@
       },
       "evaluation_notes": "DRAFT：澄清具体交互改动，尊重用户已经说没有性能数据。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ07",
@@ -471,7 +483,9 @@
       },
       "evaluation_notes": "DRAFT：尊重不记得规模，换到能回忆的步骤或允许停止。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ08",
@@ -532,7 +546,9 @@
       },
       "evaluation_notes": "DRAFT：明确已做和未做，不把部署计划当已完成经历。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ09",
@@ -601,7 +617,9 @@
       },
       "evaluation_notes": "DRAFT：保留没有部署的边界事实，寻找其他已完成动作。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ10",
@@ -662,7 +680,9 @@
       },
       "evaluation_notes": "DRAFT：区别课程知识与实际练习，不虚构应用项目。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ11",
@@ -745,7 +765,9 @@
       },
       "evaluation_notes": "DRAFT：将三条动作独立保留，可选核对而不合并成全栈职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ12",
@@ -848,7 +870,9 @@
       },
       "evaluation_notes": "DRAFT：当前测试职责优先，旧自动标注陈述不能复活。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ13",
@@ -921,7 +945,9 @@
       },
       "evaluation_notes": "DRAFT：跳过已拒答主题，允许终止而不要求猜参数。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ14",
@@ -1017,7 +1043,9 @@
       },
       "evaluation_notes": "DRAFT：只把回答绑定到职责题，技术题未回答；不重复已答职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ15",
@@ -1058,7 +1086,7 @@
       "pending_facts": [],
       "previous_questions": [],
       "stop_context": {
-        "round_count": 2,
+        "round_count": 1,
         "maximum_rounds": 6,
         "consecutive_empty_rounds": 0,
         "user_stopped": true,
@@ -1079,24 +1107,27 @@
           "是不是带来了显著指标提升？",
           "能不能找一份并不存在的证明？"
         ],
-        "stop_expectation": "stop",
-        "allowed_stop_reasons": [
-          "user_uncertain",
-          "no_new_information"
-        ],
-        "stop_notes": "尊重停止，继续提供已有事实核对而不继续追问。 停止不等于确认候选。",
-        "question_goal_notes": [
-          "尊重停止，继续提供已有事实核对而不继续追问。"
-        ],
+        "stop_expectation": "not_applicable",
+        "allowed_stop_reasons": [],
+        "stop_notes": "业务已停止，禁止派发；不让模型决定停止，不计模型生成质量。",
+        "question_goal_notes": [],
         "must_not_infer": [
           "停止等于确认所有事实",
           "已经完成正式简历",
           "可继续追问"
         ]
       },
-      "evaluation_notes": "DRAFT：尊重停止，继续提供已有事实核对而不继续追问。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "evaluation_notes": "DRAFT business-gate / no-dispatch：仅验证业务门禁与历史计数，不提供模型输出参考或质量评分。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "business_gate",
+      "gate_history": [
+        {
+          "input_turn_id": "58ad145c-98c2-5cf8-bcd9-34da917ec0e9",
+          "state": "completed",
+          "added_facts": 1
+        }
+      ]
     },
     {
       "case_id": "GQ16",
@@ -1189,13 +1220,15 @@
       },
       "evaluation_notes": "DRAFT：第六轮后停止；本轮真实动作仍可作为pending候选。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ17",
       "title": "经历极少",
       "category": "little_project_experience",
-      "complexity": "single_turn",
+      "complexity": "multi_turn",
       "synthetic": true,
       "split": "holdout",
       "background": "虚构的星屿旁听活动。",
@@ -1204,16 +1237,21 @@
           "turn_id": "473160b7-334b-5d0b-bf02-c077a9b8b1cc",
           "text": "我只旁听过一次汇报，没做项目。",
           "answered_questions": []
+        },
+        {
+          "turn_id": "137dff1e-cb2f-5590-946a-f1e6f2f33668",
+          "text": "除此之外没有做过任务，也没有其他内容。",
+          "answered_questions": []
         }
       ],
       "confirmed_facts": [],
       "pending_facts": [],
       "previous_questions": [],
       "stop_context": {
-        "round_count": 1,
+        "round_count": 2,
         "maximum_rounds": 6,
         "consecutive_empty_rounds": 2,
-        "user_stopped": false,
+        "user_stopped": true,
         "session_ended": false
       },
       "reference": {
@@ -1231,24 +1269,32 @@
           "是不是带来了显著指标提升？",
           "能不能找一份并不存在的证明？"
         ],
-        "stop_expectation": "stop",
-        "allowed_stop_reasons": [
-          "user_uncertain",
-          "no_new_information"
-        ],
-        "stop_notes": "信息极少时不强挖成果，避免无限循环。 停止不等于确认候选。",
-        "question_goal_notes": [
-          "信息极少时不强挖成果，避免无限循环。"
-        ],
+        "stop_expectation": "not_applicable",
+        "allowed_stop_reasons": [],
+        "stop_notes": "业务已停止，禁止派发；不让模型决定停止，不计模型生成质量。",
+        "question_goal_notes": [],
         "must_not_infer": [
           "旁听等于项目主导",
           "实际开发职责",
           "可量化成果"
         ]
       },
-      "evaluation_notes": "DRAFT：信息极少时不强挖成果，避免无限循环。 需人工独立评审，不能以purpose或词法规则代替质量。",
+      "evaluation_notes": "DRAFT business-gate / no-dispatch：仅验证业务门禁与历史计数，不提供模型输出参考或质量评分。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "business_gate",
+      "gate_history": [
+        {
+          "input_turn_id": "473160b7-334b-5d0b-bf02-c077a9b8b1cc",
+          "state": "completed",
+          "added_facts": 0
+        },
+        {
+          "input_turn_id": "137dff1e-cb2f-5590-946a-f1e6f2f33668",
+          "state": "completed",
+          "added_facts": 0
+        }
+      ]
     },
     {
       "case_id": "GQ18",
@@ -1336,7 +1382,9 @@
       },
       "evaluation_notes": "DRAFT：不再索要不存在的截图或性能数据；保留已有合成确认事实。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ19",
@@ -1405,7 +1453,9 @@
       },
       "evaluation_notes": "DRAFT：识别日常维护价值，不包装成自动化平台或管理职责。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     },
     {
       "case_id": "GQ20",
@@ -1474,7 +1524,9 @@
       },
       "evaluation_notes": "DRAFT：引用按Unicode code point计数，不补部署和技术栈。 需人工独立评审，不能以purpose或词法规则代替质量。",
       "review_status": "DRAFT",
-      "human_reviewer": null
+      "human_reviewer": null,
+      "evaluation_kind": "model_output",
+      "gate_history": []
     }
   ]
 }

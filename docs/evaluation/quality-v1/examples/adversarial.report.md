@@ -3,6 +3,7 @@
 仅工程检查与 DRAFT 标签匹配；不是人工语义评分或真实模型成绩。
 划分：development；来源：authored_counterexample；模型标签：offline-authored-example-not-a-model。
 计划 12，提供 12，缺失 0。
+业务门禁案例 0（不计模型质量分母）；意外提供输出 0。
 严重风险规则信号 9；人工语义分数 null；真实模型质量 null。
 
 - strict_schema: 11/12 = 0.9167；不可评分 0；不适用 0；单位 planned_outputs。
@@ -36,6 +37,7 @@
 
 ## 局限
 - Exact reference matching uses Codex DRAFT labels, not human truth/quality.
+- Business-gate cases have no model-output scores and are excluded from all quality denominators; missing supplied output does not prove no dispatch.
 - Runtime atomicity is a conservative lexical guard; mismatches are reported, not fixed.
 - Purpose/numeric-token/exact-duplicate checks do not score semantic question usefulness.
 - Missing outputs stay in planned-output denominators; unknown candidate counts are separate.

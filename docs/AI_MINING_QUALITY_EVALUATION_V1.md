@@ -15,7 +15,7 @@
 
 ## 2. 新数据：20个虚构场景、12开发/8留出
 
-数据：`docs/evaluation/quality-v1/dataset.json`，版本grad-mining-quality-v1-draft；全部synthetic=true、label_status/review_status=DRAFT、human_reviewer=null。
+数据：`docs/evaluation/quality-v1/dataset.json`，修订版本grad-mining-quality-v1-draft-r2；全部synthetic=true、label_status/review_status=DRAFT、human_reviewer=null。原版本与摘要保留在Git历史。
 
 开发集GQ01–GQ12依次覆盖：课设无实习、团队分工不清、基础数据整理、基础手工测试、“我们”不等于“我”、无指标、记不清规模、未完成计划、否定经历、学习不等于成果、多个步骤拆解、历史纠正。
 
@@ -24,7 +24,15 @@
 每例含背景、用户原话及UUID、显式回答关联、历史问题状态/版本、合成用户已确认与pending事实及来源、记忆状态、原文引用code-point区间、正向/边界标签、不可推断信息、推荐澄清目标及文字说明、误导问题、停止条件、备注和审核状态。
 
 `split-manifest.json`记录canonical dataset/case SHA。代码独立pin数据SHA和12/8划分，不能改两份JSON便静默交换划分；改语料须新版本/审查。当前SHA为：
-`ea46915e46784e5e729935828f044546052736479d10246460432a90faff3329`。
+`e0af925ad6b431ff5d50eb7f59aaa42bd3b2598c2d51edfc878b6bdf59bb6fd7`。
+
+### 业务门禁不等于模型停止判断（r2修订）
+
+20例中18例是model_output，GQ15/GQ17是business_gate/no-dispatch。开发集仍12个模型场景；留出集是6个模型场景及2个业务门禁场景。后两例已经stopped，不允许先调用模型再让模型输出stop=true；stop_expectation为not_applicable，不提供模型停止原因或参考候选。
+
+GQ15是一轮产生事实后由用户明确停止。GQ17改为两轮完成、均无新增事实的合法历史：round_count=2、consecutive_empty_rounds=2、user_stopped=true。gate_history按时间列出completed轮和added_facts；校验按build_context的distinct input_turn_id及最近两次completed轮规则计算。真实隔离PostgreSQL测试另外通过原API/complete产生这两种状态，再调用原build_context核对，不更改正式状态机。第六轮GQ16仍是合法的最后一轮模型输出场景，不能与已完成六轮后的新调用混淆。
+
+门禁例不进入任何模型质量指标分母、不计缺失模型输出、不生成评分模板。若有人为其提供响应，固定标记unexpected_output_rejected，在Schema解析前隔离且不显示正文；没有导入响应仅标no_output_expected，actual_dispatch保持NOT_MEASURED，不能据此声称真正没有调用。真实状态机负向测试验证停止后即使换新操作键提交也返回409/mining_stopped，Provider、Run和事实数量不增加。
 
 这是**公开、Codex起草的留出材料，不是秘密盲测集**。未来模型输入只能用context_for()的用户/问题/事实快照，不传reference、目标、误导问题或评分标签。人工审核后应另立版本保留审核来源，不把DRAFT直接改名为人工gold。禁止用留出答案继续调Prompt。
 
@@ -50,6 +58,8 @@
 `app/mining_quality_evaluation.py`只读取受控合成案例和预先提供的输出content JSON。没有HTTP、env/Key、DB/凭据、推理或重试接口。输出来源可标authored_oracle、authored_counterexample、mock或imported_model_unverified；Provider/模型均为**提供方声明**，generation_verified始终false。
 
 Prompt文件SHA与canonical wire Schema SHA绑定现有版本；prompt_file_sha不是完整system/request SHA。所有运行明确记录数据版本/摘要、划分、来源、模型标签、Prompt版本和Schema摘要，不把Mock用量或本地估算写成实测。
+
+r2在代码中独立固定版本证据，不能仅和当前文件自洽：dynamic-mining-prompt-v1-offline原件SHA为`d9d7b2a4303c58004cbbf97fbc50e57ac195270182b73e760aefb575d8ee5273`；mining-output-v2 canonical Schema SHA为`a55afacc5c0e570a4c86dc6eaa723f8d8b43e58c455bef0308fe57e8834db736`；Schema LF规范化原件SHA为`6a1b38f86e6250e120d3cf95dc86abc8141bf369b91423abf7f05214995975d5`。Schema仅将Windows checkout CRLF规范化为LF，其他格式/字段变化都拒绝；Prompt已有LF属性，直接核验原始字节。同版本文件与输出声明同步篡改也拒绝；新内容须独立版本及审查，不自动重签。
 
 每项比率都有numerator、denominator、unscorable、not_applicable、unit和ratio。分母包含已知但不可评分的机会，不能先丢掉失败样本再报满分。候选数未知另计citation_unscorable_outputs，不能凭空估计缺失候选数量。
 
@@ -106,7 +116,7 @@ holdout需要显式--split holdout及仅含该划分的独立外部输出bundle�
 3. 人工语义评审：本轮只有规范/模板/DEMO；实际评分、评审者和一致率都不存在。
 4. 真实模型留出质量：本轮没有调用或已认证输出；结论null，不能用前两层代替。
 
-专项测试覆盖20例结构/偏移、划分与Prompt隔离、未审核标签、确定性报告、缺失/空值/错误分母、严重错误独立、人工N/A/绑定/分歧、来源声明、安全脱敏、零DB/HTTP/DNS/原生凭据、原事实规则保持及CLI不覆盖证据。CI追加一次纯离线质量CLI，保留完整后端/React/Chromium、迁移及旧12/48合同。
+专项测试覆盖20例结构/偏移、划分与Prompt隔离、未审核标签、确定性报告、缺失/空值/错误分母、严重错误独立、人工N/A/绑定/分歧、来源声明、安全脱敏、零DB/HTTP/DNS/原生凭据、原事实规则保持及CLI不覆盖证据。r2纯离线99项及单独的2项隔离PostgreSQL门禁测试通过；同版本Prompt/Schema漂移、同步修改输出摘要、门禁意外输出均有负向断言。第一次r2专项命令在仓库根目录执行，导入app失败，改用项目规定的apps/api工作目录后通过，未修改导入合同或降低断言。完整回归和CI见PR记录。CI追加一次纯离线质量CLI，保留完整后端/React/Chromium、迁移及旧12/48合同。
 
 初轮74通过/1失败/2临时目录错误：编码名称拼写和本机沙箱临时目录权限；随后Unicode反例发现新语料验证只比较切片，未拒绝超长end（Python切片会截断）。已在新数据验证器加显式区间上界，未改原事实规则。77项复验通过；补充缺失/类型/评分/重现检查后，最终专项89项通过。完整回归及CI以PR记录为准。失败历史保留，不删除断言。
 

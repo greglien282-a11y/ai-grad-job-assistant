@@ -18,6 +18,15 @@ from app.mining_quality_data import (Strict,QualityInputError,DATA_DIR,ROOT,DIME
 
 NUMBER=re.compile(r'\d+(?:\.\d+)?')
 SECRET=re.compile(r'\bBearer\s+\S+|\bsk-[A-Za-z0-9_-]{8,}|(?:api[_ -]?key|password|authorization)\s*[:=]\s*\S+',re.I)
+# Independently frozen version evidence, not a hash supplied by the output or
+# recomputed from whatever file happens to be installed. New bytes need review
+# and a new version; neither this tool nor a bundle can silently re-sign them.
+PROMPT_VERSION='dynamic-mining-prompt-v1-offline'
+PROMPT_FILE_SHA='d9d7b2a4303c58004cbbf97fbc50e57ac195270182b73e760aefb575d8ee5273'
+WIRE_SCHEMA_VERSION='mining-output-v2'
+WIRE_SCHEMA_SHA='a55afacc5c0e570a4c86dc6eaa723f8d8b43e58c455bef0308fe57e8834db736'
+# Git source bytes use LF; Windows checkout CRLF is normalized only here.
+WIRE_SCHEMA_FILE_SHA='6a1b38f86e6250e120d3cf95dc86abc8141bf369b91423abf7f05214995975d5'
 
 
 def text_sha(text): return hashlib.sha256(text.encode('utf8')).hexdigest()
@@ -85,7 +94,13 @@ def literal_match(c,turns):
         and turns[c['turn_id']][c['start']:c['end']]==c['quote'])
 
 
+def require_model_case(case):
+    if case.evaluation_kind!='model_output' or case.stop_context['user_stopped'] or case.stop_context['session_ended']:
+        raise QualityInputError()
+
+
 def score_case(case,entry):
+    require_model_case(case)
     context=context_for(case);turns={str(t.turn_id):t.content for t in context.user_turns}
     present=entry is not None
     unsafe=bool(present and (SECRET.search(entry.content) or PRIVATE.search(entry.content)))
@@ -161,7 +176,7 @@ def score_case(case,entry):
         draft_goal_coverage=rate(len(purposes & goals),len(goals),len(goals) if not schema else 0,int(not goals),unit='draft_question_goals'),
         exact_nonduplicate_questions=rate(len(questions)-duplicates-unknown_questions,len(questions),unknown_questions,int(raw_questions==[]),unit='raw_questions'),
         supported_numeric_tokens=rate(supported,numeric_total,0,int(numeric_total==0),unit='numeric_tokens'))
-    return dict(case_id=case.case_id,split=case.split,category=case.category,output_id=entry.output_id if entry else None,
+    return dict(case_id=case.case_id,split=case.split,category=case.category,evaluation_kind='model_output',output_id=entry.output_id if entry else None,
         output_sha=text_sha(entry.content) if present and not unsafe else None,present=present,safety_redacted=unsafe,
         validation_code=code,schema_valid=schema,runtime_valid=runtime,
         raw_candidate_count=len(candidates) if isinstance(raw_candidates,list) else None,
@@ -175,26 +190,47 @@ def evaluate(bundle_data,*,split='development'):
         data,cases=load_dataset();bundle=OutputBundle.model_validate(bundle_data)
         if split not in ('development','holdout') or bundle.dataset_version!=data['dataset_version']: raise ValueError()
         p=bundle.provenance
-        if p.prompt_file_sha!=hashlib.sha256((ROOT/'docs/evaluation/dynamic-mining-prompt-v1.txt').read_bytes()).hexdigest(): raise ValueError()
-        if p.schema_sha!=digest(json.loads((ROOT/'docs/evaluation/provider-wire-output.schema.json').read_text(encoding='utf8'))): raise ValueError()
+        if (p.prompt_version!=PROMPT_VERSION or p.prompt_file_sha!=PROMPT_FILE_SHA
+            or hashlib.sha256((ROOT/'docs/evaluation/dynamic-mining-prompt-v1.txt').read_bytes()).hexdigest()!=PROMPT_FILE_SHA): raise ValueError()
+        schema_bytes=(ROOT/'docs/evaluation/provider-wire-output.schema.json').read_bytes().replace(b'\r\n',b'\n')
+        if (p.schema_sha!=WIRE_SCHEMA_SHA or hashlib.sha256(schema_bytes).hexdigest()!=WIRE_SCHEMA_FILE_SHA
+            or digest(json.loads(schema_bytes))!=WIRE_SCHEMA_SHA): raise ValueError()
         selected=[c for c in cases if c.split==split];ids={c.case_id for c in selected}
         if (len({e.case_id for e in bundle.outputs})!=len(bundle.outputs)
             or len({e.output_id for e in bundle.outputs})!=len(bundle.outputs)
             or any(e.case_id not in ids for e in bundle.outputs)): raise ValueError()
         if split=='holdout' and p.output_origin in ('authored_oracle','authored_counterexample'): raise ValueError()
         entries={e.case_id:e for e in bundle.outputs}
-        rows=[score_case(c,entries.get(c.case_id)) for c in selected]
+        rows=[];gate_checks=[]
+        for c in selected:
+            if c.evaluation_kind=='model_output':
+                rows.append(score_case(c,entries.get(c.case_id)))
+            else:
+                e=entries.get(c.case_id)
+                # Never parse/score a model response for a forbidden dispatch.
+                # Absence of an imported output alone is NOT proof of no send.
+                status='unexpected_output_rejected' if e else 'no_output_expected'
+                gate_checks.append(dict(case_id=c.case_id,status=status,expected_dispatch=False,
+                    supplied_output_present=e is not None,actual_dispatch='NOT_MEASURED'))
+                rows.append(dict(case_id=c.case_id,split=c.split,category=c.category,evaluation_kind='business_gate',
+                    output_id=e.output_id if e else None,output_sha=None,present=e is not None,safety_redacted=True,
+                    validation_code=status,schema_valid=None,runtime_valid=None,metrics={},critical_rule_signals=[],
+                    safety_review_required=e is not None,human_quality={d:None for d in DIMENSIONS},human_review_status='not_applicable_business_gate'))
+        model_rows=[r for r in rows if r['evaluation_kind']=='model_output']
         metrics={}
-        for name in rows[0]['metrics']:
-            values=[r['metrics'][name] for r in rows]
+        for name in model_rows[0]['metrics']:
+            values=[r['metrics'][name] for r in model_rows]
             metrics[name]=rate(sum(v['numerator'] for v in values),sum(v['denominator'] for v in values),
                 sum(v['unscorable'] for v in values),sum(v['not_applicable'] for v in values),unit=values[0]['unit'])
         return dict(report_version='mining-quality-report-v1',dataset_version=data['dataset_version'],dataset_sha=digest(data),
             split=split,reference_labels='DRAFT_NOT_HUMAN_GOLD',provenance=p.model_dump(),
-            output_bundle_sha=digest(bundle.model_dump(mode='json')),planned_outputs=len(rows),
-            provided_outputs=len(entries),missing_outputs=sum(not r['present'] for r in rows),
-            citation_unscorable_outputs=sum(r['raw_candidate_count'] is None for r in rows),
-            empty_candidate_outputs=sum(r['raw_candidate_count']==0 for r in rows),
+            output_bundle_sha=digest(bundle.model_dump(mode='json')),planned_cases=len(rows),planned_outputs=len(model_rows),
+            business_gate_checks=gate_checks,unexpected_business_gate_outputs=sum(g['supplied_output_present'] for g in gate_checks),
+            provided_outputs=sum(r['present'] for r in model_rows),missing_outputs=sum(not r['present'] for r in model_rows),
+            citation_unscorable_outputs=sum(r['raw_candidate_count'] is None for r in model_rows),
+            empty_candidate_outputs=sum(r['raw_candidate_count']==0 for r in model_rows),
+            frozen_contract=dict(prompt_version=PROMPT_VERSION,prompt_file_sha=PROMPT_FILE_SHA,
+                schema_version=WIRE_SCHEMA_VERSION,schema_sha=WIRE_SCHEMA_SHA,schema_lf_file_sha=WIRE_SCHEMA_FILE_SHA),
             metrics=metrics,rows=rows,critical_rule_signal_count=sum(len(r['critical_rule_signals']) for r in rows),
             safety_review_required=any(r['safety_review_required'] for r in rows),
             semantic_quality_status='UNREVIEWED_NO_RELEASE_DECISION',human_semantic_scores=None,real_model_holdout_quality=None,
@@ -202,6 +238,7 @@ def evaluate(bundle_data,*,split='development'):
                 human_semantics='UNREVIEWED',real_model_quality='NOT_MEASURED_OR_AUTHENTICATED'),
             tool_provider_requests=0,tool_cost_cny='0.000000',actual_model_tokens=None,provider_latency_ms=None,
             limitations=['Exact reference matching uses Codex DRAFT labels, not human truth/quality.',
+                'Business-gate cases have no model-output scores and are excluded from all quality denominators; missing supplied output does not prove no dispatch.',
                 'Runtime atomicity is a conservative lexical guard; mismatches are reported, not fixed.',
                 'Purpose/numeric-token/exact-duplicate checks do not score semantic question usefulness.',
                 'Missing outputs stay in planned-output denominators; unknown candidate counts are separate.',
@@ -216,6 +253,7 @@ def markdown_report(report):
         '仅工程检查与 DRAFT 标签匹配；不是人工语义评分或真实模型成绩。',
         f"划分：{report['split']}；来源：{report['provenance']['output_origin']}；模型标签：{escape(report['provenance']['model'])}。",
         f"计划 {report['planned_outputs']}，提供 {report['provided_outputs']}，缺失 {report['missing_outputs']}。",
+        f"业务门禁案例 {len(report['business_gate_checks'])}（不计模型质量分母）；意外提供输出 {report['unexpected_business_gate_outputs']}。",
         f"严重风险规则信号 {report['critical_rule_signal_count']}；人工语义分数 null；真实模型质量 null。",'']
     for name,value in report['metrics'].items():
         ratio='N/A' if value['ratio'] is None else f"{value['ratio']:.4f}"
