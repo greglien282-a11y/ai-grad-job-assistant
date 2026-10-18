@@ -23,13 +23,25 @@
 | 动作 | 目标状态/前提 | 成功后 | 不做什么 |
 |---|---|---|---|
 | append（GQ01/GQ11） | 无替换目标；合法独立原句 | 每个新增事实pending/version=1；已有事实不动 | 不因后句更具体就覆盖旧背景 |
-| correct（GQ12） | 唯一同项目目标，pending/confirmed/evidence_supported，版本精确 | 同一fact_id新版本pending；当前evidence_id=null；新FactChange/来源 | 不继承确认、材料或旧引用；不额外询问是否纠错 |
+| correct（同一事实；GQ12冻结表示另见下文） | 唯一同项目目标且确为同一原子主张，pending/confirmed/evidence_supported，版本精确 | 同一fact_id新版本pending；当前evidence_id=null；新FactChange/来源 | 不把撤回一种职责、补充另一种职责硬塞为同一事实修订 |
 | withdraw | 同上，明确撤回但无替换句 | 同一fact变rejected，版本+1，保留原历史/撤回依据 | 不空字符串替换、不物理删除原Turn/历史 |
 | progress（GQ08） | 原话明确阶段；可有唯一关联旧计划 | 新阶段陈述形成独立pending；旧计划/history保留，关系指明是进展 | 不把计划改写成已完成，不推断线上效果 |
 | ambiguous | 无唯一目标/指代不清 | 一个needs_clarification回执；无任何事实改变 | 不选最高置信候选，不把它当成功纠错 |
 | 任意编辑/纠错rejected | 已拒绝/撤回 | 409 fact_rejected_immutable，零业务写入 | 不换key、新Fact或旧PATCH复活 |
 
 confirmed指user_confirmed。任何来源/Schema不合法是422，不能借“歧义”吞掉错误。推荐withdraw清空当前evidence_id，旧FactEvidence仍留历史，不再表示当前支持；现有reject分支会保留该指针，故这也是B2需单独验证的兼容性收紧，不能假称已有行为。显式撤回允许准确的否定原句，不能要求它先通过“正向贡献”的atomic()动作词表；撤回意图验证与候选事实验证分开。
+
+### 2.1 同一事实修订与独立职责的边界
+
+新自动维护合同中的correct必须同时满足：唯一目标及版本可定位；用户明确更正；新句仍针对同一经历中的同一原子动作/对象，只修正该主张的数量、时间、范围等属性。例如把“我测试了3个导出按钮。”更正为“我测试了2个导出按钮。”可保留fact_id。仅有相同项目、相邻轮次、同一fact_id或模型高置信度，都不足以证明事实身份相同；不得把“更具体”默认当纠错。
+
+“自动标注不是我写的。我测试了导出按钮。”包含**撤回旧职责+新增独立职责**：旧标注贡献应rejected并保留撤回来源；新的测试贡献应为不同fact_id的pending，各自有FactChange/来源。这是语义上两个效果，不得为了减少接口数把不同动作改成同ID，也不得只保存新职责却让旧已确认贡献继续有效。
+
+冻结GQ12草案及其既有历史用同ID修订表示这次用户纠正；**原样保留该表示、引用、SHA和报告**，不回写评测资料或追溯判定旧记录无效。它用于历史兼容与产品意图讨论，不是对所有新“跨职责替换”请求的同ID许可。新自动维护的身份规则与旧手工编辑/冻结样例的表示能力分开记录，不声称两者已经统一。
+
+当前B2候选只有单目标correct/withdraw或独立append，没有“withdraw_and_append”动作、双效果结果合同及相应幂等resolution。因此**不支持该复合动作的原子完成**，不能声明完整支持GQ12自然语言维护。明确识别为复合动作时422 composite_operation_not_supported，Δ=0、U=0、Provider=0；不得执行前半部分、降格成correct、自动拆为两个POST或换key补写。未来需独立审查复合合同及其一次事务内两个效果、共享原始Turn、分别的来源与历史，未通过前不开放。
+
+仅目标不唯一、但拟议动作及事实身份关系已明确时，沿既有needs_clarification流程等待用户定位。目标已知却无法可靠判断“同一事实还是独立职责”时，422 correction_identity_unresolved、零写入，提示尚未修改，允许用户提供更明确的主张/范围；现有只选目标ID的resolution不能解决这个语义缺口，不伪造同一性或重复要求确认已明确的纠错意图。安全回退不是把两个不同动作静默合并。
 
 推荐兼容修复：在共享change_fact的statement分支加rejected拒绝，覆盖旧手工PATCH及新入口；reject/confirm/verify状态规则不变，旧rejected数据原样保留。曾经通过漏洞被编辑而当前已pending/confirmed的历史资料**不自动回滚、不推定真伪**；离线合成测试证明历史仍可读取，生产审计/处置另批。记忆标注不等于重开贡献；是否继续允许对rejected做纯memory标注保留现状，不改变正文/信任状态。
 
@@ -77,6 +89,10 @@ needs_clarification→resolved不通过覆盖父记录表达：插入一个appli
 
 延迟完整性检查须验证：Turn.role=user；该Turn就是本操作input_turn_id；项目归属由Fact→Session和MVP唯一Project确定；原文Python code-point区间吻合（PG text substring以字符索引校验需测试Unicode，start用+1）；after快照、action、状态和source_role匹配。created要statement；correct要intent+statement；withdraw要intent且没有statement；progress要statement。intent来自用户明确原话，模型推测不能标user actor。
 
+**append/correct正文一致性是强制合同，不只是“引用本身存在”：** 对每个statement来源，`Turn.content[start_cp:end_cp] == FactChangeSource.quote == FactChange.after.statement`，逐code point完全相等；不得trim、归一化、改写、补数字或把另一条合法原句贴为该效果的来源。该效果提交时当前`ExperienceFact.id == fact_id`、`version == after_version`，且`ExperienceFact.statement == FactChange.after.statement`。append初始FactSource的对应statement引用也必须等于同一原句；correct的旧FactSource只作历史，不要求它等于新正文。
+
+这些等式由API来源/效果构造校验及数据库延迟完整性约束双重保证；后者不能只验证quote等于Turn切片而漏掉after/current正文。after.statement必须存在且为非NULL字符串，不能让JSON缺字段/NULL或SQL三值逻辑绕过相等检查。后续合法编辑使Fact版本大于after_version时，历史source仍只与它自己的不可变FactChange.after核对，**不要求所有旧引用都等于最新正文**，否则会阻断正常版本演进。未来聚合读取当前来源必须选择当前版本的变更，不能把历史等式当成当前支持。source_role=intent不适用statement等式，withdraw没有新statement，仍保留原文及撤回依据，不把否定指令改成贡献正文。
+
 actor=user表示经会话凭证鉴权的提交者，不是实名身份或供应商认证。created沿现有system建档历史，不改写成用户已确认。来源插入须伴随相应FactChange/事实版本变化，不能提交独立“补来源”事务；因此不额外引入能独立改变当前语义的回执UPDATE或来源编辑接口。
 
 一条source不可UPDATE，不能独立删以换来源；权限/触发器仅允许整会话业务删除的级联。B2来源校验函数若使用SECURITY DEFINER，必须另审查非LOGIN owner、固定search_path、PUBLIC EXECUTE撤销及调用链；不能默认授予Web绕过角色。拒绝跨会话的FK不替代HTTP鉴权。
@@ -118,6 +134,8 @@ actor=user表示经会话凭证鉴权的提交者，不是实名身份或供应�
 
 API的action/target只是用户请求，不是授权证明；必须验证其和明确原话及服务端唯一目标一致。直接“我又做了测试”不当纠错；含引用/假设/否定的纠错指令不自动执行。B2解释器不支持的自然句，不猜target，归入歧义或422明确不支持；无需为了降低点击调用模型。
 
+append/correct只接受上述statement引用对象，不接受与quote分离的自由`statement`或`replacement_text`字段。响应中的正文只能来自通过一致性合同的该效果原句，不能一边存B一边展示A。新请求的复合动作与身份不明错误按2.1节拒绝，不通过resolution暗中扩展动作类型。
+
 成功201 AppliedResult：operation_id、input_turn_id、action、outcome、base_revision、result_revision、effects[{fact_id,change_id,before_version,after_version,applied_status}]、provider_calls=0、mining_run_id=null。applied_status是本次提交历史值；另行GET聚合的current_fact可已被后续修改，不能谎称现在仍pending。响应不含Bearer、原操作键或内部HMAC。
 
 歧义201 ClarificationResult：同一稳定operation/input、state=needs_clarification、effects=[]、固定reason=target_ambiguous、provider_calls=0、可选同会话可选目标ID/版本及显示摘要通过实时鉴权读取，不在回执存文本。**这不是纠错半成功**：该动作本来就定义为保存原话等待目标，绝不显示“已修改”。有明确target但版本错/无权限不降格歧义。
@@ -134,7 +152,7 @@ API的action/target只是用户请求，不是授权证明；必须验证其和�
 - 401：缺凭据/操作键proof不符；404：鉴权会话不存在或外会话目标（不泄漏目标存在性）。
 - 409 idempotency_payload_mismatch：同键改任意action/target/span/stage/正文/父关系；409 version_conflict：已知归属目标版本错；409 context_conflict：目标版本正确但会话revision变。
 - 409 fact_rejected_immutable / conversation_input_already_submitted / conversation_resolution_already_applied / mining_result_unresolved / session_ended：固定安全码，无新业务行。
-- 422 conversation_source_invalid / correction_intent_invalid / progress_contract_unavailable：输入或来源不合法；503 idempotency_busy：有界锁超时；500/断线只报固定安全错误，无原始SQL/堆栈/输入。
+- 422 conversation_source_invalid / correction_intent_invalid / progress_contract_unavailable / composite_operation_not_supported / correction_identity_unresolved：输入、来源或动作范围不合法/不支持；503 idempotency_busy：有界锁超时。合法输入若因服务端写入的source/after/current不一致被DB约束拒绝，500 conversation_integrity_failed并整笔回滚，不能把服务端缺陷冒充用户引用错误；不输出原始SQL/堆栈/输入，不自动重试。
 
 同键查询/重放先验证key proof与截止时间，再查tombstone、鉴权live会话、校验request_tag；相同成功回执优先于过时版本、ended/stopped检查，**只读恢复不变成新写**。新操作先归属再fact版本，版本冲突先于context冲突，双错返回version_conflict且均零写。未获准引用目标不返回它的版本。
 
@@ -242,7 +260,7 @@ sequenceDiagram
 |---|---|---|---|
 | B01 GQ01 | 原背景/确认事实；新增一条合法个人动作 | 201 applied | Δ(1,1,1,1,1,0)，旧Fact原样，新pending v1 |
 | B02 GQ11 | 三个合法完整原句不同区间 | 201 | Δ(1,3,3,3,1,0)，来源逐条吻合；任一非法整笔422/Δ0 |
-| B03 GQ12 | 唯一目标已confirmed v3，独立纠错意图+合法新句 | 201 | U=1到v4/pending；Δ(1,0,1,2,1,0)，当前evidence=null |
+| B03 同一事实修订 | 唯一confirmed v3；同一导出按钮测试主张的数量被明确更正，合法新句 | 201 | U=1到v4/pending；Δ(1,0,1,2,1,0)，当前evidence=null；不把本例当完整GQ12复合动作支持 |
 | B04 材料支持纠错 | evidence_supported v4 | 201 | 同B03的Δ；v5/pending、旧材料历史保留，不支持新句 |
 | B05 撤回 | 唯一有效目标/明确否认无替换 | 201 | U=1/rejected v+1；Δ(1,0,1,1,1,0)，03不再使用 |
 | B06 歧义 | 无唯一目标 | 201 needs_clarification | Δ(1,0,0,0,1,0)，U=0，不显示已纠错 |
@@ -259,10 +277,15 @@ sequenceDiagram
 | B17 COMMIT后退出 | 原连接断开再新进程GET | 200 | 原B03完整Δ，恢复Δ0；原文/版本一致 |
 | B18 引用权限 | 错quote/UTF-16偏移/越界/assistant/外会话目标 | 422或404 | Δ0，不泄露目标/原文；emoji/组合字符合法例201 |
 | B19 跨入口重复 | 新维护后旧mining/add_turn/add_fact；逆序；换key/receipt过期 | 409，旧成功key可读恢复 | Δ0，不额外Turn/Run，不绕过六轮/停止 |
-| B20 end/delete竞争 | Y先提交与X先提交两种屏障时序 | ended409/deleted404或有效201后被清理 | 无半套source，deleted墓碑字段全NULL，旧key410 |
+| B20 end/delete竞争 | Y先提交与X先提交两种屏障时序 | ended409/deleted404或有效201后被清理 | 无半套source；deleted保留id、contract_version、key_digest、state=deleted、created_at、expires_at，其余业务字段NULL（按3.1白名单核验）；旧key410 |
 | B21 stopped/六轮 | 本地纠错与再挖掘分开 | 本地可201；挖掘409 | 本地仅B03 Δ；R=0，mining_status/轮数不重置 |
 | B22 unresolved | reserved/running/unknown尚未恢复 | 409 mining_result_unresolved | Δ0；GET只读，不能把它变成retry |
 | B23 迁移/权限 | 空库、0012升级、失败注入、受限角色、空表/非空降级 | 明确成功或拒绝 | 原数据无损；非空拒降级；没有资金/Provider能力 |
+| B24 API正文替换攻击 | append/correct提交与quote分离的statement/replacement_text，或quote不等于指定原句 | 422 | Δ0、U=0；不能改写再配一条合法引用 |
+| B25 source/after不等 | 合法输入A；数据库直写或测试注入使source.quote=A、after.statement=B，及after.statement缺失/NULL/非字符串 | DB提交拒绝；经API固定500 integrity码 | 全事务Δ0、U=0，连已插Turn/回执回滚；保留错误码，无秘密或原始异常 |
+| B26 after/current不等 | source.quote=after.statement=A，但该after_version的当前Fact.statement=B | 同B25 | Δ0、U=0；配套正例：后续合法v+1编辑不强求旧source等于新正文 |
+| B27 复合职责/身份歧义 | 明确撤回标注+新增测试；或有目标但无法证明同一主张 | 422 composite/identity专用码 | Δ0、U=0、Provider=0；不拆POST、不部分撤回、不改为同ID成功 |
+| B28 GQ12冻结兼容 | 对比原冻结数据、报告和同ID修订表示；新API执行B03/B27各自合同 | 静态一致/相应API码 | 冻结文件不改；不以历史样例宣称新复合事务已支持 |
 
 补充：noop去重若新原文但statement已有有效事实，201 outcome=no_new_fact、Δ(1,0,0,0,1,0)，不伪造effect；需要被拒职责重新主张时不作为noop掩盖，须拒绝/澄清。FK/延迟约束测试直接尝试错误配对、少一条source、不同change共享effect_slot，必须整事务拒绝。非空operation必须与真实effects数量一致。
 
