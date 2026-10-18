@@ -189,12 +189,16 @@ def test_fact_request_contract_rejects_invalid_or_combined_operations(api, body)
 
 
 def test_illegal_state_and_rejected_fact_edit(api):
-    client, _ = api
+    client, factory = api
     data, headers = create(client)
     fact = add(client, data, headers)
     assert patch(client, fact, headers, "verify_material", material_reference="report", basis="User reviewed").status_code == 409
     fact = patch(client, fact, headers, "reject").json()
     assert patch(client, fact, headers, "confirm").status_code == 409
-    fact = patch(client, fact, headers, "edit", statement="Synthetic clarified claim").json()
-    assert fact["status"] == "pending" and fact["version"] == 3
-    assert patch(client, fact, headers, "confirm").status_code == 200
+    response = patch(client, fact, headers, "edit", statement="Synthetic clarified claim")
+    assert response.status_code == 409 and response.json()["error"]["code"] == "state_conflict"
+    with factory() as db:
+        stored = db.get(ExperienceFact, fact["id"])
+        assert stored.status == "rejected" and stored.version == 2
+        assert stored.statement == fact["statement"]
+        assert db.scalar(select(text('count(*)')).select_from(FactChange)) == 2

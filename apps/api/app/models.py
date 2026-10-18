@@ -117,6 +117,7 @@ class FactEvidence(Record, Base):
 class FactChange(Record, Base):
     __tablename__ = "fact_changes"
     __table_args__ = (
+        UniqueConstraint("id", "fact_id", "session_id", name="uq_change_fact_session"),
         ForeignKeyConstraint(["fact_id", "session_id"], ["experience_facts.id", "experience_facts.session_id"], ondelete="CASCADE"),
         CheckConstraint("actor IN ('user', 'system')", name="ck_change_actor"),
     )
@@ -321,3 +322,4 @@ from app import paid_models  # noqa: E402,F401
 from app import controlled_probe_models  # noqa: E402,F401
 from app import mining_paid_models  # noqa: E402,F401
 from app import request_manifest_models  # noqa: E402,F401
+from app import fact_maintenance_models  # noqa: E402,F401

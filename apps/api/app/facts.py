@@ -141,6 +141,8 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
         fact.memory_state = memory_state
         action = 'memory_changed'
     elif statement is not None:
+        if fact.status == FactStatus.REJECTED:
+            raise StateConflict("Rejected fact cannot be edited")
         required_text(statement)
         if status is not None or material_reference is not None or basis is not None:
             raise ValueError("Edit and confirmation must be separate operations")

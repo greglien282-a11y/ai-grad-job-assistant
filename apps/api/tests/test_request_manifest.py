@@ -43,6 +43,7 @@ from offline_manifest_store import install,put,recover
 
 OLD='0011_mining_paid_metadata'
 NEW='0012_request_manifest'
+HEAD='0013_fact_maintenance'
 TABLES=('mining_request_manifests','mining_request_tombstones')
 
 
@@ -324,13 +325,13 @@ def test_recovered_mock_response_uses_existing_complete_pending_only(stored):
 
 def test_empty_candidate_upgrade_check_downgrade_reupgrade(migrated_connection):
     conn,cfg=migrated_connection
-    assert ScriptDirectory.from_config(cfg).get_current_head()==NEW
+    assert ScriptDirectory.from_config(cfg).get_current_head()==HEAD
     command.check(cfg);conn.commit()
     assert set(TABLES).issubset(inspect(conn).get_table_names());conn.commit()
     before=conn.execute(text('SELECT * FROM paid_funding')).one();conn.commit()
     command.downgrade(cfg,OLD);conn.commit()
     assert not set(TABLES).intersection(inspect(conn).get_table_names());conn.commit()
-    command.upgrade(cfg,NEW);conn.commit();command.check(cfg)
+    command.upgrade(cfg,HEAD);conn.commit();command.check(cfg)
     assert conn.execute(text('SELECT * FROM paid_funding')).one()==before
     for t in (*TABLES,'paid_grants','paid_calls','controlled_probe','paid_audit'):
         assert conn.scalar(text(f'SELECT count(*) FROM {t}'))==0
@@ -343,7 +344,7 @@ def test_nonempty_manifest_or_tombstone_blocks_downgrade(stored,migrated_connect
         assert e.client.delete('/api/v1/experience/sessions/'+str(e.sid),headers={'Authorization':'Bearer '+e.token}).status_code==204
     with pytest.raises(RuntimeError,match='manifest_nonempty_downgrade_blocked'):
         with conn.begin(): command.downgrade(cfg,OLD)
-    assert conn.scalar(text('SELECT version_num FROM alembic_version'))==NEW
+    assert conn.scalar(text('SELECT version_num FROM alembic_version'))==HEAD
 
 
 @pytest.mark.parametrize('sql',[

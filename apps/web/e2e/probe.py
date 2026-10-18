@@ -23,7 +23,7 @@ def main():
         if db.scalar(text('SELECT current_schema()')) != schema:
             raise ValueError('Schema mismatch')
         if sys.argv[1] == 'preflight':
-            assert db.scalar(text('SELECT version_num FROM alembic_version')) == '0012_request_manifest'
+            assert db.scalar(text('SELECT version_num FROM alembic_version')) == '0013_fact_maintenance'
             return
         if sys.argv[1] == 'reset':
             db.execute(text('DELETE FROM ai_mining_receipts'))
