@@ -611,13 +611,54 @@ def test_unicode_correction_indices_are_python_codepoints(service):
         assert len(source.quote.encode('utf-16-le'))//2==len(source.quote)+1
 
 
+def worker_url(url):
+    # Validate the source before normalizing CI's literal localhost. Do not
+    # resolve arbitrary names or widen the child's fixed numeric-loopback gate.
+    if (url.get_backend_name() != 'postgresql' or url.host not in ('localhost', '127.0.0.1')
+            or url.database not in ('pathwise_test', 'pathwise_e2e')):
+        raise ValueError('offline_worker_database_invalid')
+    return url.set(host='127.0.0.1')
+
+
+@pytest.mark.parametrize('host', ['localhost', '127.0.0.1'])
+@pytest.mark.parametrize('database', ['pathwise_test', 'pathwise_e2e'])
+def test_worker_url_normalizes_only_literal_test_loopback(host, database):
+    from sqlalchemy.engine import URL
+    source = URL.create('postgresql+psycopg', username='b2b_run_fake', password='public-fake-value',
+                        host=host, port=15487, database=database, query={'connect_timeout': '3'})
+    normalized = worker_url(source)
+    assert normalized == source.set(host='127.0.0.1')
+    assert source.host == host  # immutable URL; credentials/port/options unchanged
+
+
+@pytest.mark.parametrize('host', [None, '', 'LOCALHOST', 'localhost.', 'localhost.evil',
+                                'evil-localhost', '192.0.2.1', '127.0.0.2', '::1'])
+def test_worker_url_rejects_unapproved_host_before_subprocess(host, monkeypatch):
+    from sqlalchemy.engine import URL
+    import socket, subprocess
+    def forbidden(*args, **kwargs):
+        pytest.fail('URL validation must not resolve, connect or launch a child')
+    monkeypatch.setattr(socket, 'getaddrinfo', forbidden)
+    monkeypatch.setattr(subprocess, 'run', forbidden)
+    monkeypatch.setattr('sqlalchemy.engine.Engine.connect', forbidden)
+    with pytest.raises(ValueError, match='^offline_worker_database_invalid$'):
+        worker_url(URL.create('postgresql+psycopg', host=host, database='pathwise_test'))
+
+
+@pytest.mark.parametrize('database', [None, '', 'pathwise_dev', 'pathwise_probe', 'postgres'])
+def test_worker_url_rejects_non_test_database(database):
+    from sqlalchemy.engine import URL
+    with pytest.raises(ValueError, match='^offline_worker_database_invalid$'):
+        worker_url(URL.create('postgresql+psycopg', host='localhost', database=database))
+
+
 def worker(s,b,h,body,mode):
     import json,subprocess,sys
     from pathlib import Path
     env={k:os.environ[k] for k in ('SYSTEMROOT','WINDIR','TEMP','TMP') if k in os.environ}
     env['PYTHONIOENCODING']='utf-8'
     # Disposable generated DB credentials travel only to this child via stdin.
-    data=dict(url=s.runtime.kw['bind'].url.render_as_string(hide_password=False),
+    data=dict(url=worker_url(s.runtime.kw['bind'].url).render_as_string(hide_password=False),
               schema=s.schema,sid=str(b.sid),headers=h,body=body,mode=mode)
     return subprocess.run([sys.executable,str(Path(__file__).with_name('maintenance_process_worker.py'))],
         input=json.dumps(data),text=True,encoding='utf-8',capture_output=True,timeout=30,env=env)
