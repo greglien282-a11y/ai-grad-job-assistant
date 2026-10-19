@@ -51,6 +51,18 @@
 
 旧成功 v1 行原样恢复。新行不能经过旧 `view()` 被硬编码返回为 v1：未来需在旧投影前增加版本拒绝边界，已鉴权的“不支持合同”返回候选 409 conversation_contract_mismatch，不能重解释、更改旧回执或返回不完整效果。非法请求形状仍可先 422；只有结构有效的同键不同正文按 409 payload mismatch。此适配是未来明确列出的兼容工作，本轮没有修改 B2-b。
 
+#### 跨版本分派、鉴权与摘要顺序
+
+以下是未来适配的固定边界，不改变合法 v1 的既有恢复/错误优先级。跨版本测试前提为未过期、非 deleted 的合法记录；过期/删除仍沿 B2-b 的安全 410/404，不先披露版本或业务内容。
+
+1. **查询前**：服务端路由固定可接受的 DTO/CO 版本、decision_contract、action/kind 组合；不能由客户端声明版本来选择任意投影器。POST 的无效版本/结构返回既有 422 invalid_request；键恢复先验证 Bearer 绑定的 key proof、scope 和期限，错误 proof 为 401 idempotency_credential_invalid。GET 不接受正文来修补版本或摘要。
+2. **鉴权前**：只可读取定位回执与判断安全可用性所需的内部字段，不投影 Fact/Turn/来源、不向外返回 version/action/效果。保留 B2-b 两种恢复路径的现有顺序：原键恢复的 available() 可先返回固定 deleted/期限错误，再鉴权路径 Session及回执归属；operation_id恢复则先鉴权 Session并检查归属，再由投影前的 available() 判断期限/删除。未找到记录时仍先核验路径鉴权，再返回固定404。外会话/错误归属统一 404 resource_unavailable（错误 key proof 已在上一步401），不能用版本差异泄漏他人记录；不能为了版本分派把原ID路径的鉴权后置。
+3. **鉴权后、摘要比较前**：核对持久 CO 的版本+decision_contract+动作族与路由白名单。v1 conversation-operations 的 GET 只读 v1；append GET 在 c1 只读 v2 append。相互错用返回 409 conversation_contract_mismatch、零效果投影；不能调用旧 view 后改 version 标签，也不能按“字段差不多”降级解析。未知持久版本同样固定拒绝，不能通过 GET 升级/补写它。
+4. **摘要比较**：POST 恢复仅在合同匹配后，对经该 DTO 验证并规范化的完整正文计算 request_tag，与原值恒定时间比较；版本、action、parent、区间、顺序等均不能省略。同版本 correct↔withdraw 等有效改正文为 409 idempotency_payload_mismatch；跨 append/v1 路由先按合同不匹配拒绝。两种冲突都不重新执行、不保存输入。GET 没有待比较的提交正文，不伪造或重算原请求来替代此步骤；其授权依据仍是原键证明或已鉴权 operation_id。
+5. **投影前后**：只对通过上述检查的回执选择对应版本的只读投影；核对 effects 数量/来源归属和原 after_version，输出 contract_version 必须来自已验证的持久合同。缺依赖或版本不一致按固定 410 conversation_result_unavailable，不能返回部分结果或改写回执。输出后也不得注册 deadline/清理/修复/Provider；GET 全程同一个 REPEATABLE READ READ ONLY 连接。POST 同键恢复不能递增任何版本或触发新业务效果。
+
+0014 升级不得重算合法 v1 的 request_tag/submission_tag、迁移它的 version/decision、延长期限或“补齐”历史正文。旧键、旧 operation_id 及其已提交效果在原窗口内仍按 v1 原样恢复；v1 GET白名单不得仅按当前HTTP可创建的动作缩窄而误拒既有合法v1历史（包括0013合法append原型记录）。结果中的 current_version 仍可如 B2-b 一样反映后续合法变化，不冒充历史回执被修改。fresh 请求只有确认没有原回执后才进入 Session 锁/写入流程，不能把未知版本或冲突当“没找到”而换入口创建。
+
 ### 3.2 请求例：完整原文、三个独立来源
 
 以下为公开虚构格式；base_revision 仅示例，不可当执行授权。
@@ -236,6 +248,12 @@ sequenceDiagram
 
 这是可见的可用性代价，应由产品明确接受（D3），不能写成“已有智能去重”。旧 add_fact/手工 edit/Provider complete 仍存在精确规则以外的语义缺口：**只收紧新 append 不足以保证全入口防改写复活**。若要求全入口保证，必须独立批准共享准入的相应保守收紧、验证旧接口兼容和 Provider 完成路径的错误/抑制语义；未通过前保留生产上线 BLOCK，不能趁本设计静默改变 B2-b。历史记录不因这个风险被改写或删除。
 
+**D3 过渡能力与正式可用性分开验收**：B2-c1“存在 rejected 就阻断本会话新 append”只能作为明确受限的临时安全子集。即便用户确实在补充毫不相关的新工作，也可能被拒绝；不能把该过渡测试通过标记为正式产品已支持普通连续补充，更不能以此解除语义防复活的生产 BLOCK。正式可用性至少须另审如何证明独立贡献、歧义如何解决、旧入口如何一致保护，并给出正反例和用户可理解的结果。
+
+临时阻断的提示候选为：“本会话有已拒绝或撤回的事实，当前版本还不能可靠判断这条补充是否独立。本次内容尚未保存，也没有新增或修改事实。草稿请保留；现有事实仍可查看和审核。”返回 409 append_requires_clarification；Δ(T,F,C,FS,S,O,R)=0、原事实版本/context_revision不变、Provider=0。它不是已保存的 needs_clarification 回执，不生成 operation_id、待办或后台解析任务；GET 原键未找到也不代表可自动 POST。已有成功回执仍优先恢复，不因后来出现 rejected 而被此门禁阻断。
+
+当前没有可以继续执行的语义澄清协议。提示不得建议换 key/Turn/会话、改写同一职责、走旧接口或先确认另一事实来解锁。后续澄清/再主张必须独立批准其输入保存与幂等、独立性证据、目标/来源/历史绑定和成功/拒绝语义；“我确认是新事实”、选中一个 fact_id 或模型置信分本身均不够。本轮不预留 force/ignore_duplicate/new_source 或等效绕过参数，也不自动撤销 rejected。若无法提供正式可用的澄清合同，就保持该场景不支持及生产 BLOCK，不能悄悄默认放行。
+
 ### 7.2 精确区间候选必须具备什么证据
 
 将来若放开同 Turn 中另一条独立贡献，必须以不可变 user Turn + 已审计 FCS/建档锚点证明每个被拒主张的全部历史区间；逐句/重叠检查含否定和限定语，不能只信任可改的 legacy citation JSON。部分重叠、重复引用、缺区间、旧编辑无当前来源、同文不同 Turn、记录损坏或语义身份不明均回到保守拒绝。不得通过回填猜测区间或“确认此来源正确”按钮洗白旧资料。
@@ -276,17 +294,33 @@ c1不实现类型列/新03过滤：新建事实仍无类型判断，当前03规�
 
 legacy-v0 是兼容标记，不是新的语义安全证明：未升级旧AddFact仍可保存未经分类的自由文本，这一旧能力与全局“计划绝不进入正文”的新承诺不能同时被假称已解决。新typed事实不能通过旧编辑转回该例外；跨旧入口新建未分类改写也仍受§7的独立性/防复活BLOCK。若要求所有新写入都适用类型过滤，必须另批旧writer准入、legacy-v0默认的截止/路由策略和旧UI升级；在此之前只可验证隔离合同，不能宣称03全局分类保证或开启typed生产写入。D6须明确选择，不能靠改原E2E断言消除冲突。
 
-`experience-summary` 的未来版本化投影须明确：正文及 confirmed（正文依据）只含eligible当前事实；pending保留当前pending；已确认但不适合正文的typed事实另列 reviewed_non_contributions 并给固定排除原因。incomplete只按正文资格判断，不能因存在一个已确认计划就宣称有成果。保持旧路由/旧字段/排序与legacy资料的原结果，新增 summary_contract_version；对新typed资料的上述差异必须成为明确合同，不由前端猜。正文仍逐条原文拼接，不专业改写、不生成PDF/正式简历。
+`experience-summary` 的未来 typed 投影：正文及 confirmed（正文依据）只含eligible当前事实；pending保留当前pending；已确认但不适合正文的typed事实另列 reviewed_non_contributions 并给固定排除原因。incomplete只按正文资格判断，不能因存在一个已确认计划就宣称有成果。正文仍逐条原文拼接，不专业改写、不生成PDF/正式简历。
+
+推荐**显式分路由**，不在原响应上只加一个可被忽略的 summary_contract_version 来改变 confirmed 的意义：
+
+- 原 `GET /api/v1/experience/projects/{pid}/experience-summary` 保留旧 legacy 数据的正文、confirmed/pending、排序及字段语义，不自动升级；它不是 typed 结果的兼容投影。对当前项目是否需要新读合同的判断只使用已鉴权数据/可信合同标记；只要有 explicit-typed-v1、unclassified-v1、typed 分类历史或进展关系，旧 summary 返回候选 409 summary_contract_upgrade_required，不把这些记录混入旧 confirmed。曾有 typed 数据不能仅靠修改当前标签来静默退回旧投影。
+- 新候选 `GET /api/v2/experience/projects/{pid}/experience-summary` 固定响应 summary_contract_version=2，采用本节 typed 资格及 reviewed_non_contributions；其中 legacy-v0 仍按旧数据兼容规则处理，不自动重新分类。客户端必须显式使用该路由并验证版本、事实类型/阶段/来源及排除原因，不能遇到新版本就 fallback 旧 GET 或自己重拼所有 confirmed。
+- 未支持的版本路由按固定 404 resource_unavailable；新路由依赖/权限缺失503，不退回旧投影。409升级提示只在鉴权后返回，不泄漏外会话是否含 typed。新旧版本都不能为了读取去写分类/修复历史。
+
+上述分路由是 D6 推荐候选，尚未批准或实现；api/v2 路由版本与 append CO v2/v3不是同一编号体系。若改选媒体类型协商，必须另给固定 Accept/Vary、未协商请求的拒绝、缓存与前端消费测试，不能自动按客户端缺字段猜版本。未完成明确选择及验证，typed 写入口保持关闭。
 
 ### 9.2 FactView 与来源
 
 FactView推荐只新增 fact_kind/progress_stage/classification_contract，旧字段不改名。旧TS Zod当前会丢弃不认识的新字段，**成功parse不代表旧UI能正确呈现类型**。typed功能启用须先证明旧03消费的是服务端筛选正文、不会自行把所有已确认背景重拼成成果；未通过则typed写入口仍关闭，不借本轮改UI。
+
+这里“新增字段”仅描述新 FactView 投影，不授权将 typed 记录塞给未升级旧读者。旧 FactView/会话聚合及 summary/export 任一路径不能表达新分类、当前来源或排除原因时，应在鉴权后固定拒绝（候选409 fact_contract_upgrade_required/export_contract_upgrade_required），不能去掉类型字段、把 typed 改标 legacy、漏掉记录后假称完整读取。纯 legacy 数据继续使用旧投影；精确版本路由/DTO适配须在c2实现前确认。
+
+typed 写入启用必须同时具备：新 FactView/来源投影及其权限、新summary路由和资格测试、新完整技术备份版本、前端显式路由与严格版本/枚举校验及真实消费验收。旧Zod只忽略extra字段、把缺失字段默认legacy、只测试JSON parse成功、只验证新后端而未验证当前02/03，任一都不算兼容通过。旧客户端仍可能访问同项目时，必须先证明它的所有入口都安全拒绝 typed 或完成升级；做不到即保持typed入口关闭，而不是允许写入后再让用户遇到坏结果。B2-c1未分类append的独立门禁不因此获得typed能力。
+
+旧编辑/旧v1 correct对未来typed资料的共享事务语义（§4.2）不等于批准旧客户端可用这些入口操作typed。旧写入口若不能提供已审查的新响应/后续读取合同，须在任何效果前固定拒绝；不能先提交修改再在FactView序列化时报告升级错误。仅具备完整新读合同的受控调用链才可讨论复用共享函数，纯legacy旧调用的行为保持不变。
 
 B2-b provenance_version=2/current_citations仍按最新edited的来源语义保留；不能把created/classified偷偷塞进去又称完全兼容。推荐将来显式FactView来源v3（受控协商/独立投影）：current_statement_citations指最新文字变更或初始created来源；classification_citations分列分类依据；history只作历史。分类/记忆/确认不让旧正文引用支持不同文字；后来的旧手工编辑没有新对话引用就如实空缺，不能恢复初始来源充数。v2读者仍可从original/citations追溯建档，不把空current_citations当无任何来源。
 
 ### 9.3 导出与 MiningContext
 
 原JSON是技术备份，需保留当前类型、所有历史/来源及可选进展关系，并区分未分类旧快照；不得把它当仅筛好的简历。旧format_version=1的历史意义不改，完整新关系需独立导出版本，保留旧版本投影而不重写历史文件。恢复回执不承担整份导出副本。
+
+推荐新候选 `GET /api/v2/experience/sessions/{sid}/export` 固定 format_version=2，完整包含会话当前资料及新历史/类型/关系，不套summary的正文过滤。旧export仅为纯legacy资料保留原行为；会话有任何需要新合同的项目/历史/关系时，旧路由409 export_contract_upgrade_required，不能丢关系或删字段后返回format_version=1成功。新导出缺权限则503，不能输出“部分备份”。后续重分类不得触发自动重写已导出的历史文件。
 
 当前FactContext没有类型/进度，不能让后续Provider把计划当确认贡献。类型字段若纳入context payload，会改变冻结bytes/SHA/预算及Prompt/Schema适用性：须另审版本化上下文/准备请求合同，不能在B2-c顺手把新列注入历史v2.1或正式Provider。未审查之前typed数据不得被标成已准备真实外发，不能因synthetic开关假装已经衔接真实AI。
 
@@ -319,9 +353,18 @@ B2-b provenance_version=2/current_citations仍按最新edited的来源语义保�
 | A11 | append与legacy来源UPDATE/DELETE/INSERT、首次审计竞争 | 原审计保护保持；旧漂移不追认，冲突失败，无死锁/自动重试；覆盖RR旧快照 |
 | A12 | reserved/running/unknown、六轮、failed/stale | 未决409；六轮/stopped只本地，状态/计数不重置 |
 | A13 | 旧add_turn/mining先保存输入；新append先提交后旧add_fact/mining | 409跨入口冲突；旧成功receipt优先恢复，不领养Turn |
+| V01 | 未过期v2 append CO经v1两种GET读取 | 鉴权后409 conversation_contract_mismatch，Fact/来源投影0次、Δ0，不能硬标v1 |
+| V02 | 未过期v1 correct/withdraw/resolution CO经v2两种GET读取 | 鉴权后409 conversation_contract_mismatch，投影0次、Δ0，不能映射成append效果 |
+| V03 | 同键correct→withdraw及反向；二者↔append；root↔resolution错用 | 同合同有效异正文409 idempotency_payload_mismatch；跨合同409 conversation_contract_mismatch；非法DTO422，均Δ0，不新Turn/执行/错误恢复 |
+| V04 | 0014升级前合法v1 correct/withdraw/needs_clarification/resolution及其父回执，另有合法append原型 | 升级前后原键/ID GET一致；原本支持的同键同正文POST效果一致，不为原型新增v1创建能力；摘要/期限/合同不改、Δ0，之后合法编辑只影响既有current_version投影 |
+| V05 | 无效请求版本、未知持久版本、路由版本与decision/action不符 | 请求422 invalid_request；鉴权后的持久合同不支持409 conversation_contract_mismatch；无部分投影/修补，Δ0 |
+| V06 | 同键改正文/第N项/引用/版本，以及错误Bearer/scope/外会话ID | 既有proof错误401，归属错误404且先于版本披露；合法同合同异正文409 mismatch，Δ0；过期/deleted保持原安全410/404 |
+| V07 | GET权限/依赖不足、源/效果损坏，所有版本分派异常分支 | 固定503或410，REPEATABLE READ READ ONLY下无写、无fallback、无新key/Provider |
 | R01 | rejected当前/历史原文，换key/换Turn/改写来源 | 精确命中409；无法证明独立则澄清零写，不能把改写当新贡献 |
 | R02 | 同Turn不同句，有/无可信完整历史区间 | 默认整Turn保护；精确不重叠本身不作放行授权 |
 | R03 | 旧入口改写rejected避开精确guard的攻击样本 | 如仍能接受，报告全入口上线BLOCK，不改预期让测试“绿”；需另审共享保守策略 |
+| R04 | rejected会话补充明显无关的新工作，c1仍无独立性协议 | 临时409 append_requires_clarification；提示未保存、保留草稿、允许现有审核；Δ0且无needs_clarification回执，不宣称正式可用性通过 |
+| R05 | 临时阻断后换key/Turn/措辞/入口或自报“独立”试图解锁 | 不以这些信号放行；无force/ignore_duplicate参数；缺完整跨入口保护仍生产BLOCK，不引导绕过 |
 | L01 | §8全部整理正反例，数字/否定/假设/团队 | 新窄规则只允合法正例；旧atomic/GQ03结果与冻结文件blob不变 |
 | U01 | GQ20、CRLF、组合字符、ZWJ、非法UTF-16偏移 | code-point精确，错误422，合法保存/历史/导出一致 |
 | P01 | GQ08计划已确认后再明确完成 | 两个fact_id，各有来源，旧计划状态/版本/材料不变，新pending/evidenceNULL；03只用确认后合格新完成 |
@@ -331,6 +374,9 @@ B2-b provenance_version=2/current_citations仍按最新edited的来源语义保�
 | C01 | 旧legacy确认/编辑/memory/material/rejected历史 | 旧结果保持；typed文字编辑退unclassified-v1在同一版本历史，确认后仍不能借legacy例外进正文；分类变化不继承确认 |
 | C02 | 03/JSON导出/FactView v2与新投影 | 原字段/旧结果兼容，typed计划/边界不进正文，pending/旧版本不混入；不完整新投影不得伪成功 |
 | C03 | 源表/关系表无SELECT，INSERT越权、恶意函数owner/PUBLIC EXECUTE | 503零写或DB拒绝；不默认空来源/忽略规则，无资金权限 |
+| C04 | legacy资料旧FactView/summary/export，含typed资料误用旧路由 | legacy结果不变；typed项目/会话依§9固定409升级错误，不能省类型/关系或把typed confirmed当旧语义，Δ0 |
+| C05 | 新summary v2、FactView/来源新投影、export v2及旧Zod丢extra | 严格版本/类型与排除语义验收；plan/boundary不入正文，备份保留全部；parse成功但语义缺失须阻断typed写入 |
+| C06 | 新读合同/前端/权限任一未完成、未知版本、跨会话升级探测 | typed工厂保持关闭；404/503/已鉴权409固定失败，不fallback或写后补救，无迁移重分类 |
 | M01 | 0013→候选、空库、旧业务资料、失败注入 | 随机Schema升级/check一致、失败原子回滚，不改历史迁移/旧快照 |
 | M02 | v1合法历史/empty downgrade与re-upgrade、v2/typed/墓碑非空 | 空且无新历史时才安全降级；否则拒绝，不能清防重放/进展审计 |
 
@@ -338,12 +384,14 @@ B2-b provenance_version=2/current_citations仍按最新edited的来源语义保�
 
 ## 12. 必须先确认的开放决策
 
+D1–D8均仍为待确认候选。本轮三处补充不是对实施/上线的批准；D3仅提出受限临时能力，D6明确分路由建议及typed禁用门槛，原生产BLOCK保留。
+
 - **D1 批量效果语义**：推荐all-new或整批拒绝，不静默部分去重；确认是否接受重复项导致用户整批需修改。若要混合noop，须另设计每项回执/来源绑定及零效果语义，不能套本双射保证。
 - **D2 合同/迁移成本**：推荐S1版本化CO v2及前向迁移，而非只用0013宽规则；确认独立append路径/恢复投影与旧v1拒绝未知版本的方式。不修改已有v1记录。
-- **D3 rejected可用性与兼容**：推荐保留整Turn、语义不明零写；没有可靠独立性判断时新append可整会话保守阻断。全入口语义防复活尚BLOCK，需决定共享旧入口是否同等收紧或保持新功能关闭；不能宣称精确匹配已解决。
+- **D3 rejected可用性与兼容**：推荐保留整Turn、语义不明零写；整会话保守阻断仅是c1明确受限的临时安全子集，提示未保存且不创建澄清回执，不能当正式产品可用性方案。正式独立性/澄清及全入口保护仍需审查，生产BLOCK不解除；不能宣称精确匹配已解决。
 - **D4 类型/阶段及进展关系**：推荐§4矩阵、legacy不推断、计划/完成另建。确认c2是否包含可持久恢复的related_plan；不含则明确不支持关联，不假装有进展链。
 - **D5 分类修改与旧编辑**：推荐分类实质变化重回pending/清材料，旧typed文字编辑退unclassified-v1且不恢复legacy正文资格；classify命令、引用方式及可接受的窄语法必须单独批准，未批准就不开放。
-- **D6 03与旧客户端**：推荐新typed只把确认的personal_action/completed放正文，legacy-v0保持旧路径结果并明确未分类；unclassified-v1隔离。确认是否保留in_progress到辅助区、新导出/来源版本协商，以及旧writer未分类文本的兼容截止策略；无法同时保证旧行为和全局新分类时继续禁用typed入口，不降低原验收。
+- **D6 03与旧客户端**：推荐显式新summary/export路由及严格版本投影，旧路由只保留legacy原行为、不能错误读取typed；新typed只把确认的personal_action/completed放正文，unclassified-v1隔离。确认FactView/来源新合同、前端真实消费和旧writer兼容截止策略；任一未就绪即禁用typed入口，不能以JSON/Zod parse成功替代兼容，不降低原验收。
 - **D7 GQ03范围**：推荐仅新版本append窄词法增加“整理”，保留全局atomic、历史模型输出合同与冻结质量v1；扩大到其他路径需另审。
 - **D8 部署与权限**：append独立受限角色、函数owner/ACL、清理和新表读取权限未部署；c1/c2离线通过也不授权生产启用、真实资料外发或付费。
 
@@ -353,11 +401,11 @@ B2-b provenance_version=2/current_citations仍按最新edited的来源语义保�
 
 候选文件：新append DTO/事务/独立默认关闭路由与权限准入；复用facts.add_turn/add_fact、CO/FCS及幂等读取的经版本化适配，不复制确认逻辑；新增0014候选模型/约束分派、append窄词法策略及专项测试。旧维护writer/factory保持原能力。新事实尚无分类列，未分类不得宣称已完成；GQ08不支持、无progress/related_plan/classify。新工厂仍默认关闭，Provider/Run=0。
 
-必须证明N项双射、全回滚、并发、真实进程崩溃/GET-only恢复、跨入口和来源权限；必须明确R03失败意味着什么。受限运行角色只在随机Schema配置，不给持久库授权。拒绝/澄清与既有合成手工流程共存，不实现新UI。审查通过后停止，再请求c2授权。
+必须证明N项双射、全回滚、并发、真实进程崩溃/GET-only恢复、V01–V07双向版本隔离/v1升级恢复、跨入口和来源权限；必须明确R03失败意味着什么，R04临时阻断通过不能替代正式可用性。受限运行角色只在随机Schema配置，不给持久库授权。拒绝/澄清与既有合成手工流程共存，不实现新UI。审查通过后停止，再请求c2授权。
 
 ### B2-c2：类型、进度及读取兼容（待D4/D5/D6通过）
 
-候选文件：ExperienceFact正式列/新迁移、共享snapshot/current-history约束、typed append合同v3与独立类型规则、可选FactProgressLink及分类修改命令、FactView/summary/导出版本化投影与权限适配、合成P/C/M矩阵。若typed规则或旧UI兼容无法安全证明，就只提交Schema/读取合同与拒绝测试，写入口不启用；不能用自由JSON或关闭否定检查来跑通GQ08。
+候选文件：ExperienceFact正式列/新迁移、共享snapshot/current-history约束、typed append合同v3与独立类型规则、可选FactProgressLink及分类修改命令、FactView/summary/导出版本化投影与权限适配、合成P/C/M矩阵。C04–C06与D6的读路由/DTO/完整备份/前端真实消费门槛须全部满足；若typed规则或旧UI兼容无法安全证明，就只提交Schema/读取合同与拒绝测试，写入口不启用；不能用自由JSON或关闭否定检查来跑通GQ08。c1获批或其CI成功不授予c2实施/启用许可。
 
 不修改旧MiningOutputV2/正式Provider输入；将来context/动态请求的新合同另审。生产角色/工厂部署、语义再主张/精准来源放行、阶段C自动解释、阶段D前端和阶段E新评测均为后续独立授权。停用是关闭新入口、保留审计/来源/旧恢复能力，不删历史、不重签key、不恢复任何费用许可。
 
