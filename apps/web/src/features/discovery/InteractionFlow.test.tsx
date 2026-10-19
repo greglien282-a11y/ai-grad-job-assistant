@@ -5,6 +5,7 @@ import fixtures from '../../test/mining-fixtures.json'
 import { createExperienceApi, sessionSchema, SESSION_KEY } from '../../lib/experience'
 import type { MiningRun } from '../../lib/mining-contract'
 import { MINING_KEY } from '../../lib/pending-mining'
+import * as pendingMining from '../../lib/pending-mining'
 import DiscoveryWorkbench from './DiscoveryWorkbench'
 
 function harness(outcome: MiningRun['state'] | 'empty' | 'conflict' = 'completed', hold = false, unstarted = false, holdRead = false) {
@@ -13,10 +14,13 @@ function harness(outcome: MiningRun['state'] | 'empty' | 'conflict' = 'completed
   const gate = new Promise<void>(resolve => { release = resolve })
   let releaseRead!: () => void
   let readGate = new Promise<void>(resolve => { releaseRead = resolve })
+  const heldRead = vi.fn(), finishedRead = vi.fn()
   const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path=String(input), method=init?.method ?? 'GET'
     const json=(value: unknown,status=200)=>new Response(JSON.stringify(value),{status})
-    if (method==='GET' && path.endsWith(`/sessions/${data.id}`) && holdRead) { await readGate;holdRead=false }
+    if (method==='GET' && path.endsWith(`/sessions/${data.id}`) && holdRead) {
+      heldRead();await readGate;holdRead=false;finishedRead()
+    }
     if (path.endsWith('/mining-runs') && method==='POST') {
       expect(sessionStorage.getItem(MINING_KEY)).not.toBeNull()
       if (hold) await gate
@@ -51,7 +55,7 @@ function harness(outcome: MiningRun['state'] | 'empty' | 'conflict' = 'completed
   sessionStorage.setItem(SESSION_KEY,JSON.stringify({sessionId:data.id,token:fixtures.created.access_token}))
   const api=createExperienceApi(fetcher as typeof fetch)
   const view=render(<DiscoveryWorkbench api={api} />)
-  return {fetcher,release,releaseRead:()=>releaseRead(),view,api,
+  return {fetcher,release,releaseRead:()=>releaseRead(),heldRead,finishedRead,view,api,
     holdNextRead:()=>{holdRead=true;readGate=new Promise<void>(resolve=>{releaseRead=resolve})},
     complete:()=>{ const run=data.mining_runs!.at(-1)!;run.state='completed';run.error_code=null }}
 }
@@ -87,12 +91,41 @@ it('initial mining does not clear a separate unsubmitted answer draft',async()=>
   expect(JSON.parse(String(writes(x)[0][1]?.body)).content).toBeNull()
 })
 it('changes from POST submission to ordinary reading while the follow-up GET is held',async()=>{
-  const x=harness();await ready();x.holdNextRead();await answer()
-  await waitFor(()=>expect(status()).toHaveAttribute('data-state','reading'))
-  expect(status()).not.toHaveTextContent('正在提交并进行合成整理')
-  expect(writes(x)).toHaveLength(1)
-  x.releaseRead();await ready()
-  expect(status()).toHaveAttribute('data-state','completed')
+  let releasePreparation!: () => void
+  const preparationGate = new Promise<void>(resolve => { releasePreparation = resolve })
+  const newMining = pendingMining.newMining
+  const preparation = vi.spyOn(pendingMining,'newMining').mockImplementationOnce(async (...args) => {
+    await preparationGate
+    return newMining(...args)
+  })
+  const x=harness('completed',true)
+  try {
+    await ready()
+    expect(writes(x)).toHaveLength(0)
+    x.holdNextRead();await answer()
+    await waitFor(()=>expect(preparation).toHaveBeenCalledOnce())
+    // busy also projects reading before asynchronous key preparation finishes.
+    await waitFor(()=>expect(status()).toHaveAttribute('data-state','reading'))
+    expect(writes(x)).toHaveLength(0)
+    expect(x.heldRead).not.toHaveBeenCalled()
+    releasePreparation()
+    await waitFor(()=>expect(writes(x)).toHaveLength(1))
+    expect(String(writes(x)[0][0])).toMatch(/\/mining-runs$/)
+    await waitFor(()=>expect(status()).toHaveAttribute('data-state','submitting'))
+    x.release()
+    // Synchronize on the actual follow-up GET, which remains unresolved here.
+    await waitFor(()=>expect(x.heldRead).toHaveBeenCalledOnce())
+    await waitFor(()=>expect(status()).toHaveAttribute('data-state','reading'))
+    expect(x.finishedRead).not.toHaveBeenCalled()
+    expect(status()).not.toHaveTextContent('正在提交并进行合成整理')
+    expect(writes(x)).toHaveLength(1)
+    x.releaseRead();await ready()
+    expect(x.finishedRead).toHaveBeenCalledOnce()
+    expect(status()).toHaveAttribute('data-state','completed')
+    expect(writes(x)).toHaveLength(1)
+  } finally {
+    x.view.unmount();releasePreparation();x.release();x.releaseRead();preparation.mockRestore()
+  }
 })
 it('uses the actual POST lifecycle and submits two explicit question links only once',async()=>{
   const x=harness('completed',true);await ready()
