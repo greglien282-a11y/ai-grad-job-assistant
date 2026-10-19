@@ -2,7 +2,7 @@
 from uuid import uuid4
 
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from app import facts, fact_maintenance as maintenance, idempotency as idem
 from app.append_contract import AppendResult, append_spans
@@ -84,9 +84,13 @@ def apply(db, sid, token, key, body):
     if session.context_revision != body.base_revision:
         raise ConversationError(409, 'context_conflict')
     spans = append_spans(body)
-    # Temporary D3 restriction: no semantic independence interpreter exists.
+    # Temporary D3 restriction includes legacy facts restored after rejection.
+    # Neither current status nor a later edit erases a rejected snapshot.
     if db.scalar(select(ExperienceFact.id).where(ExperienceFact.session_id == sid,
-                 ExperienceFact.status == 'rejected').limit(1)):
+                 ExperienceFact.status == 'rejected').limit(1)) or db.scalar(
+            select(FactChange.id).where(FactChange.session_id == sid, or_(
+                FactChange.before['status'].as_string() == 'rejected',
+                FactChange.after['status'].as_string() == 'rejected')).limit(1)):
         raise ConversationError(409, 'append_requires_clarification')
     content = body.input.content
     if db.scalar(select(ConversationTurn.id).where(ConversationTurn.session_id == sid,

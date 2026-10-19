@@ -178,7 +178,9 @@ V2_CHECK = r'''
               AND xmin::text::bigint=pg_current_xact_id()::text::bigint % 4294967296)<>ns
             OR (SELECT count(*) FROM {q}.fact_sources WHERE session_id=s.id
               AND xmin::text::bigint=pg_current_xact_id()::text::bigint % 4294967296)<>ns
-            OR EXISTS(SELECT 1 FROM {q}.experience_facts WHERE session_id=s.id AND status='rejected') THEN
+            OR EXISTS(SELECT 1 FROM {q}.experience_facts WHERE session_id=s.id AND status='rejected')
+            OR EXISTS(SELECT 1 FROM {q}.fact_changes WHERE session_id=s.id
+              AND (before->>'status'='rejected' OR after->>'status'='rejected')) THEN
             RAISE EXCEPTION 'append_v2_bijection' USING ERRCODE='23514'; END IF;
           total:=0; n:=0;
           FOR span IN SELECT value FROM jsonb_array_elements(o.proposal_spans) LOOP

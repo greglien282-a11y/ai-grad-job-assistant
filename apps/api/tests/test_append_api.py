@@ -752,3 +752,147 @@ def test_V07_readonly_option_failure_refuses_projection(append_service, failure)
     try: error(recover(s, b, h), 503, 'conversation_readonly_required')
     finally: event.remove(s.append_runtime.kw['bind'], 'before_cursor_execute', alter_show)
     assert stored(s.admin) == before
+
+
+def legacy_rejected_history(s, b, current_status, history_field):
+    """Trusted legacy fixture, never a new API transition or runtime bypass.
+
+    Arrange an unaudited fact restored by a historical writer. Partial legacy
+    snapshots exercise before/after independently; they are constructed before
+    INSERT, never backfilled or rewritten by the 0014 upgrade.
+    """
+    with s.admin.begin() as db:
+        session = facts.authorize(db, b.sid, b.token, lock=True)
+        turn = facts.add_turn(db, b.sid, b.token, '我维护了旧清单。')
+        fact = facts.add_fact(db, b.pid, b.token, turn.content, [turn.id])
+        before = facts.snapshot(db, fact)
+        fact.status = 'rejected'; db.flush()
+        after = facts.snapshot(db, fact)
+        if history_field == 'before': after.pop('status')
+        db.add(FactChange(id=uuid4(), fact_id=fact.id, session_id=b.sid,
+                         action='status_changed', actor='user', before=before, after=after))
+        db.flush()
+        before = facts.snapshot(db, fact)
+        if history_field == 'after': before.pop('status')
+        # Simulate a pre-existing old edit that restored pending. The current
+        # HTTP/domain writer does not permit editing a rejected fact.
+        fact.statement = '我维护了旧记录清单。'
+        fact.status = 'pending'; db.flush()
+        change = FactChange(id=uuid4(), fact_id=fact.id, session_id=b.sid,
+                            action='edited', actor='user', before=before)
+        change.after = facts.snapshot(db, fact, edit=change)
+        db.add(change); db.flush()
+        if current_status == 'user_confirmed':
+            facts.change_fact(db, fact.id, b.token, status=current_status, expected_version=fact.version)
+        db.refresh(session)
+        return fact.id
+
+
+@pytest.mark.parametrize('entry', ['http', 'restricted_sql'])
+@pytest.mark.parametrize('current_status', ['pending', 'user_confirmed'])
+@pytest.mark.parametrize('history_field', ['before', 'after', 'both'])
+def test_D3_legacy_rejected_history_blocks_after_upgrade_preserves_v1(
+        append_service, migrated_connection, entry, current_status, history_field):
+    from alembic import command as alembic
+    from test_fact_maintenance import append_operation
+    s = append_service; conn, cfg = migrated_connection
+    alembic.downgrade(cfg, '0013_fact_maintenance'); conn.commit()
+    b = seed(s); h = key(b); original_body = command(b)
+    original = v1post(s, b, original_body, h)
+    assert original.status_code == 201, original.text
+    legacy_id = legacy_rejected_history(s, b, current_status, history_field)
+    current(s, b)
+    with s.admin() as db:
+        assert db.get(ExperienceFact, legacy_id).status == current_status
+        for field in ('before', 'after'):
+            count = db.scalar(select(text('count(*)')).select_from(FactChange).where(
+                FactChange.fact_id == legacy_id, getattr(FactChange, field)['status'].as_string() == 'rejected'))
+            assert bool(count) == (history_field in (field, 'both'))
+        assert db.scalar(select(ExperienceFact.id).where(
+            ExperienceFact.session_id == b.sid, ExperienceFact.status == 'rejected').limit(1)) is None
+    before = stored(s.admin)
+    alembic.upgrade(cfg, '0014_append_batch'); conn.commit()
+    assert stored(s.admin) == before  # No rewriting old facts, snapshots or v1 CO.
+    if entry == 'http':
+        fresh_key = key(b)
+        response = post(s, b, h=fresh_key)  # Three new statements, all zero-write.
+        error(response, 409, 'append_requires_clarification')
+        assert '尚未保存' in response.json()['error']['message']
+        assert 'operation_id' not in response.text
+        error(recover(s, b, fresh_key), 404, 'conversation_operation_not_found')
+    else:
+        # No fact_append.apply()/D3 service guard or projector is invoked.
+        # Real restricted LOGIN must be rejected by deferred v2 SQL at COMMIT.
+        with pytest.raises(IntegrityError, match='append_v2_bijection'), s.append_runtime.begin() as db:
+            assert db.scalar(text('SELECT current_user')) == s.append_role
+            append_operation(db, b, operation={'contract_version': 2, 'decision_contract': 'append-batch-v1'})
+    assert stored(s.admin) == before
+    assert v1recovery(s, b, h).json() == original.json()
+    v1path = path(b).replace('conversation-appends', 'conversation-operations')
+    assert s.client.get(v1path + '/' + original.json()['operation_id'], headers=h).json() == original.json()
+    replay = v1post(s, b, original_body, h)
+    assert replay.status_code == 200 and replay.headers['Idempotency-Replayed'] == 'true'
+    assert replay.json() == original.json()
+    session = s.client.get(f'/api/v1/experience/sessions/{b.sid}', headers=h)
+    assert session.status_code == 200, session.text
+    assert stored(s.admin) == before
+
+
+def test_D3_legacy_history_is_session_scoped_for_http_and_sql(append_service, migrated_connection):
+    from alembic import command as alembic
+    from test_fact_maintenance import append_operation
+    s = append_service; conn, cfg = migrated_connection
+    alembic.downgrade(cfg, '0013_fact_maintenance'); conn.commit()
+    old = seed(s); legacy_rejected_history(s, old, 'user_confirmed', 'both')
+    clean = seed(s)
+    alembic.upgrade(cfg, '0014_append_batch'); conn.commit()
+    assert post(s, clean).status_code == 201
+    with s.append_runtime.begin() as db:
+        append_operation(db, clean, operation={'contract_version': 2, 'decision_contract': 'append-batch-v1'})
+    current(s, old); before = stored(s.admin)
+    error(post(s, old), 409, 'append_requires_clarification')
+    assert stored(s.admin) == before
+
+
+def test_D3_committed_v2_recovery_precedes_later_legacy_history(append_service):
+    s = append_service; b = seed(s); h = key(b); original_body = body(b)
+    result = post(s, b, original_body, h)
+    assert result.status_code == 201
+    legacy_rejected_history(s, b, 'pending', 'both')
+    current(s, b); before = stored(s.admin)
+    assert recover(s, b, h).json() == result.json()
+    assert s.client.get(path(b) + '/' + result.json()['operation_id'], headers=h).json() == result.json()
+    replay = post(s, b, original_body, h)
+    assert replay.status_code == 200 and replay.headers['Idempotency-Replayed'] == 'true'
+    assert replay.json() == result.json()
+    error(post(s, b), 409, 'append_requires_clarification')
+    assert stored(s.admin) == before
+
+
+@pytest.mark.parametrize('action', ['correct', 'withdraw', 'prototype'])
+def test_D3_history_does_not_restrict_legal_v1_writes(append_service, migrated_connection, action):
+    from alembic import command as alembic
+    from app.idempotency import parse
+    from test_fact_maintenance import append_operation
+    from test_maintenance_api import KIND
+    s = append_service; conn, cfg = migrated_connection
+    alembic.downgrade(cfg, '0013_fact_maintenance'); conn.commit()
+    b = seed(s); legacy_rejected_history(s, b, 'pending', 'both'); current(s, b)
+    before = stored(s.admin)
+    alembic.upgrade(cfg, '0014_append_batch'); conn.commit()
+    assert stored(s.admin) == before
+    h = key(b)
+    if action == 'prototype':
+        k = parse(h['Idempotency-Key'], b.token, KIND, f'session:{b.sid}')
+        with s.append_runtime.begin() as db:
+            fixture = append_operation(db, b, operation={'key_digest': k.digest})
+            oid = fixture.oid
+    else:
+        response = v1post(s, b, command(b, action=action), h)
+        assert response.status_code == 201, response.text
+        oid = response.json()['operation_id']
+    stable = stored(s.admin)
+    restored = v1recovery(s, b, h)
+    assert restored.status_code == 200 and restored.json()['contract_version'] == 1
+    assert str(restored.json()['operation_id']) == str(oid)
+    assert stored(s.admin) == stable

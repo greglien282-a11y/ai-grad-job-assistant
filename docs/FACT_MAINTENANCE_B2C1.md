@@ -51,6 +51,12 @@ append 有单独 check_append_runtime 与真实独立 LOGIN 测试身份。它�
 
 原测试仅更新迁移最新 head 的精确预期（含 E2E probe）；历史迁移目标和全部业务断言保留。实际运行命令、数量和 CI 以本 PR 验证记录为准，不把矩阵当作执行结果。
 
+### PR #36 第一轮独立审查修复：D3 rejected 历史
+
+审核 HEAD `c9fbd6a7408c616b52477b0f726196614a13f62b` 的 Python 门禁与 0014 v2 校验仅查当前 rejected，漏掉旧事实被历史 writer 恢复到 pending/confirmed 的情况。现两层均按同会话检查当前状态及 FactChange.before/after 的 status='rejected'；成功幂等恢复仍在 D3 前，Session 锁、鉴权及零写提示/错误保持。0013、0014 内冻结的 v1 validator 与 v1 合法合同不变，无历史 UPDATE/backfill、角色扩权或生产启用。
+
+新增 17 项合成回归：在 0013 准备旧资料及合法 v1 回执，再升级 0014。before-only/after-only/both × 当前 pending/user_confirmed × HTTP/真实受限 SQL 的 12 项，在原审核代码上全部复现漏挡（HTTP 成功写入、SQL 可提交）；修复后要求 HTTP 409/无回执、SQL 在 COMMIT 抛约束错误，所有表逐行比较零变化。另测外会话 rejected 历史不阻断干净会话、已有 v2 回执在后来出现 rejected 历史后仍 GET/同键恢复优先，以及 v1 correct/withdraw/合法 append 原型写入不受新 v2 门禁影响。旧 v1 原键/ID/同键回放与会话读取保持，升级前后事实、来源、快照、HMAC、期限和回执逐行不变。稀疏历史快照在 fixture 的 INSERT 前构造，不在迁移中改写旧记录。
+
 实际检查入口（均显式绑定专用测试实例；以下省略测试进程的环境变量，不提供生产连接方式）：
 
 ```text
