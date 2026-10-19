@@ -34,7 +34,7 @@ GQ08 的类型/进度合同未获 B2-a 实施授权，progress / progress_stage 
 
 ## 权限与锁序
 
-新表和五个触发器/检查函数对 PUBLIC 及继承自 default ACL 的非 owner 角色撤销权限；不创建角色、不授予 Web/runner 读写或任何付费权限。函数固定 `search_path=pg_catalog`，所有业务表使用迁移时可信 Schema 的限定名。删除入口仅为固定 Session 触发器；对新表的普通直接权限不能凭调用验证函数取得。
+新表和六个触发器/检查函数对 PUBLIC 及继承自 default ACL 的非 owner 角色撤销权限；不创建角色、不授予 Web/runner 读写或任何付费权限。函数固定 `search_path=pg_catalog`，所有业务表使用迁移时可信 Schema 的限定名。删除入口仅为固定 Session 触发器；对新表的普通直接权限不能凭调用验证函数取得。
 
 函数由迁移执行者拥有。本阶段没有部署运行写入者；**正式启用 BLOCK**：须先独立核验迁移/函数 owner 为隔离非 LOGIN 身份，Web 无其成员关系/SET ROLE 通道，以及未来最小权限命令的可调用链。隔离测试 owner 仅用于建 Schema 与构造合成事务，不是生产角色方案已部署的证据。
 
@@ -70,3 +70,16 @@ GQ08 的类型/进度合同未获 B2-a 实施授权，progress / progress_stage 
 本轮没有真实凭据读取、真实供应商请求或费用；未访问持久业务库、探针库和历史冻结账本，没有前端/模型/资金合同变更。
 
 特别地，旧 reject 路径仍保留原 evidence_id 行为；新 withdraw 合同要求清空当前指针而保留历史。B2-b 必须单独实现并验证这个显式命令的 before/after 历史，不能直接把旧 reject 宣称为完整 withdraw API。
+
+## PR #33 复审：原始 FactSource 保护
+
+初版 0013 的缺口是：维护来源与变更历史已被保护，原始 `fact_sources` 仍仅由旧 `user_source` 检查 Turn 归属/角色。合法的同会话用户 Turn 并不能证明一次来源改写是合法的。UPDATE citations、DELETE 或追加额外 FactSource 都可能让建档来源与审计结果分离。本轮在同一未合并的 0013 候选中修复，不修改 0001–0012、不访问持久库，不靠重新执行已部署迁移修补数据。
+
+- 事实存在任意版本的 FactChangeSource 后，禁止其原始 FactSource INSERT/UPDATE/DELETE；检查 UPDATE 的旧/新 fact_id 两侧，不能搬移到 legacy 事实绕过。作用域不随新版本编辑或 24 小时键过期解除。整会话删除仍允许原始来源级联清理。
+- 新增固定 search_path、撤销 PUBLIC/default EXECUTE 的内部 `maintenance_original_fact(uuid)`。在首次审计及原始来源写入的延迟检查中，比较实际来源 Turn ID 集合和 citations 多重集与唯一 created FactChange.after 的建档快照。引用多重集保留重复数量，仅忽略枚举顺序，不 trim/归一化文本。缺失、额外来源、非法容器或快照不一致均拒绝。已审计事实的全部 FactChange 也不能单独删除，以保护该建档锚点。
+- 新 append 还要求恰好一个对应用户 Turn 的 FactSource、恰好一个精确 citation；不能通过在同一事务内伪造“自洽”的 created 快照，给本轮原子事实补挂额外来源。correct/withdraw 保留原始来源，只增加新版本来源；对 legacy 事实的首次审计，不允许在同一事务先 UPDATE/INSERT 其旧原始来源再补审计。
+- 未审计 legacy FactSource 的旧 INSERT/UPDATE/DELETE 行为仍保留，不改旧行。若这些写入令来源偏离建档快照，之后尝试纳入维护审计必须整体失败，不自动修补或追认。已有合法多 Turn、NULL citations 的建档仍兼容。这里证明的是元数据留存与冻结，不是对所有 legacy 来源内容的真实性背书；旧快照扁平保存 citations，不能提供逐行或密码学认证。对全部 legacy 禁止补来源属于另行审查的兼容性收紧，本轮没有实施。
+- 所有原始来源行写入（包括尚未审计的 legacy）按 UUID 顺序尝试 Session `FOR UPDATE NOWAIT`，与首次维护、删除串行；现有 API 已持有同一 Session 锁。原始 SQL 已锁来源行时不得反向等待 Session，冲突即失败。成功的未审计来源写入对 Session 做 `updated_at=updated_at` 的 MVCC 写屏障，不改变任何业务值、context_revision、时间戳或 Fact.version；让更早开启的 REPEATABLE READ 审计无法忽略已提交来源变更。旧快照/锁竞争按 40001/55P03 fail-closed，无自动重试，没有 Funding 锁。
+- TRUNCATE 无行级 OLD：仅在 READ COMMITTED、能立即取得 Session 表 SHARE 锁且不存在任何维护来源时保留旧 bulk DDL 行为；有审计、锁冲突或高隔离级别的 bulk DDL 拒绝。这个限制不冻结 legacy 行级 DML；现有业务 API 不执行 TRUNCATE。测试亦覆盖 PostgreSQL TRUNCATE 非 MVCC 安全的边界。
+
+新增 `test_fact_source_maintenance.py`：覆盖三类操作的来源攻击、同事务两种写入顺序、先提交 legacy 漂移再审计、合法历史与后续编辑、双连接首次审计/来源写入及删除竞争、双向 REPEATABLE READ 旧快照、bulk DDL，以及失败后完整事实/来源/历史/回执快照不变。继续保留顶层事务限制、无 B2-b API、无真实凭据/供应商、无生产迁移及原上线 BLOCK。

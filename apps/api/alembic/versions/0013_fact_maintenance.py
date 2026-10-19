@@ -80,7 +80,7 @@ CREATE INDEX ix_fcs_turn ON fact_change_sources (turn_id);
 def upgrade():
     conn=op.get_bind()
     q=conn.dialect.identifier_preparer.quote_identifier(conn.scalar(sa.text('SELECT current_schema()')))
-    op.execute(f'LOCK TABLE {q}.experience_sessions, {q}.experience_facts, {q}.fact_changes IN ACCESS EXCLUSIVE MODE NOWAIT')
+    op.execute(f'LOCK TABLE {q}.experience_sessions, {q}.experience_facts, {q}.fact_changes, {q}.fact_sources IN ACCESS EXCLUSIVE MODE NOWAIT')
     op.create_unique_constraint('uq_change_fact_session','fact_changes',['id','fact_id','session_id'])
     op.execute(DDL)
     install(q)
@@ -89,6 +89,39 @@ def upgrade():
 def install(q):
     # All names are migration-quoted, all runtime data is typed. No runtime SQL
     # interpolation or externally selected namespace, no paid_* writes/grants.
+    op.execute(f'''CREATE FUNCTION {q}.maintenance_original_fact(fid uuid) RETURNS void
+      LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+      DECLARE c {q}.fact_changes%ROWTYPE; actual_ids jsonb; actual_quotes jsonb; saved_quotes jsonb;
+      BEGIN
+        IF NOT EXISTS(SELECT 1 FROM {q}.fact_change_sources WHERE fact_id=fid) THEN RETURN; END IF;
+        IF (SELECT count(*) FROM {q}.fact_changes WHERE fact_id=fid AND action='created')<>1 THEN
+          RAISE EXCEPTION 'maintenance_original_invalid' USING ERRCODE='23514'; END IF;
+        SELECT * INTO c FROM {q}.fact_changes WHERE fact_id=fid AND action='created';
+        IF jsonb_typeof(c.after->'original_source_turn_ids') IS DISTINCT FROM 'array'
+          OR jsonb_typeof(c.after->'citations') IS DISTINCT FROM 'array'
+          OR c.after->>'version' IS DISTINCT FROM '1'
+          OR EXISTS(SELECT 1 FROM {q}.fact_sources WHERE fact_id=fid
+            AND citations IS NOT NULL AND jsonb_typeof(citations) NOT IN ('array','null')) THEN
+            RAISE EXCEPTION 'maintenance_original_invalid' USING ERRCODE='23514'; END IF;
+        -- An old fact cannot have its origin rewritten in the very transaction
+        -- adopting it into maintenance. New append sources are checked below.
+        IF (SELECT xmin::text::bigint FROM {q}.fact_changes WHERE id=c.id)
+            <>pg_current_xact_id()::text::bigint % 4294967296
+          AND EXISTS(SELECT 1 FROM {q}.fact_sources WHERE fact_id=fid
+            AND xmin::text::bigint=pg_current_xact_id()::text::bigint % 4294967296) THEN
+            RAISE EXCEPTION 'maintenance_original_invalid' USING ERRCODE='23514'; END IF;
+        SELECT coalesce(jsonb_agg(turn_id::text ORDER BY turn_id::text),'[]'::jsonb)
+          INTO actual_ids FROM {q}.fact_sources WHERE fact_id=fid;
+        SELECT coalesce(jsonb_agg(x.value ORDER BY x.value),'[]'::jsonb) INTO actual_quotes
+          FROM {q}.fact_sources fs CROSS JOIN LATERAL jsonb_array_elements(
+            CASE WHEN jsonb_typeof(fs.citations)='array' THEN fs.citations ELSE '[]'::jsonb END) x
+          WHERE fs.fact_id=fid;
+        SELECT coalesce(jsonb_agg(x.value ORDER BY x.value),'[]'::jsonb) INTO saved_quotes
+          FROM jsonb_array_elements(c.after->'citations') x;
+        IF actual_ids IS DISTINCT FROM c.after->'original_source_turn_ids'
+          OR actual_ids='[]'::jsonb OR actual_quotes IS DISTINCT FROM saved_quotes THEN
+            RAISE EXCEPTION 'maintenance_original_invalid' USING ERRCODE='23514'; END IF;
+      END $$''')
     op.execute(f'''CREATE FUNCTION {q}.maintenance_validate(oid uuid) RETURNS void
       LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
       DECLARE o {q}.conversation_operations%ROWTYPE; p {q}.conversation_operations%ROWTYPE;
@@ -206,9 +239,10 @@ def install(q):
             IF c.action<>'created' OR c.actor<>'system' OR (c.before IS NOT NULL AND c.before<>'null'::jsonb) OR r.before_version IS NOT NULL
               OR r.after_version<>1 OR f.status<>'pending' OR r.source_role<>'statement' THEN
                 RAISE EXCEPTION 'maintenance_created_invalid' USING ERRCODE='23514'; END IF;
-            IF NOT EXISTS(SELECT 1 FROM {q}.fact_sources fs, jsonb_array_elements(fs.citations) x
-              WHERE fs.fact_id=f.id AND fs.turn_id=t.id AND fs.session_id=s.id AND x->>'turn_id'=t.id::text
-              AND x->>'quote'=r.quote AND x->>'start'=r.start_cp::text AND x->>'end'=r.end_cp::text) THEN
+            IF (SELECT count(*) FROM {q}.fact_sources WHERE fact_id=f.id)<>1 OR NOT EXISTS(
+              SELECT 1 FROM {q}.fact_sources fs WHERE fs.fact_id=f.id AND fs.turn_id=t.id AND fs.session_id=s.id
+              AND fs.citations=jsonb_build_array(jsonb_build_object('turn_id',t.id::text,
+                'quote',r.quote,'start',r.start_cp,'end',r.end_cp))) THEN
                 RAISE EXCEPTION 'maintenance_original_source_invalid' USING ERRCODE='23514'; END IF;
           ELSE
             expected_reason:=CASE WHEN a='correct' THEN 'explicit_correction' ELSE 'explicit_withdrawal' END;
@@ -223,6 +257,7 @@ def install(q):
           END IF;
           IF r.reason<>expected_reason OR (r.source_role='statement' AND r.quote IS DISTINCT FROM c.after->>'statement') THEN
             RAISE EXCEPTION 'maintenance_statement_mismatch' USING ERRCODE='23514'; END IF;
+          PERFORM {q}.maintenance_original_fact(f.id);
         END LOOP;
         FOR r IN SELECT effect_slot,count(*) AS sources,count(DISTINCT change_id) AS changes,
           count(*) FILTER(WHERE source_role='statement') AS statements,count(*) FILTER(WHERE source_role='intent') AS intents
@@ -234,8 +269,17 @@ def install(q):
       END $$''')
     op.execute(f'''CREATE FUNCTION {q}.maintenance_guard() RETURNS trigger
       LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+      DECLARE old_sid uuid; new_sid uuid; old_fid uuid; new_fid uuid;
       BEGIN
-        IF TG_OP='TRUNCATE' THEN RAISE EXCEPTION 'maintenance_immutable' USING ERRCODE='23514'; END IF;
+        IF TG_OP='TRUNCATE' THEN
+          IF TG_RELID='{q}.fact_sources'::regclass AND current_setting('transaction_isolation')='read committed' THEN
+            -- Bulk DDL has no OLD rows. Serialize against source activation and
+            -- fail rather than waiting in the reverse table/Session lock order.
+            LOCK TABLE {q}.experience_sessions IN SHARE MODE NOWAIT;
+            IF NOT EXISTS(SELECT 1 FROM {q}.fact_change_sources) THEN RETURN NULL; END IF;
+          END IF;
+          RAISE EXCEPTION 'maintenance_immutable' USING ERRCODE='23514';
+        END IF;
         IF TG_RELID='{q}.conversation_operations'::regclass THEN
           IF TG_OP='INSERT' THEN
             IF NEW.state='deleted' THEN RAISE EXCEPTION 'maintenance_tombstone_insert' USING ERRCODE='23514'; END IF;
@@ -256,9 +300,26 @@ def install(q):
           IF TG_OP='UPDATE' AND (SELECT xmin::text::bigint FROM {q}.fact_changes WHERE id=OLD.id)
             <>pg_current_xact_id()::text::bigint % 4294967296 THEN
               RAISE EXCEPTION 'maintenance_history_immutable' USING ERRCODE='23514'; END IF;
-          IF EXISTS(SELECT 1 FROM {q}.fact_change_sources WHERE change_id=OLD.id)
+          IF EXISTS(SELECT 1 FROM {q}.fact_change_sources WHERE fact_id=OLD.fact_id)
             AND EXISTS(SELECT 1 FROM {q}.experience_sessions WHERE id=OLD.session_id) THEN
               RAISE EXCEPTION 'maintenance_history_immutable' USING ERRCODE='23514'; END IF;
+          IF TG_OP='DELETE' THEN RETURN OLD; END IF; RETURN NEW;
+        ELSIF TG_RELID='{q}.fact_sources'::regclass THEN
+          IF TG_OP<>'INSERT' THEN old_sid:=OLD.session_id; old_fid:=OLD.fact_id; END IF;
+          IF TG_OP<>'DELETE' THEN new_sid:=NEW.session_id; new_fid:=NEW.fact_id; END IF;
+          -- Also lock for legacy rows: otherwise their source write could race
+          -- the first audit. Existing APIs already hold this Session lock.
+          -- NOWAIT prevents a raw row write from deadlocking Session deletion.
+          PERFORM id FROM {q}.experience_sessions WHERE id=ANY(ARRAY[old_sid,new_sid])
+            ORDER BY id FOR UPDATE NOWAIT;
+          IF EXISTS(SELECT 1 FROM {q}.fact_change_sources WHERE fact_id=ANY(ARRAY[old_fid,new_fid])) THEN
+            IF TG_OP='DELETE' AND NOT EXISTS(SELECT 1 FROM {q}.experience_sessions WHERE id=old_sid) THEN RETURN OLD; END IF;
+            RAISE EXCEPTION 'maintenance_original_immutable' USING ERRCODE='23514';
+          END IF;
+          -- A row lock alone does not invalidate an earlier RR snapshot. Make a
+          -- new Session tuple without changing any business value/revision, so
+          -- an auditor with a stale snapshot fails serialization, not validation.
+          UPDATE {q}.experience_sessions SET updated_at=updated_at WHERE id=ANY(ARRAY[old_sid,new_sid]);
           IF TG_OP='DELETE' THEN RETURN OLD; END IF; RETURN NEW;
         ELSIF TG_RELID='{q}.conversation_turns'::regclass THEN
           -- xmin alone proves a write, not an INSERT. Block touching old turns
@@ -288,6 +349,9 @@ def install(q):
             IF EXISTS(SELECT 1 FROM {q}.experience_sessions WHERE id=OLD.session_id) THEN
               RAISE EXCEPTION 'maintenance_source_immutable' USING ERRCODE='23514'; END IF;
           ELSE PERFORM {q}.maintenance_validate(NEW.operation_id); END IF;
+        ELSIF TG_TABLE_NAME='fact_sources' THEN
+          IF TG_OP<>'INSERT' THEN PERFORM {q}.maintenance_original_fact(OLD.fact_id); END IF;
+          IF TG_OP<>'DELETE' THEN PERFORM {q}.maintenance_original_fact(NEW.fact_id); END IF;
         END IF;
         RETURN NULL;
       END $$''')
@@ -333,12 +397,15 @@ def install(q):
     op.execute(f'CREATE CONSTRAINT TRIGGER maintenance_current AFTER UPDATE ON {q}.experience_facts DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {q}.maintenance_current_fact()')
     op.execute(f'CREATE TRIGGER maintenance_version BEFORE UPDATE ON {q}.experience_facts FOR EACH ROW EXECUTE FUNCTION {q}.maintenance_guard()')
     op.execute(f'CREATE TRIGGER maintenance_input_guard BEFORE UPDATE ON {q}.conversation_turns FOR EACH ROW EXECUTE FUNCTION {q}.maintenance_guard()')
+    op.execute(f'CREATE TRIGGER maintenance_original_guard BEFORE INSERT OR UPDATE OR DELETE ON {q}.fact_sources FOR EACH ROW EXECUTE FUNCTION {q}.maintenance_guard()')
+    op.execute(f'CREATE CONSTRAINT TRIGGER maintenance_original_consistent AFTER INSERT OR UPDATE OR DELETE ON {q}.fact_sources DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {q}.maintenance_deferred()')
+    op.execute(f'CREATE TRIGGER maintenance_original_truncate BEFORE TRUNCATE ON {q}.fact_sources FOR EACH STATEMENT EXECUTE FUNCTION {q}.maintenance_guard()')
     # Default ACLs may grant a named application role access on CREATE. Revoke
     # those too; new tables/functions have no production runtime writer yet.
     conn=op.get_bind()
     quote=conn.dialect.identifier_preparer.quote_identifier
     functions=('maintenance_validate(uuid)','maintenance_guard()',
-        'maintenance_deferred()','maintenance_erase_session()','maintenance_current_fact()')
+        'maintenance_deferred()','maintenance_erase_session()','maintenance_current_fact()','maintenance_original_fact(uuid)')
     for kind,targets,catalog,acl,owner,default in (
         ('TABLE',('conversation_operations','fact_change_sources'),'pg_class','relacl','relowner','r'),
         ('FUNCTION',functions,'pg_proc','proacl','proowner','f')):
@@ -357,7 +424,7 @@ def install(q):
 def downgrade():
     conn=op.get_bind()
     q=conn.dialect.identifier_preparer.quote_identifier(conn.scalar(sa.text('SELECT current_schema()')))
-    op.execute(f'LOCK TABLE {q}.experience_sessions,{q}.experience_facts,{q}.fact_changes,{q}.conversation_operations,{q}.fact_change_sources IN ACCESS EXCLUSIVE MODE NOWAIT')
+    op.execute(f'LOCK TABLE {q}.experience_sessions,{q}.experience_facts,{q}.fact_changes,{q}.fact_sources,{q}.conversation_operations,{q}.fact_change_sources IN ACCESS EXCLUSIVE MODE NOWAIT')
     if any(conn.scalar(sa.text(f'SELECT EXISTS(SELECT 1 FROM {q}.{t})')) for t in ('conversation_operations','fact_change_sources')):
         raise RuntimeError('maintenance_nonempty_downgrade_refused')
     op.execute(f'DROP TRIGGER maintenance_erase ON {q}.experience_sessions')
@@ -365,7 +432,9 @@ def downgrade():
     op.execute(f'DROP TRIGGER maintenance_current ON {q}.experience_facts')
     op.execute(f'DROP TRIGGER maintenance_version ON {q}.experience_facts')
     op.execute(f'DROP TRIGGER maintenance_input_guard ON {q}.conversation_turns')
+    for trigger in ('maintenance_original_guard','maintenance_original_consistent','maintenance_original_truncate'):
+        op.execute(f'DROP TRIGGER {trigger} ON {q}.fact_sources')
     op.drop_table('fact_change_sources');op.drop_table('conversation_operations')
-    for fn,args in (('maintenance_deferred',''),('maintenance_guard',''),('maintenance_erase_session',''),('maintenance_current_fact',''),('maintenance_validate','uuid')):
+    for fn,args in (('maintenance_deferred',''),('maintenance_guard',''),('maintenance_erase_session',''),('maintenance_current_fact',''),('maintenance_validate','uuid'),('maintenance_original_fact','uuid')):
         op.execute(f'DROP FUNCTION {q}.{fn}({args})')
     op.drop_constraint('uq_change_fact_session','fact_changes',type_='unique')

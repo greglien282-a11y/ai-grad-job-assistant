@@ -39,7 +39,7 @@ def base(db):
     return SimpleNamespace(sid=project.session_id, pid=project.id, tid=turn.id, token=token)
 
 
-def append_operation(db, b, *, operation=None, source=None, after=None, statement=UNICODE, extra=None):
+def append_operation(db, b, *, operation=None, source=None, after=None, statement=UNICODE, extra=None, before_audit=None):
     """Construct the prospective atomic write as one trusted fixture transaction."""
     session = facts.authorize(db, b.sid, b.token, write=True)
     revision = session.context_revision
@@ -53,6 +53,8 @@ def append_operation(db, b, *, operation=None, source=None, after=None, statemen
         facts.add_fact(db,b.pid,b.token,'我测试了界面。',[turn.id])
     if extra=='turn':
         facts.add_turn(db,b.sid,b.token,'另一条未归入回执的回答。')
+    if before_audit is not None:
+        before_audit(db, fact, turn, change)
     db.flush()
     db.refresh(session)
     op = ConversationOperation(id=uuid4(), key_digest=tag(), state='applied',
@@ -348,7 +350,7 @@ def test_public_and_restricted_role_have_no_new_authority(api,migrated_connectio
         with conn.begin():conn.execute(text(f'GRANT USAGE ON SCHEMA "{schema}" TO "{role}"'))
         with conn.begin():
             rows=conn.execute(text("SELECT p.oid,p.prosecdef,p.proconfig,p.proowner FROM pg_proc p WHERE p.pronamespace=current_schema()::regnamespace AND p.proname LIKE 'maintenance_%'" )).all()
-            assert len(rows)==5
+            assert len(rows)==6
             for oid,secdef,config,owner in rows:
                 assert secdef and config==['search_path=pg_catalog']
                 assert not conn.scalar(text("SELECT has_function_privilege(:r,:o,'EXECUTE')"),{'r':role,'o':oid})
