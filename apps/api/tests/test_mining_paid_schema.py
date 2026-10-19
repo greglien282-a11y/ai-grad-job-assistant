@@ -25,7 +25,7 @@ from app.mining_paid_models import MiningPaidIdentity, MiningPaidLimit, MiningPa
 TABLES=('mining_paid_identities','mining_paid_limits','mining_paid_plans','mining_paid_bindings')
 OLD='0010_response_diagnostics'
 NEW='0011_mining_paid_metadata'
-HEAD='0012_request_manifest'
+HEAD='0013_fact_maintenance'
 
 
 def candidate(e, run=None, plan_changes=None):
