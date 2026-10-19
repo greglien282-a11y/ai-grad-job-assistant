@@ -124,6 +124,11 @@ def reserve(factory, sid, token, key, body):
         existing = receipt(db, key, tag)
         if existing:
             return existing.id, False
+        from app.maintenance_guard import input_consumed
+        if body.input_turn_id:
+            input_consumed(db, sid, turn_ids=[body.input_turn_id])
+        elif body.content is not None:
+            input_consumed(db, sid, content=body.content)
         if session.status != 'active' or session.mining_status == 'stopped':
             raise MiningError(409, 'mining_stopped')
         if session.context_revision != body.base_revision:
@@ -273,6 +278,16 @@ def complete(factory, sid, token, rid, output, *, context=None):
                                                        ExperienceFact.statement == citation.quote)) or db.scalar(
                 select(FactSource.fact_id).where(FactSource.session_id == sid,
                     FactSource.citations.contains([{'quote': citation.quote}]))):
+                continue
+            from app.maintenance_guard import rejected_contribution
+            from app.maintenance_errors import ConversationError
+            try:
+                rejected_contribution(db, sid, citation.quote, [citation.turn_id])
+            except ConversationError as error:
+                if error.code != 'fact_rejected_immutable':
+                    raise
+                # Rejected historical text/origins are suppressed, not revived
+                # or converted into a storage-unknown retry opportunity.
                 continue
             facts.add_fact(db, run.project_id, token, citation.quote, [citation.turn_id], origin='ai_extracted',
                 ai_run_id=run.id, citations=[citation.model_dump(mode='json')])

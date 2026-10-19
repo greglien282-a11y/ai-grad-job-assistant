@@ -43,7 +43,11 @@ def append_operation(db, b, *, operation=None, source=None, after=None, statemen
     """Construct the prospective atomic write as one trusted fixture transaction."""
     session = facts.authorize(db, b.sid, b.token, write=True)
     revision = session.context_revision
-    turn = facts.add_turn(db, b.sid, b.token, UNICODE)
+    # Trusted DB-attack fixture: insert directly so B2-b's shared HTTP/domain
+    # duplicate guard cannot mask the database uniqueness/audit assertions.
+    # No production bypass option is added; the real INSERT triggers still run.
+    turn = ConversationTurn(session_id=b.sid, role='user', content=UNICODE)
+    db.add(turn); db.flush()
     citation = {'turn_id': str(turn.id), 'start': 0, 'end': len(UNICODE), 'quote': UNICODE}
     fact = facts.add_fact(db, b.pid, b.token, statement, [turn.id], citations=[citation])
     change = db.scalar(select(FactChange).where(FactChange.fact_id == fact.id))

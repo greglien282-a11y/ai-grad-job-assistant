@@ -58,6 +58,8 @@ def authorize(db: Session, session_id: UUID, token: str, *, write: bool = False,
 
 def add_turn(db: Session, session_id: UUID, token: str, content: str) -> ConversationTurn:
     session = authorize(db, session_id, token, write=True)
+    from app.maintenance_guard import input_consumed
+    input_consumed(db, session_id, content=content)
     turn = ConversationTurn(session_id=session_id, role="user", content=required_text(content))
     session.updated_at = utcnow()
     db.add(turn)
@@ -104,6 +106,9 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
     if project is None:
         raise PermissionError("Session unavailable")
     session = authorize(db, project.session_id, token, write=True)
+    from app.maintenance_guard import input_consumed, rejected_contribution
+    input_consumed(db, session.id, turn_ids=source_turn_ids)
+    rejected_contribution(db, session.id, statement, source_turn_ids)
     required_text(statement)
     if not source_turn_ids or len(set(source_turn_ids)) != len(source_turn_ids):
         raise ValueError("Supply distinct user source turns")
@@ -123,7 +128,8 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
 
 def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None = None,
                 status: FactStatus | None = None, material_reference: str | None = None,
-                basis: str | None = None, memory_state: str | None = None, expected_version: int) -> ExperienceFact:
+                basis: str | None = None, memory_state: str | None = None, expected_version: int,
+                withdraw: bool = False) -> ExperienceFact:
     fact = db.get(ExperienceFact, fact_id)
     if fact is None:
         raise PermissionError("Session unavailable")
@@ -132,6 +138,8 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
     db.refresh(fact)
     if fact.version != expected_version:
         raise VersionConflict("Fact version has changed")
+    if withdraw and (status != FactStatus.REJECTED or any(v is not None for v in (statement, material_reference, basis, memory_state))):
+        raise ValueError('Invalid withdrawal')
     before = snapshot(db, fact)
     if memory_state is not None:
         if memory_state not in ('unspecified','certain','approximate','needs_check') or any(v is not None for v in (statement,status,material_reference,basis)):
@@ -144,6 +152,8 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
         if fact.status == FactStatus.REJECTED:
             raise StateConflict("Rejected fact cannot be edited")
         required_text(statement)
+        from app.maintenance_guard import rejected_contribution
+        rejected_contribution(db, session.id, statement, exclude=fact.id)
         if status is not None or material_reference is not None or basis is not None:
             raise ValueError("Edit and confirmation must be separate operations")
         if statement == fact.statement:
@@ -173,6 +183,10 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
         elif material_reference is not None or basis is not None:
             raise ValueError("Evidence is only accepted during material verification")
         fact.status = status
+        if withdraw:
+            # before was captured above, including the old evidence pointer.
+            # Legacy manual reject intentionally keeps its original semantics.
+            fact.evidence_id = None
         action = "status_changed"
     fact.updated_at = utcnow()
     session.updated_at = fact.updated_at

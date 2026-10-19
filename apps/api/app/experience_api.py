@@ -43,8 +43,11 @@ Token = Annotated[str, Depends(require_token)]
 
 
 def fact_view(db: Session, fact: ExperienceFact) -> schemas.FactView:
+    from app.maintenance_provenance import provenance
+    snapshot = facts.snapshot(db, fact)
     return schemas.FactView(id=fact.id, project_id=fact.project_id, session_id=fact.session_id,
-                            created_at=fact.created_at, updated_at=fact.updated_at, **facts.snapshot(db, fact))
+                            created_at=fact.created_at, updated_at=fact.updated_at,
+                            **snapshot, **provenance(db, fact, snapshot))
 
 
 def turn_view(db: Session, turn: ConversationTurn) -> schemas.TurnView:

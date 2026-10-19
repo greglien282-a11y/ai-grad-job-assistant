@@ -16,6 +16,8 @@ from app.http_security import RequestBoundary, error_response
 from app.idempotency import IdempotencyError
 from app.mining_api import router as mining_router
 from app.mining import MiningError
+from app.maintenance_api import router as maintenance_router
+from app.maintenance_errors import ConversationError
 
 
 class HealthResponse(BaseModel):
@@ -43,6 +45,12 @@ app.add_middleware(
 )
 app.include_router(router)
 app.include_router(mining_router)
+app.include_router(maintenance_router)
+
+
+@app.exception_handler(ConversationError)
+async def conversation_error(request, exc):
+    return error_response(exc.status, exc.code, 'Fact operation requires review')
 
 
 @app.exception_handler(MiningError)

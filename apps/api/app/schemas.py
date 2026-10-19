@@ -101,6 +101,16 @@ class TurnView(Output):
     answered_questions: list[AnswerQuestionView] = Field(default_factory=list)
 
 
+class MaintenanceCitation(Output):
+    turn_id: UUID
+    start: int
+    end: int
+    quote: str
+    change_id: UUID
+    fact_version: int
+    source_role: Literal['intent', 'statement']
+
+
 class FactView(Output):
     id: UUID
     project_id: UUID
@@ -111,6 +121,11 @@ class FactView(Output):
     created_at: datetime
     updated_at: datetime
     original_source_turn_ids: list[UUID]
+    provenance_version: Literal[2] = 2
+    edit_method: Literal['legacy_manual', 'conversation_correction'] | None = None
+    current_citations: list[MaintenanceCitation] = Field(default_factory=list)
+    withdrawal_basis: list[MaintenanceCitation] = Field(default_factory=list)
+    maintenance_history_sources: list[MaintenanceCitation] = Field(default_factory=list)
     source_kind: Literal["conversation_turns", "user_edit"]
     source_turn_ids: list[UUID]
     source_change_id: UUID | None
