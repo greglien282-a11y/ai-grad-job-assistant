@@ -51,6 +51,32 @@ append 有单独 check_append_runtime 与真实独立 LOGIN 测试身份。它�
 
 原测试仅更新迁移最新 head 的精确预期（含 E2E probe）；历史迁移目标和全部业务断言保留。实际运行命令、数量和 CI 以本 PR 验证记录为准，不把矩阵当作执行结果。
 
+实际检查入口（均显式绑定专用测试实例；以下省略测试进程的环境变量，不提供生产连接方式）：
+
+```text
+apps/api: .venv/Scripts/python.exe -m pytest -q -ra --tb=short
+apps/api: .venv/Scripts/python.exe -m pytest tests/test_fact_maintenance.py tests/test_append_api.py tests/test_mining_paid_schema.py tests/test_request_manifest.py -q -x --tb=short
+apps/api: .venv/Scripts/python.exe ../../scripts/check_isolated_migrations.py
+apps/api: .venv/Scripts/python.exe ../../scripts/check_m12c2_contracts.py
+apps/api: .venv/Scripts/python.exe ../../scripts/check_s03b_output_contract.py
+apps/api: .venv/Scripts/python.exe ../../scripts/evaluate_mining_quality.py --outputs ../../docs/evaluation/quality-v1/oracle.outputs.json --output-dir <本轮新目录>
+apps/api: .venv/Scripts/python.exe ../../scripts/run_offline_evaluation.py --profile 0 --output <本轮新文件>
+apps/web: npm run test
+apps/web: npm run build
+apps/web: npm run test:e2e:types
+apps/web: npm run e2e:preflight
+apps/web: npm run test:e2e
+```
+
+## 完整文件清单
+
+- 迁移：`apps/api/alembic/versions/0014_append_batch.py`。
+- 新后端：`apps/api/app/append_contract.py`、`append_api.py`、`fact_append.py`。
+- 现有后端适配：`apps/api/app/fact_maintenance.py`、`fact_maintenance_models.py`、`maintenance_permissions.py`、`main.py`。
+- 新测试：`apps/api/tests/test_append_api.py`、`append_process_worker.py`。
+- 迁移 head/roundtrip 测试适配：`apps/api/tests/test_fact_maintenance.py`、`test_mining_paid_schema.py`、`test_request_manifest.py`、`apps/web/e2e/probe.py`。0013 roundtrip 仍精确验证到 0013，再升至当前 0014 执行 Alembic check；不能在非 head 上冒充 check。
+- 本文：`docs/FACT_MAINTENANCE_B2C1.md`。
+
 ## 保留的生产 BLOCK 与停止点
 
 1. rejected 会话临时整会话阻断可能拒绝真正无关工作；没有正式独立性/澄清/再主张协议，不保存假的澄清回执，不指引换 key/Turn/会话或旧入口解锁。

@@ -312,7 +312,10 @@ def test_head_empty_roundtrip_and_alembic_metadata(migrated_connection):
     command.check(cfg);conn.commit()
     command.downgrade(cfg,OLD);conn.commit()
     assert not set(TABLES).intersection(inspect(conn).get_table_names());conn.commit()
-    command.upgrade(cfg,NEW);conn.commit();command.check(cfg);conn.commit()
+    command.upgrade(cfg,NEW);conn.commit()
+    assert conn.scalar(text('SELECT version_num FROM alembic_version'))==NEW
+    conn.commit()
+    command.upgrade(cfg,HEAD);conn.commit();command.check(cfg);conn.commit()
     assert conn.scalar(text('SELECT ceiling+held+spent FROM paid_funding'))==0
 
 
