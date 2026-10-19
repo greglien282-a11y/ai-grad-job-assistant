@@ -17,6 +17,7 @@ from app.idempotency import IdempotencyError
 from app.mining_api import router as mining_router
 from app.mining import MiningError
 from app.maintenance_api import router as maintenance_router
+from app.append_api import router as append_router
 from app.maintenance_errors import ConversationError
 
 
@@ -46,10 +47,15 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(mining_router)
 app.include_router(maintenance_router)
+app.include_router(append_router)
 
 
 @app.exception_handler(ConversationError)
 async def conversation_error(request, exc):
+    if exc.code == 'append_requires_clarification':
+        return error_response(exc.status, exc.code,
+            '本会话有已拒绝或撤回的事实，当前版本还不能可靠判断这条补充是否独立。'
+            '本次内容尚未保存，也没有新增或修改事实。草稿请保留；现有事实仍可查看和审核。')
     return error_response(exc.status, exc.code, 'Fact operation requires review')
 
 

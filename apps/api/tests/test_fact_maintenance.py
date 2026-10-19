@@ -27,6 +27,7 @@ from test_deepseek_mining_integration import offline_guard, test_database_only
 TABLES = ('conversation_operations', 'fact_change_sources')
 OLD = '0012_request_manifest'
 NEW = '0013_fact_maintenance'
+HEAD = '0014_append_batch'
 UNICODE = '我制作了🧪原型图。'
 
 
@@ -307,7 +308,7 @@ def test_reject_commits_before_waiting_edit_no_resurrection(api):
 
 def test_head_empty_roundtrip_and_alembic_metadata(migrated_connection):
     conn,cfg=migrated_connection
-    assert ScriptDirectory.from_config(cfg).get_current_head()==NEW
+    assert ScriptDirectory.from_config(cfg).get_current_head()==HEAD
     command.check(cfg);conn.commit()
     command.downgrade(cfg,OLD);conn.commit()
     assert not set(TABLES).intersection(inspect(conn).get_table_names());conn.commit()
@@ -323,7 +324,7 @@ def test_nonempty_downgrade_refused(api,migrated_connection,state):
     conn,cfg=migrated_connection;conn.commit()
     with pytest.raises(RuntimeError,match='maintenance_nonempty_downgrade_refused'):command.downgrade(cfg,OLD)
     conn.rollback()
-    assert conn.scalar(text('SELECT version_num FROM alembic_version'))==NEW
+    assert conn.scalar(text('SELECT version_num FROM alembic_version'))==HEAD
 
 
 def test_failed_upgrade_is_atomic_and_old_business_survives(api,migrated_connection):

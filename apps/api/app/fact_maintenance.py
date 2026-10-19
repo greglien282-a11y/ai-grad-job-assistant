@@ -35,8 +35,23 @@ def available(row):
         raise ConversationError(410, 'conversation_operation_expired')
 
 
-def view(db, row):
+def require_contract(row, version=1):
+    valid = (row.contract_version == version and (
+        (version == 1 and row.decision_contract == 'explicit-target-v1'
+         and ((row.kind == 'root' and row.action in ('append', 'correct', 'withdraw', 'disambiguate'))
+              or (row.kind == 'resolution' and row.action in ('correct', 'withdraw'))))
+        or (version == 2 and row.decision_contract == 'append-batch-v1'
+            and row.kind == 'root' and row.action == 'append')))
+    if not valid:
+        raise ConversationError(409, 'conversation_contract_mismatch')
+
+
+def view(db, row, *, version=1):
     available(row)
+    require_contract(row, version)
+    if version == 2:
+        from app.fact_append import view as append_view
+        return append_view(db, row)
     turn = db.get(ConversationTurn, row.input_turn_id)
     if turn is None or turn.session_id != row.session_id or turn.role != 'user':
         raise ConversationError(410, 'conversation_result_unavailable')
@@ -63,29 +78,30 @@ def view(db, row):
         effects=[effects[k] for k in sorted(effects)], provider_calls=0, mining_run_id=None)
 
 
-def replay(db, sid, token, key, row, tag=None):
+def replay(db, sid, token, key, row, tag=None, *, version=1):
     available(row)
     facts.authorize(db, sid, token)
     if row.session_id != sid:
         raise PermissionError('Resource unavailable')
+    require_contract(row, version)
     if tag is not None and not hmac.compare_digest(tag, row.request_tag):
         raise idem.IdempotencyError(409, 'idempotency_payload_mismatch')
     key.fresh()
-    return view(db, row)
+    return view(db, row, version=version)
 
 
-def recover(db, sid, token, *, key=None, oid=None):
+def recover(db, sid, token, *, key=None, oid=None, version=1):
     # No locks, expiry cleanup, clock registration, writes or provider access.
     row = existing(db, key) if key else db.get(ConversationOperation, oid)
     if row is None:
         facts.authorize(db, sid, token)
         raise ConversationError(404, 'conversation_operation_not_found')
     if key:
-        return replay(db, sid, token, key, row)
+        return replay(db, sid, token, key, row, version=version)
     facts.authorize(db, sid, token)
     if row.session_id != sid:
         raise PermissionError('Resource unavailable')
-    return view(db, row)
+    return view(db, row, version=version)
 
 
 def gate(db, session):
@@ -143,6 +159,7 @@ def apply(db, sid, token, key, body, *, parent_id=None):
         if parent is None:
             raise PermissionError('Resource unavailable')
         available(parent)
+        require_contract(parent)
         if parent.kind != 'root' or parent.state != 'needs_clarification':
             raise ConversationError(409, 'conversation_resolution_invalid')
         if db.scalar(select(ConversationOperation.id).where(ConversationOperation.parent_operation_id == parent.id)):

@@ -9,6 +9,18 @@ from app.maintenance_errors import ConversationError
 
 
 def check_runtime(db):
+    _check_runtime(db, append=False)
+
+
+def check_append_runtime(db):
+    _check_runtime(db, append=True)
+    if not db.scalar(text("""SELECT EXISTS(SELECT 1 FROM pg_proc
+        WHERE pronamespace=current_schema()::regnamespace AND proname='maintenance_validate'
+          AND position('append_v2_bijection' in prosrc)>0)""")):
+        raise ConversationError(503, 'append_schema_unavailable')
+
+
+def _check_runtime(db, *, append):
     role = db.execute(text('''SELECT current_user,session_user,rolsuper,rolcreatedb,
         rolcreaterole,rolreplication,rolbypassrls,rolinherit
         FROM pg_roles WHERE rolname=current_user''')).one()
@@ -41,6 +53,9 @@ def check_runtime(db):
     # No table owner, DDL, extra writers, money or call-function privileges.
     insertable = {'conversation_turns', 'fact_changes', 'conversation_operations', 'fact_change_sources'}
     updatable = {'experience_sessions', 'experience_facts', 'conversation_operations'}
+    if append:
+        insertable |= {'experience_facts', 'fact_sources'}
+        updatable = {'experience_sessions'}
     rows = db.execute(text('''SELECT c.relname,c.relowner=(SELECT oid FROM pg_roles WHERE rolname=current_user),
         has_any_column_privilege(current_user,c.oid,'INSERT'),
         has_any_column_privilege(current_user,c.oid,'UPDATE'),
@@ -57,6 +72,11 @@ def check_runtime(db):
         'experience_facts': {'statement', 'status', 'evidence_id', 'updated_at', 'version'},
         'conversation_operations': {'id'},
     }
+    if append:
+        allowed_columns = {'experience_sessions': {'updated_at', 'context_revision'}}
+        for table in insertable:
+            if not db.scalar(text("SELECT has_table_privilege(current_user,to_regclass(:table),'INSERT')"), {'table': table}):
+                raise ConversationError(503, 'conversation_runtime_unapproved')
     for table, columns in allowed_columns.items():
         if db.scalar(text('''SELECT EXISTS(SELECT 1 FROM pg_attribute a
             WHERE a.attrelid=to_regclass(:table) AND a.attnum>0 AND NOT a.attisdropped
