@@ -1,0 +1,1692 @@
+{
+  "summary": {
+    "summary_contract_version": 2,
+    "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+    "context_revision": 21,
+    "confirmed": [
+      {
+        "fact_kind": "legacy_unspecified",
+        "progress_stage": "legacy_unknown",
+        "classification_contract": "legacy-v0",
+        "fact_contract_version": 3,
+        "provenance_version": 3,
+        "id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+        "session_id": "07601718-2462-4051-a97e-b22942926180",
+        "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+        "statement": "我测试了2个导出按钮。",
+        "status": "user_confirmed",
+        "version": 3,
+        "created_at": "2026-10-20T16:00:17.266805+08:00",
+        "updated_at": "2026-10-20T16:00:17.394896+08:00",
+        "origin": "manual",
+        "memory_state": "unspecified",
+        "ai_run_id": null,
+        "evidence_id": null,
+        "original_source_turn_ids": [
+          "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+        ],
+        "current_statement_source_turn_ids": [
+          "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3"
+        ],
+        "current_statement_citations": [
+          {
+            "turn_id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+            "start": 6,
+            "end": 17,
+            "quote": "我测试了2个导出按钮。",
+            "change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+            "fact_version": 2,
+            "source_kind": "conversation_change"
+          }
+        ],
+        "classification_citations": [],
+        "classification_basis_status": "legacy_unclassified",
+        "source_kind": "user_edit",
+        "source_change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e"
+      },
+      {
+        "fact_kind": "personal_action",
+        "progress_stage": "completed",
+        "classification_contract": "explicit-typed-v1",
+        "fact_contract_version": 3,
+        "provenance_version": 3,
+        "id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+        "session_id": "07601718-2462-4051-a97e-b22942926180",
+        "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+        "statement": "我制作了🧪原型图。\r\né",
+        "status": "evidence_supported",
+        "version": 3,
+        "created_at": "2026-10-20T16:00:17.538003+08:00",
+        "updated_at": "2026-10-20T16:00:17.538003+08:00",
+        "origin": "manual",
+        "memory_state": "unspecified",
+        "ai_run_id": null,
+        "evidence_id": "eea599cf-0743-41fe-bdd0-aef9e6d3693b",
+        "original_source_turn_ids": [
+          "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+        ],
+        "current_statement_source_turn_ids": [
+          "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+        ],
+        "current_statement_citations": [
+          {
+            "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509",
+            "start": 0,
+            "end": 13,
+            "quote": "我制作了🧪原型图。\r\né",
+            "change_id": "02c2af29-5a49-4cf8-9f74-b398edbb28cf",
+            "fact_version": 1,
+            "source_kind": "original_source"
+          }
+        ],
+        "classification_citations": [],
+        "classification_basis_status": "not_recorded",
+        "source_kind": "conversation_turns",
+        "source_change_id": null
+      }
+    ],
+    "pending": [
+      {
+        "fact_kind": "legacy_unspecified",
+        "progress_stage": "legacy_unknown",
+        "classification_contract": "legacy-v0",
+        "fact_contract_version": 3,
+        "provenance_version": 3,
+        "id": "9b61c548-d9c5-491e-8a97-f0ad29cbbe7c",
+        "session_id": "07601718-2462-4051-a97e-b22942926180",
+        "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+        "statement": "我编写了清洗脚本。",
+        "status": "pending",
+        "version": 1,
+        "created_at": "2026-10-20T16:00:17.453957+08:00",
+        "updated_at": "2026-10-20T16:00:17.453957+08:00",
+        "origin": "manual",
+        "memory_state": "unspecified",
+        "ai_run_id": null,
+        "evidence_id": null,
+        "original_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_citations": [
+          {
+            "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+            "start": 0,
+            "end": 9,
+            "quote": "我编写了清洗脚本。",
+            "change_id": "94505644-823b-4afb-b174-aca977e5fdd9",
+            "fact_version": 1,
+            "source_kind": "original_source"
+          }
+        ],
+        "classification_citations": [],
+        "classification_basis_status": "legacy_unclassified",
+        "source_kind": "conversation_turns",
+        "source_change_id": null
+      },
+      {
+        "fact_kind": "legacy_unspecified",
+        "progress_stage": "legacy_unknown",
+        "classification_contract": "legacy-v0",
+        "fact_contract_version": 3,
+        "provenance_version": 3,
+        "id": "a6d8f0d8-fd9f-4eec-970e-85a537144e9e",
+        "session_id": "07601718-2462-4051-a97e-b22942926180",
+        "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+        "statement": "我测试了导出按钮。",
+        "status": "pending",
+        "version": 1,
+        "created_at": "2026-10-20T16:00:17.465956+08:00",
+        "updated_at": "2026-10-20T16:00:17.465956+08:00",
+        "origin": "manual",
+        "memory_state": "unspecified",
+        "ai_run_id": null,
+        "evidence_id": null,
+        "original_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_citations": [
+          {
+            "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+            "start": 9,
+            "end": 18,
+            "quote": "我测试了导出按钮。",
+            "change_id": "34a8d34d-e8db-48f4-9955-c47cbc9b071e",
+            "fact_version": 1,
+            "source_kind": "original_source"
+          }
+        ],
+        "classification_citations": [],
+        "classification_basis_status": "legacy_unclassified",
+        "source_kind": "conversation_turns",
+        "source_change_id": null
+      },
+      {
+        "fact_kind": "legacy_unspecified",
+        "progress_stage": "legacy_unknown",
+        "classification_contract": "legacy-v0",
+        "fact_contract_version": 3,
+        "provenance_version": 3,
+        "id": "25b6ca6d-dd3c-4e5c-ae9c-05709f80c668",
+        "session_id": "07601718-2462-4051-a97e-b22942926180",
+        "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+        "statement": "我制作了结果图。",
+        "status": "pending",
+        "version": 1,
+        "created_at": "2026-10-20T16:00:17.473954+08:00",
+        "updated_at": "2026-10-20T16:00:17.473954+08:00",
+        "origin": "manual",
+        "memory_state": "unspecified",
+        "ai_run_id": null,
+        "evidence_id": null,
+        "original_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_source_turn_ids": [
+          "f7b49156-76f7-4c83-9070-7542b7e308a9"
+        ],
+        "current_statement_citations": [
+          {
+            "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+            "start": 18,
+            "end": 26,
+            "quote": "我制作了结果图。",
+            "change_id": "fc7cfc48-7d62-4f8b-b3ad-2c5d2cc932ff",
+            "fact_version": 1,
+            "source_kind": "original_source"
+          }
+        ],
+        "classification_citations": [],
+        "classification_basis_status": "legacy_unclassified",
+        "source_kind": "conversation_turns",
+        "source_change_id": null
+      }
+    ],
+    "reviewed_non_contributions": [
+      {
+        "fact": {
+          "fact_kind": "plan",
+          "progress_stage": "planned",
+          "classification_contract": "explicit-typed-v1",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "59c4b635-f60a-4b51-8209-286fef1fc996",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我制作了🧪原型图。\r\né",
+          "status": "user_confirmed",
+          "version": 2,
+          "created_at": "2026-10-20T16:00:17.513006+08:00",
+          "updated_at": "2026-10-20T16:00:17.513006+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "c411f11c-d9ec-436e-816b-79767c110b5c"
+          ],
+          "current_statement_source_turn_ids": [
+            "c411f11c-d9ec-436e-816b-79767c110b5c"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c",
+              "start": 0,
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "change_id": "f338e9be-e787-4d12-af0e-a285ee7d3d6c",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "not_recorded",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        "reason": "plan_not_contribution"
+      }
+    ],
+    "text": "我测试了2个导出按钮。\n我制作了🧪原型图。\r\né",
+    "incomplete": false
+  },
+  "export": {
+    "format_version": 2,
+    "exported_at": "2026-10-20T08:00:17.724878Z",
+    "data": {
+      "id": "07601718-2462-4051-a97e-b22942926180",
+      "status": "active",
+      "created_at": "2026-10-20T16:00:17.252809+08:00",
+      "updated_at": "2026-10-20T16:00:17.569817+08:00",
+      "context_revision": 21,
+      "mining_status": "not_started",
+      "projects": [
+        {
+          "id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "raw_input": "我测试了3个导出按钮。",
+          "title": null,
+          "created_at": "2026-10-20T16:00:17.255805+08:00"
+        }
+      ],
+      "turns": [
+        {
+          "id": "9c15a609-1fd7-4b88-be29-36471cb34b2c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "我测试了3个导出按钮。",
+          "created_at": "2026-10-20T16:00:17.253805+08:00",
+          "answered_questions": [
+            {
+              "question_id": "3ef57f93-2590-450c-aada-94b63b9d595b",
+              "question_version": 1
+            }
+          ]
+        },
+        {
+          "id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "纠正上一条。我测试了2个导出按钮。",
+          "created_at": "2026-10-20T16:00:17.337362+08:00",
+          "answered_questions": []
+        },
+        {
+          "id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "我编写了清洗脚本。我测试了导出按钮。我制作了结果图。",
+          "created_at": "2026-10-20T16:00:17.448955+08:00",
+          "answered_questions": []
+        },
+        {
+          "id": "c411f11c-d9ec-436e-816b-79767c110b5c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "我制作了🧪原型图。\r\né",
+          "created_at": "2026-10-20T16:00:17.510006+08:00",
+          "answered_questions": []
+        },
+        {
+          "id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "我制作了🧪原型图。\r\né",
+          "created_at": "2026-10-20T16:00:17.536002+08:00",
+          "answered_questions": []
+        },
+        {
+          "id": "795437fc-5b45-4167-b1f3-f35282d1b9b6",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "role": "user",
+          "content": "我制作了🧪原型图。\r\né",
+          "created_at": "2026-10-20T16:00:17.566379+08:00",
+          "answered_questions": []
+        }
+      ],
+      "facts": [
+        {
+          "fact_kind": "legacy_unspecified",
+          "progress_stage": "legacy_unknown",
+          "classification_contract": "legacy-v0",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我测试了2个导出按钮。",
+          "status": "user_confirmed",
+          "version": 3,
+          "created_at": "2026-10-20T16:00:17.266805+08:00",
+          "updated_at": "2026-10-20T16:00:17.394896+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+          ],
+          "current_statement_source_turn_ids": [
+            "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+              "start": 6,
+              "end": 17,
+              "quote": "我测试了2个导出按钮。",
+              "change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+              "fact_version": 2,
+              "source_kind": "conversation_change"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "legacy_unclassified",
+          "source_kind": "user_edit",
+          "source_change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e"
+        },
+        {
+          "fact_kind": "legacy_unspecified",
+          "progress_stage": "legacy_unknown",
+          "classification_contract": "legacy-v0",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "9b61c548-d9c5-491e-8a97-f0ad29cbbe7c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我编写了清洗脚本。",
+          "status": "pending",
+          "version": 1,
+          "created_at": "2026-10-20T16:00:17.453957+08:00",
+          "updated_at": "2026-10-20T16:00:17.453957+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+              "start": 0,
+              "end": 9,
+              "quote": "我编写了清洗脚本。",
+              "change_id": "94505644-823b-4afb-b174-aca977e5fdd9",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "legacy_unclassified",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        {
+          "fact_kind": "legacy_unspecified",
+          "progress_stage": "legacy_unknown",
+          "classification_contract": "legacy-v0",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "a6d8f0d8-fd9f-4eec-970e-85a537144e9e",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我测试了导出按钮。",
+          "status": "pending",
+          "version": 1,
+          "created_at": "2026-10-20T16:00:17.465956+08:00",
+          "updated_at": "2026-10-20T16:00:17.465956+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+              "start": 9,
+              "end": 18,
+              "quote": "我测试了导出按钮。",
+              "change_id": "34a8d34d-e8db-48f4-9955-c47cbc9b071e",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "legacy_unclassified",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        {
+          "fact_kind": "legacy_unspecified",
+          "progress_stage": "legacy_unknown",
+          "classification_contract": "legacy-v0",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "25b6ca6d-dd3c-4e5c-ae9c-05709f80c668",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我制作了结果图。",
+          "status": "pending",
+          "version": 1,
+          "created_at": "2026-10-20T16:00:17.473954+08:00",
+          "updated_at": "2026-10-20T16:00:17.473954+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_source_turn_ids": [
+            "f7b49156-76f7-4c83-9070-7542b7e308a9"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+              "start": 18,
+              "end": 26,
+              "quote": "我制作了结果图。",
+              "change_id": "fc7cfc48-7d62-4f8b-b3ad-2c5d2cc932ff",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "legacy_unclassified",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        {
+          "fact_kind": "plan",
+          "progress_stage": "planned",
+          "classification_contract": "explicit-typed-v1",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "59c4b635-f60a-4b51-8209-286fef1fc996",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我制作了🧪原型图。\r\né",
+          "status": "user_confirmed",
+          "version": 2,
+          "created_at": "2026-10-20T16:00:17.513006+08:00",
+          "updated_at": "2026-10-20T16:00:17.513006+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "c411f11c-d9ec-436e-816b-79767c110b5c"
+          ],
+          "current_statement_source_turn_ids": [
+            "c411f11c-d9ec-436e-816b-79767c110b5c"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c",
+              "start": 0,
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "change_id": "f338e9be-e787-4d12-af0e-a285ee7d3d6c",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "not_recorded",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        {
+          "fact_kind": "personal_action",
+          "progress_stage": "completed",
+          "classification_contract": "explicit-typed-v1",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我制作了🧪原型图。\r\né",
+          "status": "evidence_supported",
+          "version": 3,
+          "created_at": "2026-10-20T16:00:17.538003+08:00",
+          "updated_at": "2026-10-20T16:00:17.538003+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": "eea599cf-0743-41fe-bdd0-aef9e6d3693b",
+          "original_source_turn_ids": [
+            "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+          ],
+          "current_statement_source_turn_ids": [
+            "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509",
+              "start": 0,
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "change_id": "02c2af29-5a49-4cf8-9f74-b398edbb28cf",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "not_recorded",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        },
+        {
+          "fact_kind": "boundary",
+          "progress_stage": "not_applicable",
+          "classification_contract": "explicit-typed-v1",
+          "fact_contract_version": 3,
+          "provenance_version": 3,
+          "id": "06416e42-2ce0-4f0a-a0f7-fce22aced928",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "statement": "我制作了🧪原型图。\r\né",
+          "status": "rejected",
+          "version": 3,
+          "created_at": "2026-10-20T16:00:17.568380+08:00",
+          "updated_at": "2026-10-20T16:00:17.568380+08:00",
+          "origin": "manual",
+          "memory_state": "unspecified",
+          "ai_run_id": null,
+          "evidence_id": null,
+          "original_source_turn_ids": [
+            "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+          ],
+          "current_statement_source_turn_ids": [
+            "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+          ],
+          "current_statement_citations": [
+            {
+              "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6",
+              "start": 0,
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "change_id": "fbb5db75-1dc2-4b60-921a-f29408d729d8",
+              "fact_version": 1,
+              "source_kind": "original_source"
+            }
+          ],
+          "classification_citations": [],
+          "classification_basis_status": "not_recorded",
+          "source_kind": "conversation_turns",
+          "source_change_id": null
+        }
+      ],
+      "evidence": [
+        {
+          "id": "eea599cf-0743-41fe-bdd0-aef9e6d3693b",
+          "fact_id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "material_reference": "synthetic",
+          "basis": "synthetic",
+          "reviewer": "user",
+          "created_at": "2026-10-20T16:00:17.541932+08:00",
+          "verification_label": "用户提供材料并自行核实"
+        }
+      ],
+      "history": [
+        {
+          "id": "22075cc4-4396-4766-b794-1887f9838994",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [],
+            "statement": "我测试了3个导出按钮。",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ],
+            "source_change_id": null,
+            "original_source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.274856+08:00"
+        },
+        {
+          "id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "action": "edited",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [],
+            "statement": "我测试了3个导出按钮。",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ],
+            "source_change_id": null,
+            "original_source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [],
+            "statement": "我测试了2个导出按钮。",
+            "evidence_id": null,
+            "source_kind": "user_edit",
+            "memory_state": "unspecified",
+            "source_turn_ids": [],
+            "source_change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+            "original_source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.348361+08:00"
+        },
+        {
+          "id": "6d674a54-40d6-4136-b5b7-456ee2dc0820",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [],
+            "statement": "我测试了2个导出按钮。",
+            "evidence_id": null,
+            "source_kind": "user_edit",
+            "memory_state": "unspecified",
+            "source_turn_ids": [],
+            "source_change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+            "original_source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 3,
+            "ai_run_id": null,
+            "citations": [],
+            "statement": "我测试了2个导出按钮。",
+            "evidence_id": null,
+            "source_kind": "user_edit",
+            "memory_state": "unspecified",
+            "source_turn_ids": [],
+            "source_change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+            "original_source_turn_ids": [
+              "9c15a609-1fd7-4b88-be29-36471cb34b2c"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.399896+08:00"
+        },
+        {
+          "id": "94505644-823b-4afb-b174-aca977e5fdd9",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "9b61c548-d9c5-491e-8a97-f0ad29cbbe7c",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 9,
+                "quote": "我编写了清洗脚本。",
+                "start": 0,
+                "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+              }
+            ],
+            "statement": "我编写了清洗脚本。",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ],
+            "source_change_id": null,
+            "original_source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.460955+08:00"
+        },
+        {
+          "id": "34a8d34d-e8db-48f4-9955-c47cbc9b071e",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "a6d8f0d8-fd9f-4eec-970e-85a537144e9e",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 18,
+                "quote": "我测试了导出按钮。",
+                "start": 9,
+                "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+              }
+            ],
+            "statement": "我测试了导出按钮。",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ],
+            "source_change_id": null,
+            "original_source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.469955+08:00"
+        },
+        {
+          "id": "fc7cfc48-7d62-4f8b-b3ad-2c5d2cc932ff",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "25b6ca6d-dd3c-4e5c-ae9c-05709f80c668",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 26,
+                "quote": "我制作了结果图。",
+                "start": 18,
+                "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+              }
+            ],
+            "statement": "我制作了结果图。",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ],
+            "source_change_id": null,
+            "original_source_turn_ids": [
+              "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "legacy_unspecified",
+            "progress_stage": "legacy_unknown",
+            "classification_contract": "legacy-v0",
+            "interpretation": "legacy_missing_keys"
+          },
+          "created_at": "2026-10-20T16:00:17.476953+08:00"
+        },
+        {
+          "id": "cb3f5f2c-f5a8-4bf8-978b-dd8965edb998",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "59c4b635-f60a-4b51-8209-286fef1fc996",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c"
+              }
+            ],
+            "fact_kind": "plan",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "planned",
+            "source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c"
+              }
+            ],
+            "fact_kind": "plan",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "planned",
+            "source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "plan",
+            "progress_stage": "planned",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "after_classification": {
+            "fact_kind": "plan",
+            "progress_stage": "planned",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.516004+08:00"
+        },
+        {
+          "id": "f338e9be-e787-4d12-af0e-a285ee7d3d6c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "59c4b635-f60a-4b51-8209-286fef1fc996",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c"
+              }
+            ],
+            "fact_kind": "plan",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "planned",
+            "source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "c411f11c-d9ec-436e-816b-79767c110b5c"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "plan",
+            "progress_stage": "planned",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.516004+08:00"
+        },
+        {
+          "id": "02c2af29-5a49-4cf8-9f74-b398edbb28cf",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+              }
+            ],
+            "fact_kind": "personal_action",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "completed",
+            "source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.544377+08:00"
+        },
+        {
+          "id": "1e5b2fa4-a49a-4a7a-a453-393f135cc842",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+              }
+            ],
+            "fact_kind": "personal_action",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "completed",
+            "source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+              }
+            ],
+            "fact_kind": "personal_action",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "completed",
+            "source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "after_classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.544377+08:00"
+        },
+        {
+          "id": "d3180678-d579-4c9b-90fb-5a22523a780a",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+              }
+            ],
+            "fact_kind": "personal_action",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "completed",
+            "source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "evidence_supported",
+            "version": 3,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+              }
+            ],
+            "fact_kind": "personal_action",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": "eea599cf-0743-41fe-bdd0-aef9e6d3693b",
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "completed",
+            "source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "after_classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.544377+08:00"
+        },
+        {
+          "id": "0714ecfa-2a7c-4228-b8f1-2891c0f2b14f",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "06416e42-2ce0-4f0a-a0f7-fce22aced928",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+              }
+            ],
+            "fact_kind": "boundary",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "not_applicable",
+            "source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+              }
+            ],
+            "fact_kind": "boundary",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "not_applicable",
+            "source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "boundary",
+            "progress_stage": "not_applicable",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "after_classification": {
+            "fact_kind": "boundary",
+            "progress_stage": "not_applicable",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.571379+08:00"
+        },
+        {
+          "id": "454bac83-d979-4223-83e4-b01597e44709",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "06416e42-2ce0-4f0a-a0f7-fce22aced928",
+          "action": "status_changed",
+          "actor": "user",
+          "before": {
+            "origin": "manual",
+            "status": "user_confirmed",
+            "version": 2,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+              }
+            ],
+            "fact_kind": "boundary",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "not_applicable",
+            "source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ]
+          },
+          "after": {
+            "origin": "manual",
+            "status": "rejected",
+            "version": 3,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+              }
+            ],
+            "fact_kind": "boundary",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "not_applicable",
+            "source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ]
+          },
+          "before_classification": {
+            "fact_kind": "boundary",
+            "progress_stage": "not_applicable",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "after_classification": {
+            "fact_kind": "boundary",
+            "progress_stage": "not_applicable",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.571379+08:00"
+        },
+        {
+          "id": "fbb5db75-1dc2-4b60-921a-f29408d729d8",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "fact_id": "06416e42-2ce0-4f0a-a0f7-fce22aced928",
+          "action": "created",
+          "actor": "system",
+          "before": null,
+          "after": {
+            "origin": "manual",
+            "status": "pending",
+            "version": 1,
+            "ai_run_id": null,
+            "citations": [
+              {
+                "end": 13,
+                "quote": "我制作了🧪原型图。\r\né",
+                "start": 0,
+                "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+              }
+            ],
+            "fact_kind": "boundary",
+            "statement": "我制作了🧪原型图。\r\né",
+            "evidence_id": null,
+            "source_kind": "conversation_turns",
+            "memory_state": "unspecified",
+            "progress_stage": "not_applicable",
+            "source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ],
+            "source_change_id": null,
+            "classification_contract": "explicit-typed-v1",
+            "original_source_turn_ids": [
+              "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            ]
+          },
+          "before_classification": null,
+          "after_classification": {
+            "fact_kind": "boundary",
+            "progress_stage": "not_applicable",
+            "classification_contract": "explicit-typed-v1",
+            "interpretation": "explicit_fields"
+          },
+          "created_at": "2026-10-20T16:00:17.571379+08:00"
+        }
+      ],
+      "fact_sources": [
+        {
+          "fact_id": "06416e42-2ce0-4f0a-a0f7-fce22aced928",
+          "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "start": 0,
+              "turn_id": "795437fc-5b45-4167-b1f3-f35282d1b9b6"
+            }
+          ]
+        },
+        {
+          "fact_id": "25b6ca6d-dd3c-4e5c-ae9c-05709f80c668",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 26,
+              "quote": "我制作了结果图。",
+              "start": 18,
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            }
+          ]
+        },
+        {
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "turn_id": "9c15a609-1fd7-4b88-be29-36471cb34b2c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": null
+        },
+        {
+          "fact_id": "59c4b635-f60a-4b51-8209-286fef1fc996",
+          "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "start": 0,
+              "turn_id": "c411f11c-d9ec-436e-816b-79767c110b5c"
+            }
+          ]
+        },
+        {
+          "fact_id": "9b61c548-d9c5-491e-8a97-f0ad29cbbe7c",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 9,
+              "quote": "我编写了清洗脚本。",
+              "start": 0,
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            }
+          ]
+        },
+        {
+          "fact_id": "a6d8f0d8-fd9f-4eec-970e-85a537144e9e",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 18,
+              "quote": "我测试了导出按钮。",
+              "start": 9,
+              "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9"
+            }
+          ]
+        },
+        {
+          "fact_id": "ad24cee0-0be0-4d40-8af2-4d2b4df66207",
+          "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "citations": [
+            {
+              "end": 13,
+              "quote": "我制作了🧪原型图。\r\né",
+              "start": 0,
+              "turn_id": "dc1ac502-1bd7-4eac-baf1-4e8d14e0d509"
+            }
+          ]
+        }
+      ],
+      "fact_change_sources": [
+        {
+          "id": "434849f3-6c75-47c0-8cd7-114e33993c4a",
+          "operation_id": "19372e80-ed27-4f83-af56-ab7e7cb0a083",
+          "effect_slot": 1,
+          "change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "turn_id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+          "source_role": "intent",
+          "reason": "explicit_correction",
+          "start_cp": 0,
+          "end_cp": 6,
+          "quote": "纠正上一条。",
+          "before_version": 1,
+          "after_version": 2,
+          "created_at": "2026-10-20T16:00:17.353911+08:00"
+        },
+        {
+          "id": "50340f8a-0d0c-4d4a-9551-91354a148531",
+          "operation_id": "19372e80-ed27-4f83-af56-ab7e7cb0a083",
+          "effect_slot": 1,
+          "change_id": "8cd5389b-4ef6-4fab-8e83-7bcd22240f2e",
+          "fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "turn_id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+          "source_role": "statement",
+          "reason": "explicit_correction",
+          "start_cp": 6,
+          "end_cp": 17,
+          "quote": "我测试了2个导出按钮。",
+          "before_version": 1,
+          "after_version": 2,
+          "created_at": "2026-10-20T16:00:17.354276+08:00"
+        },
+        {
+          "id": "8f2acbce-2cd6-4531-8dc5-d9d39b8b87d3",
+          "operation_id": "85aa0696-b8f7-4791-8715-21809ea21f0e",
+          "effect_slot": 1,
+          "change_id": "94505644-823b-4afb-b174-aca977e5fdd9",
+          "fact_id": "9b61c548-d9c5-491e-8a97-f0ad29cbbe7c",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "source_role": "statement",
+          "reason": "addition",
+          "start_cp": 0,
+          "end_cp": 9,
+          "quote": "我编写了清洗脚本。",
+          "before_version": null,
+          "after_version": 1,
+          "created_at": "2026-10-20T16:00:17.480787+08:00"
+        },
+        {
+          "id": "f19de0ba-f789-4a21-8dc2-b34dbfaffe4d",
+          "operation_id": "85aa0696-b8f7-4791-8715-21809ea21f0e",
+          "effect_slot": 2,
+          "change_id": "34a8d34d-e8db-48f4-9955-c47cbc9b071e",
+          "fact_id": "a6d8f0d8-fd9f-4eec-970e-85a537144e9e",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "source_role": "statement",
+          "reason": "addition",
+          "start_cp": 9,
+          "end_cp": 18,
+          "quote": "我测试了导出按钮。",
+          "before_version": null,
+          "after_version": 1,
+          "created_at": "2026-10-20T16:00:17.480896+08:00"
+        },
+        {
+          "id": "4011823d-24d0-44c5-bae7-e9af103024da",
+          "operation_id": "85aa0696-b8f7-4791-8715-21809ea21f0e",
+          "effect_slot": 3,
+          "change_id": "fc7cfc48-7d62-4f8b-b3ad-2c5d2cc932ff",
+          "fact_id": "25b6ca6d-dd3c-4e5c-ae9c-05709f80c668",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "source_role": "statement",
+          "reason": "addition",
+          "start_cp": 18,
+          "end_cp": 26,
+          "quote": "我制作了结果图。",
+          "before_version": null,
+          "after_version": 1,
+          "created_at": "2026-10-20T16:00:17.480904+08:00"
+        }
+      ],
+      "conversation_operations": [
+        {
+          "id": "19372e80-ed27-4f83-af56-ab7e7cb0a083",
+          "contract_version": 1,
+          "state": "applied",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "input_turn_id": "e00ac8ae-81ea-46bc-89eb-ff857f6a27b3",
+          "kind": "root",
+          "action": "correct",
+          "parent_operation_id": null,
+          "proposed_action": null,
+          "proposal_spans": [
+            {
+              "end": 6,
+              "role": "intent",
+              "start": 0
+            },
+            {
+              "end": 17,
+              "role": "statement",
+              "start": 6
+            }
+          ],
+          "progress_stage": null,
+          "base_revision": 4,
+          "result_revision": 6,
+          "target_fact_id": "2d6edb66-00bb-4748-abb9-a5731daf2485",
+          "target_version": 1,
+          "effect_count": 1,
+          "outcome_code": "corrected",
+          "decision_contract": "explicit-target-v1",
+          "created_at": "2026-10-20T16:00:17.352113+08:00",
+          "expires_at": "2026-10-21T16:00:17+08:00",
+          "completed_at": "2026-10-20T16:00:17.352113+08:00"
+        },
+        {
+          "id": "85aa0696-b8f7-4791-8715-21809ea21f0e",
+          "contract_version": 2,
+          "state": "applied",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "input_turn_id": "f7b49156-76f7-4c83-9070-7542b7e308a9",
+          "kind": "root",
+          "action": "append",
+          "parent_operation_id": null,
+          "proposed_action": null,
+          "proposal_spans": [
+            {
+              "end": 9,
+              "role": "statement",
+              "start": 0
+            },
+            {
+              "end": 18,
+              "role": "statement",
+              "start": 9
+            },
+            {
+              "end": 26,
+              "role": "statement",
+              "start": 18
+            }
+          ],
+          "progress_stage": null,
+          "base_revision": 9,
+          "result_revision": 13,
+          "target_fact_id": null,
+          "target_version": null,
+          "effect_count": 3,
+          "outcome_code": "created",
+          "decision_contract": "append-batch-v1",
+          "created_at": "2026-10-20T16:00:17.479187+08:00",
+          "expires_at": "2026-10-21T16:00:17+08:00",
+          "completed_at": "2026-10-20T16:00:17.479187+08:00"
+        }
+      ],
+      "mining_runs": [
+        {
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "project_id": "0ee82185-a95f-4ca5-8343-fcffe07206b4",
+          "input_turn_id": "9c15a609-1fd7-4b88-be29-36471cb34b2c",
+          "base_revision": 1,
+          "reserved_revision": 1,
+          "state": "completed",
+          "lease_until": "2026-10-20T16:01:17.400896+08:00",
+          "error_code": null,
+          "retry_of": null,
+          "provider": "scripted",
+          "prompt_version": "extractive-v1",
+          "tokens_in": 0,
+          "tokens_out": 0,
+          "assistant_turn_id": null,
+          "id": "357e8df5-901b-4195-b266-977be7dc329b",
+          "created_at": "2026-10-20T16:00:17.401895+08:00"
+        }
+      ],
+      "mining_questions": [
+        {
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "run_id": "357e8df5-901b-4195-b266-977be7dc329b",
+          "content": "合成问题，不是模型输出。",
+          "state": "active",
+          "version": 1,
+          "id": "3ef57f93-2590-450c-aada-94b63b9d595b",
+          "created_at": "2026-10-20T16:00:17.402895+08:00"
+        }
+      ],
+      "answer_questions": [
+        {
+          "turn_id": "9c15a609-1fd7-4b88-be29-36471cb34b2c",
+          "question_id": "3ef57f93-2590-450c-aada-94b63b9d595b",
+          "session_id": "07601718-2462-4051-a97e-b22942926180",
+          "question_version": 1,
+          "slot": 1
+        }
+      ]
+    }
+  }
+}

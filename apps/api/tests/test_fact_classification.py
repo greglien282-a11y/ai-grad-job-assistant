@@ -542,7 +542,8 @@ def test_C06_no_typed_route_or_factory_and_v2_receipts_still_recover(append_serv
     assert recover(s,b,h).json()==result.json()
     assert append_post(s,b,append_body(b),h).json()==result.json()
     for url in [f'/api/v2/experience/projects/{b.pid}/experience-summary',f'/api/v2/experience/sessions/{b.sid}/export']:
-        assert s.client.get(url,headers=h).status_code==404
+        # c2b-read adds explicit candidates; no runtime is enabled by adding them.
+        error(s.client.get(url,headers=h),503,'experience_read_disabled')
     value=append_body(b);value['contract_version']=3
     error(append_post(s,b,value),422,'invalid_request')
     assert stored(s.admin)==before

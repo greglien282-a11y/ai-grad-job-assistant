@@ -18,6 +18,7 @@ from app.mining_api import router as mining_router
 from app.mining import MiningError
 from app.maintenance_api import router as maintenance_router
 from app.append_api import router as append_router
+from app.experience_read_api import router as read_router
 from app.maintenance_errors import ConversationError
 
 
@@ -48,6 +49,7 @@ app.include_router(router)
 app.include_router(mining_router)
 app.include_router(maintenance_router)
 app.include_router(append_router)
+app.include_router(read_router)
 
 
 @app.exception_handler(ConversationError)
