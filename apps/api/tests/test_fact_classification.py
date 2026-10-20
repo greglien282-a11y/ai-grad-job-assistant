@@ -322,6 +322,25 @@ def test_M01_0014_upgrade_preserves_all_old_rows_json_and_http(append_service,mi
     f=patch(s.client,f.json(),h,'reject');assert f.status_code==200
 
 
+@pytest.mark.parametrize('old_revision',['0005_answer_questions','0010_response_diagnostics',
+    '0011_mining_paid_metadata','0012_request_manifest','0013_fact_maintenance','0014_append_batch'])
+def test_M01_genuine_preclassification_schemas_preserve_legacy_reads(api,migrated_connection,old_revision):
+    client,factory=api;conn,cfg=migrated_connection
+    command.downgrade(cfg,old_revision);conn.commit()
+    data,h=create(client);f=add(client,data,h)
+    assert patch(client,f,h,'confirm').status_code==200
+    url=f'/api/v1/experience/sessions/{data["session_id"]}'
+    before=client.get(url,headers=h)
+    assert before.status_code==200,before.text
+    exported=client.get(url+'/export',headers=h)
+    assert exported.status_code==200,exported.text
+    command.upgrade(cfg,HEAD);conn.commit()
+    after=client.get(url,headers=h)
+    assert after.status_code==200 and after.json()==before.json()
+    after_export=client.get(url+'/export',headers=h)
+    assert after_export.status_code==200 and after_export.json()['data']==exported.json()['data']
+
+
 @pytest.mark.parametrize('with_legacy',[False,True])
 def test_M01_M02_empty_roundtrip_failure_rollback_and_function_fingerprints(migrated_connection,with_legacy):
     conn,cfg=migrated_connection

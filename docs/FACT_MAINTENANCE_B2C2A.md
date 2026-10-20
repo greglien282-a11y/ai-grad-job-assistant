@@ -48,7 +48,8 @@ Schema 准入使用 catalog 中的版本标记、完整列集合、有效 CHECK�
 启用触发器核验。标记是表 comment 中的独立行
 `pathwise-classification-schema-v1`，保留已有 comment；安全 downgrade 去掉该行。
 这样不需要扩大 B2-b 身份的 alembic_version SELECT 权限。与 §10 一致，只有
-无新标记/列/函数、且具备原 0011+ inert metadata 基础的真正旧 Schema 有明确 legacy 分支；
+无新标记/列/函数、且具备既有 mining/answer-question 读取基础的真正旧 Schema 有明确
+legacy 分支（真实测试覆盖 0005、0010–0014 的创建/确认/会话与导出升级对照）；
 部分升级、未知新标记、缺列/约束/触发器、缺 SELECT 均拒绝。不能捕获任意 SQL 错误
 后默认 legacy；迁移版本拓扑另外由 Alembic 和隔离迁移测试核验。
 

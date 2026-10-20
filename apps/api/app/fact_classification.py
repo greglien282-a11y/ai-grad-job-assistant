@@ -37,7 +37,7 @@ def has_columns(db):
           AND tgname LIKE 'classification_%' AND tgenabled='O'""")) == 8:
         return True
     # Genuine pre-feature schemas only; never default missing current fields.
-    if not any(line.startswith('pathwise-classification-schema-') for line in marker.splitlines()) and not columns and functions == 0 and db.scalar(text("SELECT to_regclass('mining_paid_bindings') IS NOT NULL")):
+    if not any(line.startswith('pathwise-classification-schema-') for line in marker.splitlines()) and not columns and functions == 0 and db.scalar(text("SELECT to_regclass('ai_mining_runs') IS NOT NULL AND to_regclass('ai_answer_questions') IS NOT NULL")):
         return False
     raise ConversationError(503, 'fact_classification_schema_unavailable')
 
