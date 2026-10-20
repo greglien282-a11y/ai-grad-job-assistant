@@ -110,4 +110,16 @@ describe('explicit read candidates, independent of the legacy React consumer', (
     delete (h.after as Record<string, unknown>).classification_contract
     expect(exportV2Schema.safeParse(b).success).toBe(false)
   })
+  it('rejects unknown legacy snapshot status rather than treating it as opaque backup content', () => {
+    const b = backup()
+    const h = b.data.history.find(c => c.after_classification.classification_contract === 'legacy-v0')!
+    h.after.status = 'future_reviewed'
+    expect(exportV2Schema.safeParse(b).success).toBe(false)
+  })
+  it('rejects malformed historical source fields in otherwise valid legacy JSON', () => {
+    const b = backup()
+    const h = b.data.history.find(c => c.after_classification.classification_contract === 'legacy-v0')!
+    ;(h.after as Record<string, unknown>).original_source_turn_ids = 'not-a-turn-list'
+    expect(exportV2Schema.safeParse(b).success).toBe(false)
+  })
 })

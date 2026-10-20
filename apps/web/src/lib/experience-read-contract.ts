@@ -53,6 +53,13 @@ export const summaryV2Schema = z.strictObject({ summary_contract_version: z.lite
 })
 
 const jsonObject = z.record(z.string(), z.unknown())
+const originalCitation = z.strictObject({ turn_id: id, start: z.number().int().nonnegative(), end: integer, quote: z.string() })
+const snapshotCore = z.object({ statement: z.string().min(1), status: z.enum(['pending', 'user_confirmed', 'evidence_supported', 'rejected']), version: integer,
+  origin: z.enum(['manual', 'ai_extracted']).optional(), memory_state: z.enum(['unspecified', 'certain', 'approximate', 'needs_check']).optional(),
+  ai_run_id: id.nullable().optional(), evidence_id: id.nullable().optional(),
+  original_source_turn_ids: z.array(id), source_kind: z.enum(['conversation_turns', 'user_edit']),
+  source_turn_ids: z.array(id), source_change_id: id.nullable(), citations: z.array(originalCitation),
+}).passthrough()
 const snapshotClassification = z.strictObject({ ...classificationShape, interpretation: z.enum(['legacy_missing_keys', 'explicit_fields']) }).refine(validPair)
 const history = z.strictObject({ id, session_id: id, fact_id: id,
   action: z.enum(['created', 'edited', 'status_changed', 'memory_changed']), actor: z.enum(['user', 'system']),
@@ -61,14 +68,13 @@ const history = z.strictObject({ id, session_id: id, fact_id: id,
 }).superRefine((h, ctx) => {
   for (const [raw, classification] of [[h.before, h.before_classification], [h.after, h.after_classification]] as const) {
     if (raw === null) { if (classification !== null) ctx.addIssue({ code: 'custom', message: 'Missing snapshot' }); continue }
-    if (!classification || !integer.safeParse(raw.version).success) { ctx.addIssue({ code: 'custom', message: 'Invalid snapshot' }); continue }
+    if (!classification || !snapshotCore.safeParse(raw).success || typeof raw.statement !== 'string' || !raw.statement.trim()) { ctx.addIssue({ code: 'custom', message: 'Invalid snapshot' }); continue }
     const keys = Object.keys(classificationShape)
     const present = keys.filter(k => Object.hasOwn(raw, k))
     if (present.length === 0 ? classification.interpretation !== 'legacy_missing_keys' || classification.classification_contract !== 'legacy-v0' :
       present.length !== 3 || classification.interpretation !== 'explicit_fields' || keys.some(k => raw[k] !== classification[k as keyof Classification])) ctx.addIssue({ code: 'custom', message: 'Classification interpretation mismatch' })
   }
 })
-const originalCitation = z.strictObject({ turn_id: id, start: z.number().int().nonnegative(), end: integer, quote: z.string() })
 const factSource = z.strictObject({ fact_id: id, turn_id: id, session_id: id, citations: z.array(originalCitation).nullable() })
 const fcs = z.strictObject({ id, operation_id: id, effect_slot: integer.max(5), change_id: id, fact_id: id, session_id: id, turn_id: id,
   source_role: z.enum(['statement', 'intent']), reason: z.enum(['addition', 'explicit_correction', 'explicit_withdrawal']),

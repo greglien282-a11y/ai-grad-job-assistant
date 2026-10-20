@@ -416,3 +416,27 @@ def test_C06_typed_source_must_support_the_initial_statement_not_just_have_valid
     assert [r.status_code for r in responses]==[503,503]
     for response in responses:error(response,503,'experience_read_integrity_unavailable')
     assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('fault',['missing_status','unknown_status','text_without_edit','historical_source_shape','historical_evidence_missing'])
+def test_C06_historical_core_and_statement_transition_are_not_opaque_backup_data(reader,fault):
+    s=reader;b=seed(s,status='user_confirmed')
+    if fault=='text_without_edit':
+        fid=synthetic(s,b)
+        corrupt(s,'experience_facts',"UPDATE experience_facts SET statement='我制作了28张图。' WHERE id=:id",{'id':fid})
+        corrupt(s,'fact_changes',"UPDATE fact_changes SET after=jsonb_set(after,'{statement}',CAST(:body AS jsonb)) WHERE fact_id=:id AND action<>'created'",{'id':fid,'body':json.dumps('我制作了28张图。')})
+    elif fault in ('historical_source_shape','historical_evidence_missing'):
+        with s.admin.begin() as db:facts.change_fact(db,b.fid,b.token,memory_state='certain',expected_version=2)
+        field='original_source_turn_ids' if fault=='historical_source_shape' else 'evidence_id'
+        value=json.dumps('not-a-turn-list' if fault=='historical_source_shape' else str(uuid4()))
+        corrupt(s,'fact_changes',f"UPDATE fact_changes SET after=CASE WHEN after->>'version'='2' THEN jsonb_set(after,'{{{field}}}',CAST(:bad AS jsonb)) ELSE after END,before=CASE WHEN after->>'version'='3' THEN jsonb_set(before,'{{{field}}}',CAST(:bad AS jsonb)) ELSE before END WHERE fact_id=:id",{'id':b.fid,'bad':value})
+    else:
+        operation="{column}-'status'" if fault=='missing_status' else "jsonb_set({column},'{status}','\"future_reviewed\"')"
+        # Keep the adjacent snapshots equally damaged, so agreement alone is
+        # insufficient; the recognized historical trust enum must be validated.
+        after=operation.replace('{column}','after');before=operation.replace('{column}','before')
+        corrupt(s,'fact_changes',f"UPDATE fact_changes SET after=CASE WHEN action='created' THEN {after} ELSE after END,before=CASE WHEN action<>'created' THEN {before} ELSE before END WHERE fact_id=:id",{'id':b.fid})
+    state=stored(s.admin)
+    responses=[request(s,b) for request in (summary,export)]
+    assert [r.status_code for r in responses]==[503,503]
+    assert stored(s.admin)==state

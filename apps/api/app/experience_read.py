@@ -29,6 +29,15 @@ def json_equal(left,right):
     return json.dumps(left,sort_keys=True,ensure_ascii=False)==json.dumps(right,sort_keys=True,ensure_ascii=False)
 
 
+def field_equal(key,left,right):
+    # FactSource rows have no ordering contract. Preserve original JSON order
+    # in the backup, but compare citation multisets without losing JSON types.
+    if key=='citations' and isinstance(left,list) and isinstance(right,list):
+        encode=lambda value:json.dumps(value,sort_keys=True,ensure_ascii=False)
+        return sorted(map(encode,left))==sorted(map(encode,right))
+    return json_equal(left,right)
+
+
 def classification(snapshot):
     require(isinstance(snapshot,dict))
     keys=set(FIELDS)&snapshot.keys()
@@ -135,6 +144,7 @@ class Projection:
 
     def fact(self,f):
         history=self.hist[f.id];sources=self.orig[f.id]
+        evidence={str(e.id):e for e in self.evidence};runs={str(r.id):r for r in self.runs}
         created=[c for c in history if c.action=='created']
         require(len(created)==1 and bool(sources))
         initial=created[0]
@@ -144,6 +154,19 @@ class Projection:
         by_version=defaultdict(list)
         for c in history:
             require(c.action in ('created','edited','status_changed','memory_changed'))
+            for saved in (c.before,c.after):
+                if saved is None:continue
+                require(isinstance(saved.get('statement'),str) and bool(saved['statement'].strip())
+                        and saved.get('status') in ('pending','user_confirmed','evidence_supported','rejected'))
+                for key,allowed in {'origin':('manual','ai_extracted'),
+                    'memory_state':('unspecified','certain','approximate','needs_check'),
+                    'source_kind':('conversation_turns','user_edit')}.items():
+                    if key in saved:require(saved[key] in allowed)
+                for key,records in (('ai_run_id',runs),('evidence_id',evidence)):
+                    if key not in saved or saved[key] is None:continue
+                    require(isinstance(saved[key],str) and saved[key] in records)
+                    if key=='evidence_id':require(records[saved[key]].fact_id==f.id)
+                if saved['status']=='evidence_supported':require(saved.get('evidence_id') is not None)
             annotations[c.id]=(classification(c.before) if c.before is not None else None,classification(c.after))
             version=c.after.get('version')
             require(type(version) is int and 1<=version<=f.version)
@@ -151,6 +174,7 @@ class Projection:
             by_version[version].append(c.after)
             if c.action!='created':require(isinstance(c.before,dict) and type(c.before.get('version')) is int
                                            and c.before['version']==version-1)
+            if c.action not in ('created','edited'):require(c.before['statement']==c.after['statement'])
         require(versions==set(range(1,f.version+1)))
         for c in history:
             if c.before is None:continue
@@ -158,7 +182,7 @@ class Projection:
                 # Shared recorded fields must agree; do not fill missing old
                 # classification keys into either original JSON snapshot.
                 for key in c.before.keys() & previous.keys():
-                    require(json_equal(c.before[key],previous[key]))
+                    require(field_equal(key,c.before[key],previous[key]))
         current=dto.Classification(**{k:getattr(f,k) for k in FIELDS})
         typed=any(a.classification_contract!='legacy-v0' for pair in annotations.values() for a in pair if a)
         require(not typed or current.classification_contract!='legacy-v0')
@@ -167,7 +191,7 @@ class Projection:
         # SET CONSTRAINTS, normalization or repair is called by this GET.
         for c in history:
             if c.after['version']==f.version:
-                for key,value in snapshot.items():require(key in c.after and json_equal(c.after[key],value))
+                for key,value in snapshot.items():require(key in c.after and field_equal(key,c.after[key],value))
             if typed:
                 for saved in (c.before,c.after):
                     if saved is None:continue
@@ -176,14 +200,13 @@ class Projection:
                     require(saved['origin']==f.origin and json_equal(saved['ai_run_id'],str(f.ai_run_id) if f.ai_run_id else None))
                     require(saved['memory_state'] in ('unspecified','certain','approximate','needs_check')
                             and saved.get('status') in ('pending','user_confirmed','evidence_supported','rejected'))
-                    evidence={str(e.id):e for e in self.evidence}
                     require(saved['evidence_id'] is None or isinstance(saved['evidence_id'],str)
                             and saved['evidence_id'] in evidence and evidence[saved['evidence_id']].fact_id==f.id)
                     require(saved['status']!='evidence_supported' or saved['evidence_id'] is not None)
         original_ids=sorted(str(s.turn_id) for s in sources)
         require(initial.after.get('original_source_turn_ids')==original_ids)
         actual_quotes=[q for s in sources for q in s.citations or []]
-        require(json_equal(initial.after.get('citations'),actual_quotes))
+        require(field_equal('citations',initial.after.get('citations'),actual_quotes))
         if typed:
             initial_expected=dict(version=1,status='pending',memory_state='unspecified',evidence_id=None,
                 source_kind='conversation_turns',source_change_id=None,source_turn_ids=original_ids)
@@ -196,6 +219,16 @@ class Projection:
                     require(all(q['quote']==initial.after['statement'] for q in source.citations))
                 else:require(self.turn_map[source.turn_id].content==initial.after['statement'])
         edits=[c for c in history if c.action=='edited']
+        for change in history:
+            for saved in (change.before,change.after):
+                if saved is None:continue
+                earlier=[e for e in edits if e.after['version']<=saved['version']]
+                prior=max(earlier,key=lambda e:(e.after['version'],e.created_at,str(e.id))) if earlier else None
+                expected=dict(original_source_turn_ids=original_ids,
+                    source_kind='user_edit' if prior else 'conversation_turns',
+                    source_turn_ids=[] if prior else original_ids,source_change_id=str(prior.id) if prior else None,
+                    citations=[] if prior else actual_quotes)
+                for key,value in expected.items():require(key in saved and field_equal(key,saved[key],value))
         edit=max(edits,key=lambda c:(c.after['version'],c.created_at,str(c.id))) if edits else None
         citations=[];turn_ids=[]
         if edit:
