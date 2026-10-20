@@ -32,7 +32,7 @@ class RequestBoundary:
         if os.getenv("REQUIRE_HTTPS", "false").lower() == "true" and scope["scheme"] != "https":
             return await fail(400, "https_required", "HTTPS is required")
         # Experience contracts have no query parameters. Do not reflect them.
-        if scope["path"].startswith("/api/v1/experience") and scope.get("query_string"):
+        if scope["path"].startswith(("/api/v1/experience", "/api/v2/experience")) and scope.get("query_string"):
             return await fail(400, "query_not_allowed", "Use the Authorization header; query parameters are not supported")
         headers = dict(scope.get("headers", []))
         length = headers.get(b"content-length")
