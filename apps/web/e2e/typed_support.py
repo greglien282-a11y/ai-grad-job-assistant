@@ -37,6 +37,9 @@ def provision(url,schema):
         with engine.begin() as db:
             db.execute(text(f'CREATE ROLE "{role}" LOGIN PASSWORD \'{password}\' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT'))
             db.execute(text(f'CREATE ROLE "{owner}" NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT'))
+            # CI revokes PUBLIC CONNECT on its disposable database. Do not rely
+            # on a developer cluster's default ACL for the actual reader LOGIN.
+            db.execute(text(f'GRANT CONNECT ON DATABASE "{url.database}" TO "{role}"'))
             db.execute(text(f'GRANT USAGE ON SCHEMA "{schema}" TO "{role}","{owner}"'))
             for t in READ_TABLES:db.execute(text(f'GRANT SELECT ON "{schema}".{t} TO "{role}","{owner}"'))
             db.execute(text(f'GRANT UPDATE(updated_at,context_revision) ON experience_sessions TO "{owner}"'))
