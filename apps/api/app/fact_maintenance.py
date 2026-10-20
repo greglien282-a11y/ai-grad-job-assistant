@@ -148,6 +148,7 @@ def apply(db, sid, token, key, body, *, parent_id=None):
         # minted in the future is not eligible for a new write yet.
         raise idem.IdempotencyError(422, 'idempotency_clock_skew')
     session = facts.authorize(db, sid, token, lock=True)
+    facts.require_legacy(db, sid)
     gate(db, session)
     project = db.scalar(select(ExperienceProject).where(ExperienceProject.session_id == sid))
     if project is None:

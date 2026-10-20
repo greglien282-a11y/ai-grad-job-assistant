@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import facts, schemas
+from app.fact_classification import require_legacy
 from app import idempotency as idem
 from app.db import build_engine, session_factory
 from app.models import ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactStatus, utcnow
@@ -44,6 +45,7 @@ Token = Annotated[str, Depends(require_token)]
 
 def fact_view(db: Session, fact: ExperienceFact) -> schemas.FactView:
     from app.maintenance_provenance import provenance
+    require_legacy(db, fact.session_id, fact_id=fact.id)
     snapshot = facts.snapshot(db, fact)
     return schemas.FactView(id=fact.id, project_id=fact.project_id, session_id=fact.session_id,
                             created_at=fact.created_at, updated_at=fact.updated_at,
@@ -60,6 +62,7 @@ def session_view(db: Session, record: ExperienceSession) -> schemas.SessionView:
     from app.mining import view
     from app.models import MiningRun
     db.refresh(record)
+    require_legacy(db, record.id)
     def rows(model):
         return list(db.scalars(select(model).where(model.session_id == record.id).order_by(model.created_at, model.id)))
 
@@ -216,6 +219,7 @@ def close_session(session_id: UUID, token: Token, db: Database):
 @router.get("/sessions/{session_id}/export", response_model=schemas.SessionExport)
 def export_session(session_id: UUID, token: Token, db: Database, response: Response):
     record = facts.authorize(db, session_id, token, lock=True)
+    require_legacy(db, record.id, code='export_contract_upgrade_required')
     response.headers["Content-Disposition"] = f'attachment; filename="pathwise-{session_id}.json"'
     return schemas.SessionExport(exported_at=utcnow(), data=session_view(db, record))
 

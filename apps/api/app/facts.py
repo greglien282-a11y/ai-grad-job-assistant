@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import ConversationTurn, ExperienceFact, ExperienceProject, ExperienceSession, FactChange, FactEvidence, FactSource, FactStatus, utcnow
+from app.fact_classification import FIELDS, LEGACY, classification, require_legacy
 
 
 class VersionConflict(Exception):
@@ -58,6 +59,7 @@ def authorize(db: Session, session_id: UUID, token: str, *, write: bool = False,
 
 def add_turn(db: Session, session_id: UUID, token: str, content: str) -> ConversationTurn:
     session = authorize(db, session_id, token, write=True)
+    require_legacy(db, session.id)
     from app.maintenance_guard import input_consumed
     input_consumed(db, session_id, content=content)
     turn = ConversationTurn(session_id=session_id, role="user", content=required_text(content))
@@ -81,7 +83,9 @@ def snapshot(db: Session, fact: ExperienceFact, *, edit: FactChange | None = Non
             FactChange.fact_id == fact.id, FactChange.action == "edited",
         ).order_by(FactChange.after["version"].as_integer().desc().nulls_last(),
                    FactChange.created_at.desc(), FactChange.id.desc()).limit(1))
-    return {"statement": fact.statement, "status": str(fact.status),
+    kind = classification(db, fact)
+    return {**(dict(zip(FIELDS, kind)) if kind != LEGACY else {}),
+            "statement": fact.statement, "status": str(fact.status),
             "origin": fact.origin, "memory_state": fact.memory_state, "ai_run_id": str(fact.ai_run_id) if fact.ai_run_id else None,
             "citations": [] if edit else [c for row in db.scalars(select(FactSource).where(FactSource.fact_id == fact.id)) for c in (row.citations or [])],
             "version": fact.version,
@@ -106,6 +110,7 @@ def add_fact(db: Session, project_id: UUID, token: str, statement: str, source_t
     if project is None:
         raise PermissionError("Session unavailable")
     session = authorize(db, project.session_id, token, write=True)
+    require_legacy(db, session.id)
     from app.maintenance_guard import input_consumed, rejected_contribution
     input_consumed(db, session.id, turn_ids=source_turn_ids)
     rejected_contribution(db, session.id, statement, source_turn_ids)
@@ -136,6 +141,7 @@ def change_fact(db: Session, fact_id: UUID, token: str, *, statement: str | None
     session = authorize(db, fact.session_id, token, write=True)
     # Reload after acquiring the parent lock: another transaction may have edited it.
     db.refresh(fact)
+    require_legacy(db, session.id)
     if fact.version != expected_version:
         raise VersionConflict("Fact version has changed")
     if withdraw and (status != FactStatus.REJECTED or any(v is not None for v in (statement, material_reference, basis, memory_state))):
@@ -200,6 +206,7 @@ def eligible_facts(db: Session, project_id: UUID, token: str) -> list[Experience
     if project is None:
         raise PermissionError("Session unavailable")
     authorize(db, project.session_id, token)
+    require_legacy(db, project.session_id, code='summary_contract_upgrade_required', project_id=project_id)
     return list(db.scalars(select(ExperienceFact).where(
         ExperienceFact.project_id == project_id,
         ExperienceFact.status.in_([FactStatus.USER_CONFIRMED, FactStatus.EVIDENCE_SUPPORTED]),
@@ -208,5 +215,6 @@ def eligible_facts(db: Session, project_id: UUID, token: str) -> list[Experience
 
 def end_session(db: Session, session_id: UUID, token: str) -> None:
     session = authorize(db, session_id, token, write=True)
+    require_legacy(db, session.id)
     session.status = "ended"
     session.updated_at = utcnow()

@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, Uuid, Index, text, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from app.fact_classification import CHECK as CLASSIFICATION_CHECK
 
 
 def utcnow() -> datetime:
@@ -72,13 +73,20 @@ class ExperienceFact(Record, Base):
         CheckConstraint("origin IN ('manual','ai_extracted')", name="ck_fact_origin"),
         CheckConstraint("memory_state IN ('unspecified','certain','approximate','needs_check')", name="ck_fact_memory"),
         CheckConstraint("status != 'evidence_supported' OR evidence_id IS NOT NULL", name="ck_fact_evidence"),
+        CheckConstraint(CLASSIFICATION_CHECK, name='ck_fact_classification'),
         ForeignKeyConstraint(["evidence_id", "id", "session_id"], ["fact_evidence.id", "fact_evidence.fact_id", "fact_evidence.session_id"], name="fk_fact_current_evidence", use_alter=True),
+        {'comment': '\npathwise-classification-schema-v1'},
     )
     project_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     session_id: Mapped[UUID] = mapped_column(Uuid, index=True)
     statement: Mapped[str] = mapped_column(Text)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    __mapper_args__ = {"version_id_col": version}
+    __mapper_args__ = {"version_id_col": version, "eager_defaults": False}
+    # Deferred/defaulted only by PostgreSQL: certified pre-0015 legacy readers
+    # do not issue SELECT/INSERT for nonexistent columns.
+    fact_kind: Mapped[str] = mapped_column(String(24), server_default='legacy_unspecified', deferred=True)
+    progress_stage: Mapped[str] = mapped_column(String(24), server_default='legacy_unknown', deferred=True)
+    classification_contract: Mapped[str] = mapped_column(String(24), server_default='legacy-v0', deferred=True)
     status: Mapped[str] = mapped_column(String(24), default=FactStatus.PENDING)
     evidence_id: Mapped[UUID | None] = mapped_column(Uuid)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

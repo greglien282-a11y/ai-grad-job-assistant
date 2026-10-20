@@ -27,7 +27,7 @@ from test_deepseek_mining_integration import offline_guard, test_database_only
 TABLES = ('conversation_operations', 'fact_change_sources')
 OLD = '0012_request_manifest'
 NEW = '0013_fact_maintenance'
-HEAD = '0014_append_batch'
+HEAD = '0015_fact_classification'
 UNICODE = '我制作了🧪原型图。'
 
 

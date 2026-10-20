@@ -106,6 +106,8 @@ def build_context(db, run, session):
     project = db.get(ExperienceProject, run.project_id)
     if project is None or project.session_id != run.session_id:
         raise ValueError('Context project mismatch')
+    from app.fact_classification import require_legacy
+    require_legacy(db, session.id)
     current = db.get(ConversationTurn, run.input_turn_id)
     if current is None or current.session_id != run.session_id or current.role != 'user':
         raise ValueError('Invalid context source')
