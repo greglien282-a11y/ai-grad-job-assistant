@@ -11,7 +11,7 @@ from app import facts, read_contract as dto
 from app.experience_api import Token
 from app.experience_read import Projection
 from app.maintenance_errors import ConversationError
-from app.models import ExperienceProject
+from app.models import ExperienceProject, ExperienceFact
 from app.read_permissions import check_reader
 
 router=APIRouter(prefix='/api/v2/experience',tags=['versioned experience reads (disabled)'])
@@ -24,7 +24,7 @@ def get_read_factory():
 Factory=Annotated[object,Depends(get_read_factory)]
 
 
-def read(factory,token,*,sid=None,pid=None):
+def read(factory,token,*,sid=None,pid=None,fid=None):
     try:
         with factory() as db:
             db.connection(execution_options={'isolation_level':'REPEATABLE READ','postgresql_readonly':True})
@@ -35,8 +35,12 @@ def read(factory,token,*,sid=None,pid=None):
                 if project is None:raise PermissionError('Resource unavailable')
                 sid=project.session_id
             session=facts.authorize(db,sid,token)
+            if fid is not None:
+                fact=db.get(ExperienceFact,fid)
+                if fact is None or fact.session_id!=sid:raise PermissionError('Resource unavailable')
             check_reader(db)
             projection=Projection(db,session)
+            if fid is not None:return projection.views[fid]
             return projection.summary(pid) if pid is not None else projection.export()
     except (SQLAlchemyError,ValidationError,KeyError,TypeError,ValueError):
         raise ConversationError(503,'experience_read_integrity_unavailable') from None
@@ -45,6 +49,11 @@ def read(factory,token,*,sid=None,pid=None):
 @router.get('/projects/{pid}/experience-summary',response_model=dto.SummaryV2)
 def summary(pid:UUID,token:Token,factory:Factory):
     return read(factory,token,pid=pid)
+
+
+@router.get('/sessions/{sid}/facts/{fid}',response_model=dto.FactV3)
+def fact(sid:UUID,fid:UUID,token:Token,factory:Factory):
+    return read(factory,token,sid=sid,fid=fid)
 
 
 @router.get('/sessions/{sid}/export',response_model=dto.ExportV2)

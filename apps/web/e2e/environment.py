@@ -103,6 +103,7 @@ def main():
     PRIVATE.mkdir(exist_ok=True)
     run_file = PRIVATE / (schema + '.json')
     log = None
+    typed_config = None
     try:
         with engine.begin() as db:
             db.execute(text(f'CREATE SCHEMA "{schema}"'))
@@ -121,9 +122,17 @@ def main():
         # Migration exceptions are suppressed at the outer boundary: no URL/SQL in output.
         subprocess.run([sys.executable, '-m', 'alembic', 'upgrade', 'head'], cwd=API, env=env,
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        sys.path.insert(0,str(API))
+        from typed_support import provision, cleanup
+        if not args.manual:
+            typed_config=provision(isolated,schema)
+            config.update(typed_config)
+            run_file.write_text(json.dumps(config),encoding='utf-8')
+        # Owner-only provisioning credentials never reach the HTTP/Vite children.
+        service_env={k:v for k,v in env.items() if k not in ('E2E_ADMIN_PASSWORD','PATHWISE_E2E_PROVISION_URL','TEST_DATABASE_URL')}
         log = (PRIVATE / (schema + '.services.log')).open('w', encoding='utf-8')
         api = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'server:app', '--app-dir', str(WEB / 'e2e'), '--host', '127.0.0.1', '--port', '18000', '--no-access-log'],
-                               cwd=API, env=env, stdout=log, stderr=log)
+                               cwd=API, env=service_env, stdout=log, stderr=log)
         wait_ready(config['api_origin'] + '/api/v1/health', api, schema)
         # Verify the actual factory and database before allowing a browser to open.
         subprocess.run([sys.executable, str(WEB / 'e2e/probe.py'), 'preflight'], env=env,
@@ -131,7 +140,7 @@ def main():
         node = os.environ.get('PATHWISE_E2E_NODE')
         if not node:
             raise ValueError('Use the Node E2E launcher')
-        web_env = {key: val for key, val in env.items() if key not in ('DATABASE_URL', 'PATHWISE_E2E_DATABASE_URL', 'TEST_DATABASE_URL')}
+        web_env = {key: val for key, val in service_env.items() if key not in ('DATABASE_URL', 'PATHWISE_E2E_DATABASE_URL', 'TEST_DATABASE_URL')}
         web_env['VITE_API_BASE_URL'] = ''
         vite = subprocess.Popen([node, str(WEB / 'node_modules/vite/bin/vite.js'), '--mode', 'e2e'], cwd=WEB, env=web_env, stdout=log, stderr=log)
         wait_ready(config['web_origin'], vite)
@@ -157,6 +166,7 @@ def main():
         stop(api)
         if log:
             log.close()
+        if typed_config:cleanup(isolated,schema,typed_config)
         run_file.unlink(missing_ok=True)
         if created:
             # Never accept cleanup targets from a config file or user input.

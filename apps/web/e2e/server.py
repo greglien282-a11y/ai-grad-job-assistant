@@ -10,6 +10,10 @@ from app.main import app as real_app
 from fastapi import Request
 from app.mining_api import get_provider
 from app.mining_provider import ScriptedProvider, MiningOutput
+from app.experience_read_api import get_read_factory
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 config = json.loads(Path(os.environ['PATHWISE_E2E_RUN_FILE']).read_text(encoding='utf-8'))
 url = make_url(os.environ['DATABASE_URL'])
@@ -50,6 +54,17 @@ def isolated_provider(request: Request):
 
 
 real_app.dependency_overrides[get_provider] = isolated_provider
+
+# Only this isolated ASGI wrapper injects the run-owned SELECT-only LOGIN.
+if 'reader_url' in config:
+    reader_url=make_url(config['reader_url'])
+    if (reader_url.host,reader_url.port,reader_url.database,reader_url.query)!=(url.host,url.port,url.database,url.query):
+        raise RuntimeError('Isolated reader target mismatch')
+    reader=sessionmaker(create_engine(reader_url,poolclass=NullPool,hide_parameters=True),expire_on_commit=False)
+    def isolated_reader(request:Request):
+        if request.headers.get('x-pathwise-e2e-read-disabled')=='1':return get_read_factory()
+        return reader
+    real_app.dependency_overrides[get_read_factory]=isolated_reader
 
 
 class IsolatedApp:
