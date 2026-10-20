@@ -68,7 +68,7 @@ def corrupt(s,table,sql,params):
         for name in names:db.execute(text(f'ALTER TABLE {table} ENABLE TRIGGER "{name}"'))
 
 
-def synthetic(s,b,values=VALID[3],status='user_confirmed'):
+def synthetic(s,b,values=VALID[3],status='user_confirmed',*,statement=None,precise=True):
     """Owner arranges a future state, not a typed writer/API.
 
     evidence_supported requires an evidence FK cycle. For this fixture only the
@@ -83,11 +83,11 @@ def synthetic(s,b,values=VALID[3],status='user_confirmed'):
         version=1 if status=='pending' else 3 if status in ('rejected','evidence_supported') else 2
         fid=uuid4()
         db.execute(ExperienceFact.__table__.insert().values(id=fid,session_id=b.sid,project_id=b.pid,
-            statement=turn.content,version=version,status='user_confirmed' if status=='evidence_supported' else status,
+            statement=statement or turn.content,version=version,status='user_confirmed' if status=='evidence_supported' else status,
             **dict(zip(FIELDS,values))))
         f=db.get(ExperienceFact,fid)
-        db.add(FactSource(fact_id=f.id,session_id=b.sid,turn_id=turn.id,citations=[dict(
-            turn_id=str(turn.id),start=0,end=len(turn.content),quote=turn.content)]));db.flush()
+        original_quotes=[dict(turn_id=str(turn.id),start=0,end=len(turn.content),quote=turn.content)] if precise else []
+        db.add(FactSource(fact_id=f.id,session_id=b.sid,turn_id=turn.id,citations=original_quotes if precise else None));db.flush()
         if status=='evidence_supported':
             evidence=FactEvidence(fact_id=f.id,session_id=b.sid,material_reference='synthetic',basis='synthetic')
             db.add(evidence);db.flush()
@@ -101,7 +101,7 @@ def synthetic(s,b,values=VALID[3],status='user_confirmed'):
             ai_run_id=None,evidence_id=str(f.evidence_id) if f.evidence_id else None,
             original_source_turn_ids=[str(turn.id)],source_turn_ids=[str(turn.id)],
             source_kind='conversation_turns',source_change_id=None,
-            citations=[dict(turn_id=str(turn.id),start=0,end=len(turn.content),quote=turn.content)])
+            citations=original_quotes)
         prior=None
         for v in range(1,version+1):
             after={**current,'version':v,'status':'pending' if v==1 else 'user_confirmed' if v<version else status,
@@ -401,4 +401,18 @@ def test_C05_v1_clarification_parent_and_resolution_keep_the_original_input_sour
     child=next(o for o in operations if o['kind']=='resolution')
     assert child['parent_operation_id']==root['id'] and child['input_turn_id']==root['input_turn_id']
     assert all(s['turn_id']==root['input_turn_id'] for s in data['fact_change_sources'])
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('precise',[False,True])
+def test_C06_typed_source_must_support_the_initial_statement_not_just_have_valid_coordinates(reader,precise):
+    s=reader;b=seed(s)
+    # Existing 0015 accepts this internally consistent synthetic history: the
+    # source and its saved quote agree, but the fact's initial text is different.
+    # The new GET must refuse, not present that quote as current statement support.
+    synthetic(s,b,statement='我制作了28张图。',precise=precise)
+    before=stored(s.admin)
+    responses=[request(s,b) for request in (summary,export)]
+    assert [r.status_code for r in responses]==[503,503]
+    for response in responses:error(response,503,'experience_read_integrity_unavailable')
     assert stored(s.admin)==before

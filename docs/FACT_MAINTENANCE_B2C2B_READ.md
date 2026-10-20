@@ -47,6 +47,9 @@ current_statement_citations、classification_citations、classification_basis_st
 当前正文来源为最新 edited（若有）对应的 statement FCS，否则是 created 的原始来源。
 无对话引用的旧手工编辑如实返回空来源，不能恢复建档引用。记忆/确认不换正文来源。
 没有精确引用的合法旧 FactSource 可保留其 Turn ID，不能据此编造 quote/区间。
+typed 原始来源的精确 quote 必须与 created 初始正文逐字相等，不能仅证明坐标有效；
+没有精确引用的 typed 合成旧形状仅接受整 Turn 原话与初始正文完全相等，不猜区间。
+该检查不拿后来编辑的正文对比旧建档引用，也不改变 legacy 原合同。
 
 0015 没有持久分类依据表或 classified 写入合同，因此 classification_citations 固定为空，
 basis_status 对 legacy 为 legacy_unclassified，对 synthetic typed 为 not_recorded。

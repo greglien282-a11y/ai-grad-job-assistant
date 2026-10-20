@@ -188,6 +188,13 @@ class Projection:
             initial_expected=dict(version=1,status='pending',memory_state='unspecified',evidence_id=None,
                 source_kind='conversation_turns',source_change_id=None,source_turn_ids=original_ids)
             for key,value in initial_expected.items():require(key in initial.after and json_equal(initial.after[key],value))
+            # Coordinate validity alone does not bind a quote to this fact.
+            # Do not infer offsets for source links without a precise citation:
+            # that supported subset must match the complete original Turn.
+            for source in sources:
+                if source.citations:
+                    require(all(q['quote']==initial.after['statement'] for q in source.citations))
+                else:require(self.turn_map[source.turn_id].content==initial.after['statement'])
         edits=[c for c in history if c.action=='edited']
         edit=max(edits,key=lambda c:(c.after['version'],c.created_at,str(c.id))) if edits else None
         citations=[];turn_ids=[]
