@@ -1,0 +1,7 @@
+.typed-read { max-width: 960px; margin: auto; padding: 24px; color: #172b3a; overflow-wrap: anywhere; }
+.typed-read label { display: block; margin: 12px 0; }
+.typed-read input { display: block; width: min(100%, 600px); box-sizing: border-box; padding: 10px; }
+.typed-read button { margin: 8px 0; padding: 10px 16px; }
+.typed-read article, .typed-read blockquote { border-left: 3px solid #61798a; margin: 16px 0; padding: 8px 16px; overflow-wrap: anywhere; }
+.typed-read .typed-original { white-space: pre-wrap; }
+.typed-read [role=alert] { color: #8b2525; }
