@@ -34,10 +34,10 @@ def has_columns(db):
         AND conname='ck_fact_classification' AND convalidated)""")) and db.scalar(text("""SELECT count(*) FROM pg_trigger
         WHERE tgrelid IN ('experience_facts'::regclass,'fact_changes'::regclass,
           'fact_sources'::regclass,'conversation_operations'::regclass)
-          AND tgname LIKE 'classification_%' AND tgenabled='O'""")) == 7:
+          AND tgname LIKE 'classification_%' AND tgenabled='O'""")) == 8:
         return True
     # Genuine pre-feature schemas only; never default missing current fields.
-    if not any(line.startswith('pathwise-classification-schema-') for line in marker.splitlines()) and not columns and functions == 0 and db.scalar(text("SELECT to_regclass('mining_request_manifests') IS NOT NULL")):
+    if not any(line.startswith('pathwise-classification-schema-') for line in marker.splitlines()) and not columns and functions == 0 and db.scalar(text("SELECT to_regclass('mining_paid_bindings') IS NOT NULL")):
         return False
     raise ConversationError(503, 'fact_classification_schema_unavailable')
 

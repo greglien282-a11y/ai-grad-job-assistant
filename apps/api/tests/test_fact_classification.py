@@ -250,6 +250,19 @@ def test_C03_database_rejects_legacy_co_even_without_python_gate(append_service)
     assert stored(s.admin)==before
 
 
+@pytest.mark.parametrize('attack',['move_in','citations'])
+def test_C03_source_deferred_check_independently_rejects_origin_drift(append_service,attack):
+    s=append_service;b=seed(s);t=typed(s,b);before=stored(s.admin)
+    # Test-owned fault injection simulates a source write passing the earlier
+    # immediate check. COMMIT must independently prove the immutable origin.
+    with pytest.raises(IntegrityError,match='classification_original_source_invalid'),s.admin.begin() as db:
+        db.execute(text('ALTER TABLE fact_sources DISABLE TRIGGER classification_immutable'))
+        if attack=='move_in':
+            db.execute(text('UPDATE fact_sources SET fact_id=:new WHERE fact_id=:old'),{'new':t.fid,'old':b.fid})
+        else:db.execute(text("UPDATE fact_sources SET citations='[{}]'::jsonb WHERE fact_id=:id"),{'id':t.fid})
+    assert stored(s.admin)==before
+
+
 def test_M01_C03_upgrade_revokes_named_default_execute_grants(append_service,migrated_connection):
     s=append_service;conn,cfg=migrated_connection
     command.downgrade(cfg,OLD);conn.commit()

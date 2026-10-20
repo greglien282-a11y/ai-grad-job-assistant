@@ -70,6 +70,8 @@ def upgrade():
             AND (candidate.classification_contract<>'legacy-v0' OR {typed.replace('f.id', 'candidate.id')})) THEN
             RAISE EXCEPTION 'classification_legacy_operation_refused' USING ERRCODE='23514'; END IF;
           RETURN NULL;
+        ELSIF TG_TABLE_NAME='fact_sources' THEN
+          IF TG_OP='DELETE' THEN fid:=OLD.fact_id; ELSE fid:=NEW.fact_id; END IF;
         ELSIF TG_TABLE_NAME='fact_changes' THEN
           PERFORM {q}.classification_value(NEW.before);
           PERFORM {q}.classification_value(NEW.after);
@@ -81,7 +83,13 @@ def upgrade():
           IF (SELECT count(*) FROM {q}.fact_changes WHERE fact_id=f.id AND action='created')<>1
             OR NOT EXISTS(SELECT 1 FROM {q}.fact_changes c WHERE c.fact_id=f.id AND c.action='created'
               AND c.after->'original_source_turn_ids'=(SELECT jsonb_agg(turn_id::text ORDER BY turn_id::text)
-                FROM {q}.fact_sources WHERE fact_id=f.id)) THEN
+                FROM {q}.fact_sources WHERE fact_id=f.id)
+              AND jsonb_typeof(c.after->'citations')='array'
+              AND coalesce((SELECT jsonb_agg(x.value ORDER BY x.value)
+                FROM jsonb_array_elements(c.after->'citations') x),'[]'::jsonb)
+                =coalesce((SELECT jsonb_agg(x.value ORDER BY x.value) FROM {q}.fact_sources fs
+                  CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(fs.citations)='array'
+                    THEN fs.citations ELSE '[]'::jsonb END) x WHERE fs.fact_id=f.id),'[]'::jsonb)) THEN
             RAISE EXCEPTION 'classification_original_source_invalid' USING ERRCODE='23514'; END IF;
           IF f.classification_contract='legacy-v0' OR NOT EXISTS(
             SELECT 1 FROM {q}.fact_changes c WHERE c.fact_id=f.id AND c.session_id=f.session_id
@@ -135,6 +143,7 @@ def upgrade():
         IF TG_OP='DELETE' THEN RETURN OLD; END IF; RETURN NEW;
       END $$""")
     for table, events in (('experience_facts','INSERT OR UPDATE'), ('fact_changes','INSERT OR UPDATE'),
+                          ('fact_sources','INSERT OR UPDATE OR DELETE'),
                           ('conversation_operations','INSERT')):
         op.execute(f'CREATE CONSTRAINT TRIGGER classification_consistent AFTER {events} ON {q}.{table} DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {q}.classification_current()')
     for table, events in (('experience_facts','INSERT OR UPDATE OR DELETE'), ('fact_changes','INSERT OR UPDATE OR DELETE'),
@@ -161,7 +170,7 @@ def downgrade():
     if op.get_bind().scalar(sa.text(f"""SELECT EXISTS(SELECT 1 FROM {q}.experience_facts f
       WHERE f.classification_contract<>'legacy-v0' OR {TYPED_HISTORY.format(q=q)})""")):
         raise RuntimeError('classification_nonempty_downgrade_refused')
-    for table in ('experience_facts','fact_changes','conversation_operations'):
+    for table in ('experience_facts','fact_changes','fact_sources','conversation_operations'):
         op.execute(f'DROP TRIGGER classification_consistent ON {q}.{table}')
     for table in ('experience_facts','fact_changes','fact_sources'):
         op.execute(f'DROP TRIGGER classification_immutable ON {q}.{table}')

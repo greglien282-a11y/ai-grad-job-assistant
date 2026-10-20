@@ -17,7 +17,8 @@
   纯 legacy-v0 快照保持原形状；旧 JSON 缺全部三个键才按 legacy 解释。
   有任一键时必须完整、类型正确且组合合法，不能把 null/部分字段当 legacy。
 - 新延迟触发器验证非 legacy 当前版本、正文、状态、材料指针与明确分类快照一致，
-  并要求唯一 created 历史及原始来源 ID 对应。旧合法 JSON 不追溯重写或全表重新裁定。
+  并要求唯一 created 历史及原始来源 ID/citations 对应。来源变更也有提交时复检，
+  不只依赖较早的即时检查。旧合法 JSON 不追溯重写或全表重新裁定。
 - 本阶段没有 classify/退级命令。数据库拒绝已有分类列变化和 typed 记录的旧式
   修改；typed/typed 历史的来源和历史不能单独擦除，整会话删除继续可用。
   受限运行身份不能凭既有表 INSERT 权限创建 typed 行。只有可信表 owner 合成夹具
@@ -43,11 +44,11 @@
 - 旧 React Zod 会忽略 extra 字段，无法证明类型语义完整。因此不向它发送 typed
   FactView，不修改前端来猜测协议。现有 legacy React/E2E 验收保持原断言。
 
-Schema 准入使用 catalog 中的版本标记、完整列集合、有效 CHECK、三个函数及七个
+Schema 准入使用 catalog 中的版本标记、完整列集合、有效 CHECK、三个函数及八个
 启用触发器核验。标记是表 comment 中的独立行
 `pathwise-classification-schema-v1`，保留已有 comment；安全 downgrade 去掉该行。
 这样不需要扩大 B2-b 身份的 alembic_version SELECT 权限。与 §10 一致，只有
-无新标记/列/函数、且具备原 0012+ manifest 基础的真正旧 Schema 有明确 legacy 分支；
+无新标记/列/函数、且具备原 0011+ inert metadata 基础的真正旧 Schema 有明确 legacy 分支；
 部分升级、未知新标记、缺列/约束/触发器、缺 SELECT 均拒绝。不能捕获任意 SQL 错误
 后默认 legacy；迁移版本拓扑另外由 Alembic 和隔离迁移测试核验。
 
