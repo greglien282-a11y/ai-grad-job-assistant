@@ -1,5 +1,6 @@
 """C2a M/C matrix. Synthetic PostgreSQL schemas and real restricted LOGINs."""
 from types import SimpleNamespace
+from datetime import timedelta
 from uuid import uuid4
 import secrets
 
@@ -14,7 +15,7 @@ from app import facts
 from app.fact_classification import FIELDS, HEAD, LEGACY, require_legacy
 from app.maintenance_errors import ConversationError
 from app.maintenance_permissions import check_append_runtime
-from app.models import ExperienceFact, ExperienceSession, FactChange, FactSource
+from app.models import ExperienceFact, ExperienceSession, FactChange, FactSource, MiningRun, utcnow
 from app.mining_api import get_mining_factory, get_provider
 from app.mining_provider import ScriptedProvider
 from app.main import app
@@ -52,19 +53,155 @@ def legacy_mining_runtime(append_service):
             db.execute(text(f'DROP OWNED BY "{role}" RESTRICT'));db.execute(text(f'DROP ROLE "{role}"'))
 
 
-def typed(s, b, values=VALID[3], *, status='user_confirmed', mutate_snapshot=None):
+def typed(s, b, values=VALID[3], *, status='user_confirmed', mutate_snapshot=None, mutate_history=None,
+          fact_values=None, with_run=False):
     """Trusted owner-only fixture INSERT. Never change an existing classification."""
     with s.admin.begin() as db:
         turn = facts.add_turn(db, b.sid, b.token, '合成分类资料原话。')
-        f = ExperienceFact(session_id=b.sid, project_id=b.pid, statement=turn.content,
-                           status=status, **{k: (null() if v is None else v) for k,v in zip(FIELDS, values)})
-        db.add(f); db.flush()
+        attrs=dict(session_id=b.sid, project_id=b.pid, statement=turn.content, status=status,
+                   **{k: (null() if v is None else v) for k,v in zip(FIELDS, values)})
+        if with_run:
+            run=MiningRun(session_id=b.sid,project_id=b.pid,input_turn_id=turn.id,
+                base_revision=1,reserved_revision=1,state='completed',lease_until=utcnow()+timedelta(minutes=1))
+            db.add(run);db.flush();attrs.update(origin='ai_extracted',ai_run_id=run.id)
+        if status!='pending':attrs['version']=2
+        if fact_values or status!='pending':
+            # Raw initial INSERT, not an UPDATE blocked by classification_guard;
+            # bypass only the ORM's version=1 insertion default, never SQL guards.
+            fid=uuid4()
+            db.execute(ExperienceFact.__table__.insert().values(id=fid,**{**attrs,**(fact_values or {})}))
+            f=db.get(ExperienceFact,fid)
+        else:
+            f=ExperienceFact(**attrs);db.add(f);db.flush()
         db.add(FactSource(session_id=b.sid, fact_id=f.id, turn_id=turn.id)); db.flush()
         after = facts.snapshot(db, f)
+        initial={**after,'version':1,'status':'pending','memory_state':'unspecified','evidence_id':None}
         if mutate_snapshot:
             mutate_snapshot(after)
-        db.add(FactChange(fact_id=f.id, session_id=b.sid, action='created', actor='system', after=after))
+        change=FactChange(fact_id=f.id, session_id=b.sid, action='created', actor='system',
+                          after=initial if status!='pending' else after)
+        db.add(change)
+        if status!='pending':
+            db.add(FactChange(fact_id=f.id,session_id=b.sid,action='status_changed',actor='user',
+                              before=initial,after=after))
+        if mutate_history:
+            mutate_history(db,f,change)
         return SimpleNamespace(fid=f.id, tid=turn.id)
+
+
+@pytest.mark.parametrize('field,value', [
+    ('memory_state','certain'), ('memory_state',None), ('memory_state',True),
+    ('origin','ai_extracted'), ('origin',None), ('origin',{}),
+    ('ai_run_id',str(uuid4())), ('ai_run_id','null'), ('ai_run_id',False),
+    ('ai_run_id',{}), ('ai_run_id',[]), ('ai_run_id',0),
+])
+def test_review_typed_current_trust_metadata_rejects_mismatch(append_service,field,value):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    with pytest.raises(IntegrityError):
+        typed(s,b,status='pending',mutate_snapshot=lambda a:a.update({field:value}))
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('fault', ['version','before','actor','status','memory',
+                                 'evidence','source_kind','source_turn_ids','source_change_id'])
+def test_review_typed_created_semantics_rejects_malformed_history(append_service,fault):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    def corrupt(db,f,c):
+        if fault=='before':c.before={**c.after}
+        elif fault=='actor':c.actor='user'
+        elif fault not in ('version','status','memory'):
+            field,value={'status':('status','user_confirmed'), 'memory':('memory_state','certain'),
+                'evidence':('evidence_id',str(uuid4())), 'source_kind':('source_kind','user_edit'),
+                'source_turn_ids':('source_turn_ids',[]), 'source_change_id':('source_change_id',str(uuid4()))}[fault]
+            c.after={**c.after,field:value}
+    attrs={'version':{'version':2},'status':{'status':'user_confirmed'},
+           'memory':{'memory_state':'certain'}}.get(fault)
+    with pytest.raises(IntegrityError):typed(s,b,status='pending',mutate_history=corrupt,fact_values=attrs)
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('field,value', [('statement','另一条正文'),('status','rejected'),
+    ('memory_state','certain'),('origin','ai_extracted'),('ai_run_id',str(uuid4())),
+    ('evidence_id',str(uuid4())),('progress_stage','in_progress')])
+def test_review_all_same_version_snapshots_must_match(append_service,field,value):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    def extra(db,f,c):
+        db.add(FactChange(fact_id=f.id,session_id=f.session_id,action='memory_changed',actor='user',
+            before=dict(c.after),after={**c.after,field:value}))
+    with pytest.raises(IntegrityError):typed(s,b,status='pending',mutate_history=extra)
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('field', ['memory_state','origin','ai_run_id'])
+def test_review_current_metadata_keys_cannot_be_missing(append_service,field):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    # Valid created/v1, separate confirmed/v2: failure must concern current state.
+    with pytest.raises(IntegrityError,match='classification_current_mismatch'):
+        typed(s,b,mutate_snapshot=lambda a:a.pop(field))
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('value', [None,'null',False,{},[],0,'00000000-0000-0000-0000-000000000001'])
+def test_review_nonnull_run_current_snapshot_requires_exact_uuid_string(append_service,value):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    with pytest.raises(IntegrityError,match='classification_current_mismatch'):
+        typed(s,b,with_run=True,mutate_snapshot=lambda a:a.update(ai_run_id=value))
+    assert stored(s.admin)==before
+    with s.admin() as db:assert db.scalar(text('SELECT count(*) FROM ai_mining_runs'))==0
+
+
+@pytest.mark.parametrize('with_run', [False,True])
+@pytest.mark.parametrize('before_sql_null', [False,True])
+def test_review_valid_versioned_memory_and_origin_and_identical_snapshots(append_service,with_run,before_sql_null):
+    s=append_service;b=seed(s)
+    def arrange(db,f,c):
+        c.before=null() if before_sql_null else None
+        # No new per-version uniqueness rule: identical snapshots are safe.
+        after=facts.snapshot(db,f)
+        db.add(FactChange(fact_id=f.id,session_id=f.session_id,action='memory_changed',
+                          actor='user',before={**after,'memory_state':'unspecified'},after=after))
+    t=typed(s,b,with_run=with_run,fact_values={'memory_state':'certain'},mutate_history=arrange)
+    with s.admin() as db:
+        changes=db.scalars(select(FactChange).where(FactChange.fact_id==t.fid)).all()
+        initial=next(c for c in changes if c.action=='created')
+        assert initial.after['version']==1 and initial.after['status']=='pending'
+        assert initial.after['memory_state']=='unspecified' and initial.before is None
+        f=db.get(ExperienceFact,t.fid)
+        assert f.version==2 and f.memory_state=='certain'
+        current=[c.after for c in changes if c.after['version']==2]
+        assert len(current)==2 and current[0]==current[1]
+        assert all(a['ai_run_id']==(str(f.ai_run_id) if with_run else None) for a in [initial.after,*current])
+
+
+@pytest.mark.parametrize('fault,reason', [('duplicate_created','classification_original_source_invalid'),
+    ('actor','ck_change_actor'),('run_fk','fk_fact_ai_run')])
+def test_review_existing_constraints_already_block_invalid_records(append_service,fault,reason):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    def corrupt(db,f,c):
+        if fault=='actor':c.actor='unknown'
+        if fault=='duplicate_created':
+            db.add(FactChange(fact_id=f.id,session_id=f.session_id,action='created',actor='system',after=dict(c.after)))
+    with pytest.raises(IntegrityError,match=reason):
+        typed(s,b,status='pending',mutate_history=corrupt,
+              fact_values={'ai_run_id':uuid4()} if fault=='run_fk' else None)
+    assert stored(s.admin)==before
+
+
+@pytest.mark.parametrize('field', ['citations','original_source_turn_ids','source_turn_ids',
+                                 'source_kind','source_change_id','version_string','version_numeric'])
+def test_review_exact_current_provenance_and_version_cohorts(append_service,field):
+    s=append_service;b=seed(s);before=stored(s.admin)
+    def extra(db,f,c):
+        after=facts.snapshot(db,f)
+        if field=='version_string':after['version']=str(f.version)
+        elif field=='version_numeric':after.update(version=float(f.version),statement='同版本错误正文')
+        elif isinstance(after[field],list):after[field]=[*after[field],str(uuid4())]
+        else:after[field]='错误来源'
+        db.add(FactChange(fact_id=f.id,session_id=f.session_id,action='memory_changed',
+                          actor='user',before=facts.snapshot(db,f),after=after))
+    with pytest.raises(IntegrityError,match='classification_current_mismatch'):
+        typed(s,b,mutate_history=extra)
+    assert stored(s.admin)==before
 
 
 def bind_mining(s, *, restricted=False):

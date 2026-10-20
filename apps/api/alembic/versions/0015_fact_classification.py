@@ -64,6 +64,7 @@ def upgrade():
     op.execute(f"""CREATE FUNCTION {q}.classification_current() RETURNS trigger
       LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
       DECLARE f {q}.experience_facts%ROWTYPE; fid uuid;
+        initial {q}.fact_changes%ROWTYPE; edit {q}.fact_changes%ROWTYPE; expected jsonb;
       BEGIN
         IF TG_TABLE_NAME='conversation_operations' THEN
           IF EXISTS(SELECT 1 FROM {q}.experience_facts candidate WHERE candidate.session_id=NEW.session_id
@@ -91,13 +92,42 @@ def upgrade():
                   CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(fs.citations)='array'
                     THEN fs.citations ELSE '[]'::jsonb END) x WHERE fs.fact_id=f.id),'[]'::jsonb)) THEN
             RAISE EXCEPTION 'classification_original_source_invalid' USING ERRCODE='23514'; END IF;
+          SELECT * INTO initial FROM {q}.fact_changes WHERE fact_id=f.id AND action='created';
+          -- Creation is pending/v1 with original provenance, not a later trust
+          -- state relabelled as creation. JSON equality preserves NULL/type
+          -- distinctions; missing keys must not pass SQL three-valued logic.
+          IF initial.actor<>'system' OR (initial.before IS NOT NULL AND initial.before<>'null'::jsonb)
+            OR NOT coalesce(initial.after @> jsonb_build_object(
+              'version',1,'status','pending','memory_state','unspecified',
+              'origin',f.origin,'ai_run_id',f.ai_run_id,'evidence_id',NULL,
+              'source_kind','conversation_turns','source_change_id',NULL,
+              'source_turn_ids',initial.after->'original_source_turn_ids'),false)
+            OR initial.after->'source_turn_ids' IS DISTINCT FROM initial.after->'original_source_turn_ids' THEN
+            RAISE EXCEPTION 'classification_created_invalid' USING ERRCODE='23514'; END IF;
+          SELECT * INTO edit FROM {q}.fact_changes WHERE fact_id=f.id AND action='edited'
+            ORDER BY (after->>'version')::integer DESC NULLS LAST,created_at DESC,id DESC LIMIT 1;
+          -- Trust and statement fields may change across versions. Only the
+          -- current version is compared to current state; creation anchors the
+          -- immutable origin/run and original sources independently.
+          expected:=jsonb_build_object('version',f.version,'statement',f.statement,'status',f.status,
+            'memory_state',f.memory_state,'origin',f.origin,'ai_run_id',f.ai_run_id,
+            'evidence_id',f.evidence_id,'fact_kind',f.fact_kind,'progress_stage',f.progress_stage,
+            'classification_contract',f.classification_contract,
+            'original_source_turn_ids',initial.after->'original_source_turn_ids',
+            'source_kind',CASE WHEN edit.id IS NULL THEN 'conversation_turns' ELSE 'user_edit' END,
+            'source_turn_ids',CASE WHEN edit.id IS NULL THEN initial.after->'original_source_turn_ids' ELSE '[]'::jsonb END,
+            'source_change_id',edit.id,
+            'citations',CASE WHEN edit.id IS NULL THEN initial.after->'citations' ELSE '[]'::jsonb END);
           IF f.classification_contract='legacy-v0' OR NOT EXISTS(
             SELECT 1 FROM {q}.fact_changes c WHERE c.fact_id=f.id AND c.session_id=f.session_id
               AND jsonb_typeof(c.after->'version')='number' AND c.after->>'version'=f.version::text
-              AND c.after->>'statement'=f.statement AND c.after->>'status'=f.status
-              AND c.after->'evidence_id'=coalesce(to_jsonb(f.evidence_id),'null'::jsonb)
-              AND c.after ?& ARRAY['fact_kind','progress_stage','classification_contract']
-              AND {q}.classification_value(c.after)=jsonb_build_array(f.fact_kind,f.progress_stage,f.classification_contract)) THEN
+              AND NOT EXISTS(SELECT 1 FROM jsonb_each(expected) e
+                WHERE c.after->e.key IS DISTINCT FROM e.value))
+            OR EXISTS(SELECT 1 FROM {q}.fact_changes c WHERE c.fact_id=f.id
+              AND (c.after->'version'=to_jsonb(f.version) OR c.after->>'version'=f.version::text) AND
+              (jsonb_typeof(c.after->'version') IS DISTINCT FROM 'number'
+               OR EXISTS(SELECT 1 FROM jsonb_each(expected) e
+                 WHERE c.after->e.key IS DISTINCT FROM e.value))) THEN
             RAISE EXCEPTION 'classification_current_mismatch' USING ERRCODE='23514'; END IF;
         END IF;
         RETURN NULL;

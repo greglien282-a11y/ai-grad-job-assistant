@@ -94,3 +94,31 @@ C01 中自动退级、C05 完整 typed 新投影/前端、P01–P04/GQ08 不在�
 R03 全入口语义防复活、新读合同/前端兼容、真实 Provider 上下文、生产 owner/ACL/
 运行角色部署、工厂启用及 D8 生产授权全部仍为 BLOCK。
 原 B2-c1 rejected 临时阻断和全部已批准边界继续保留。
+
+## PR #38 第一轮独立审查：typed 快照一致性
+
+在审核 HEAD `655932914815a2399fd52e77d775d1b9bf0291fe` 的原 0015 上，真实隔离
+PostgreSQL 负例先复现 27 个错误 COMMIT，再复现 10 个缺键/非空 run UUID 类型
+错误 COMMIT。当前 evidence_id 不一致原已被 `classification_current()` 拒绝；
+重复 created 原已被该函数的计数检查拒绝，非法 actor 和不存在的 run 分别由
+`ck_change_actor`、`fk_fact_ai_run` 拒绝。保留这些检查，不重复建立规则。
+
+0013 的 `maintenance_original_fact()` 仅处理已有 FCS 的事实；
+`maintenance_current_fact()` 的同版本复检也只处理 FCS 关联的记录。
+`uq_change_fact_session` 唯一化的是 (id, fact_id, session_id)，并非 (fact_id, version)。
+因此不能用它们证明无 FCS 的 synthetic typed 历史一致，也不新增每版本唯一限制。
+
+仅加强 0015 typed 分支：唯一 created 必须是 system、空 before、pending/v1、
+unspecified memory、无 evidence、原始 conversation_turns 来源；origin 和 ai_run_id
+锚定建档元数据。当前快照按 `facts.snapshot()` 的所有字段逐键、精确 JSON 比较，
+包括记忆、来源和 run UUID，区别缺键、JSON null、字符串及其他 JSON 类型。
+当前版本的每条快照都必须匹配，不能以一条正确记录遮蔽另一条错误记录；内容一致的
+同版本记录仍允许。数字版本与同值字符串版本也进入复检范围。
+
+statement/status/memory_state/evidence 只与当前版本比对，不要求旧版本等同当前状态。
+created 保留原始来源；当前来源按最新 edited 选择，确认/记忆变化不恢复原引用。
+合成夹具改用 pending/v1 → confirmed/v2 历史，并验证记忆合法跨版本变化、真实
+非空合成 run UUID、SQL NULL/JSON null 的空 before。没有新增运行 writer，
+未修改 0001–0014、旧 JSON、API、角色授权、工厂或评测合同。
+
+本轮命令、最终数量和 CI 结果记入同一 Draft PR；上述生产 BLOCK 全部保留。
