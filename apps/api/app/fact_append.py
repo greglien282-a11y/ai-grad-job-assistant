@@ -77,6 +77,7 @@ def apply(db, sid, token, key, body):
     if key.expires_at > utcnow() + idem.WINDOW:
         raise idem.IdempotencyError(422, 'idempotency_clock_skew')
     session = facts.authorize(db, sid, token, lock=True)
+    facts.require_legacy(db, sid)
     maintenance.gate(db, session)
     project = db.scalar(select(ExperienceProject).where(ExperienceProject.session_id == sid))
     if project is None:

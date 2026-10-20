@@ -87,6 +87,7 @@ def read_run(sid: UUID, rid: UUID, token: Token, factory: Factory):
 def stop(sid: UUID, body: ContextAction, token: Token, factory: Factory):
     with factory() as db, db.begin():
         session = facts.authorize(db, sid, token, write=True)
+        facts.require_legacy(db, sid)
         if session.context_revision != body.base_revision:
             raise mining.MiningError(409, 'context_conflict')
         session.mining_status = 'stopped'; db.flush(); db.refresh(session)
@@ -99,6 +100,7 @@ def question(sid: UUID, qid: UUID, body: QuestionAction, token: Token, factory: 
         q = db.get(MiningQuestion, qid)
         if q is None or q.session_id != sid:
             raise PermissionError('Resource unavailable')
+        facts.require_legacy(db, sid)
         if session.context_revision != body.base_revision or q.version != body.expected_version:
             raise mining.MiningError(409, 'context_conflict')
         if q.state == 'deleted':
@@ -115,6 +117,7 @@ def summary(pid: UUID, token: Token, factory: Factory):
         project = db.get(ExperienceProject, pid)
         if project is None: raise PermissionError('Resource unavailable')
         session = facts.authorize(db, project.session_id, token, lock=True)
+        facts.require_legacy(db, session.id, code='summary_contract_upgrade_required', project_id=pid)
         rows = db.scalars(select(ExperienceFact).where(ExperienceFact.project_id == pid).order_by(ExperienceFact.created_at, ExperienceFact.id)).all()
         confirmed = [f for f in rows if f.status in ('user_confirmed','evidence_supported')]
         return dict(project_id=pid, context_revision=session.context_revision,

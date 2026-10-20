@@ -65,7 +65,7 @@ def service(api):
             db.execute(text(f'GRANT UPDATE(statement,status,evidence_id,updated_at,version) ON {q}.experience_facts TO {r}'))
             db.execute(text(f'GRANT UPDATE(id) ON {q}.conversation_operations TO {r}'))
             db.execute(text(f'GRANT UPDATE ON {q}.conversation_operations TO {a}'))
-            functions = db.scalars(text("SELECT oid::regprocedure::text FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND proname LIKE 'maintenance_%'")).all()
+            functions = db.scalars(text("SELECT oid::regprocedure::text FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND (proname LIKE 'maintenance_%' OR proname LIKE 'classification_%')")).all()
             for function in functions:
                 db.execute(text(f'ALTER FUNCTION {function} OWNER TO {a}'))
         url = admin.kw['bind'].url.set(username=role, password=password)
@@ -81,7 +81,9 @@ def service(api):
             engine.dispose()
         with admin.begin() as db:
             for function in functions:
-                db.execute(text(f'ALTER FUNCTION {function} OWNER TO {quote(admin_role)}'))
+                # Migration roundtrip tests may intentionally finish at 0013/14.
+                if db.scalar(text('SELECT to_regprocedure(:fn)'), {'fn': function}) is not None:
+                    db.execute(text(f'ALTER FUNCTION {function} OWNER TO {quote(admin_role)}'))
             for name in (role, auditor):
                 # Only these random roles were created by this fixture. They own
                 # no objects after function restoration; RESTRICT, never CASCADE.

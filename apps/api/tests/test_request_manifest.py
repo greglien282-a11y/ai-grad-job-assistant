@@ -43,7 +43,7 @@ from offline_manifest_store import install,put,recover
 
 OLD='0011_mining_paid_metadata'
 NEW='0012_request_manifest'
-HEAD='0014_append_batch'
+HEAD='0015_fact_classification'
 TABLES=('mining_request_manifests','mining_request_tombstones')
 
 

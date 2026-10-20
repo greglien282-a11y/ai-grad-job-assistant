@@ -21,6 +21,8 @@ def check_append_runtime(db):
 
 
 def _check_runtime(db, *, append):
+    from app.fact_classification import has_columns
+    typed_schema = has_columns(db)
     role = db.execute(text('''SELECT current_user,session_user,rolsuper,rolcreatedb,
         rolcreaterole,rolreplication,rolbypassrls,rolinherit
         FROM pg_roles WHERE rolname=current_user''')).one()
@@ -46,9 +48,10 @@ def _check_runtime(db, *, append):
         EXISTS(SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a
           WHERE a.grantee=0 AND a.privilege_type='EXECUTE')
         FROM pg_proc p JOIN pg_roles r ON r.oid=p.proowner
-        WHERE p.pronamespace=current_schema()::regnamespace AND p.proname LIKE 'maintenance_%'
+        WHERE p.pronamespace=current_schema()::regnamespace AND
+          (p.proname LIKE 'maintenance_%' OR p.proname LIKE 'classification_%')
     ''')).all()
-    if len(functions) != 6 or any(not f[1] or f[2] != ['search_path=pg_catalog'] or any(f[3:]) for f in functions):
+    if len(functions) != (9 if typed_schema else 6) or any(not f[1] or f[2] != ['search_path=pg_catalog'] or any(f[3:]) for f in functions):
         raise ConversationError(503, 'conversation_runtime_unapproved')
     # No table owner, DDL, extra writers, money or call-function privileges.
     insertable = {'conversation_turns', 'fact_changes', 'conversation_operations', 'fact_change_sources'}

@@ -423,7 +423,7 @@ def test_M02_v2_history_or_tombstone_blocks_downgrade(append_service, migrated_c
     with pytest.raises(RuntimeError, match='append_nonempty_downgrade_refused'):
         alembic.downgrade(cfg, '0013_fact_maintenance')
     conn.rollback()
-    assert conn.scalar(text('SELECT version_num FROM alembic_version')) == '0014_append_batch'
+    assert conn.scalar(text('SELECT version_num FROM alembic_version')) == '0015_fact_classification'
     conn.commit()
     assert stored(s.admin) == before
 
@@ -451,7 +451,7 @@ def test_M01_M02_empty_roundtrip_failure_atomic_and_metadata(migrated_connection
     alembic.downgrade(cfg, '0013_fact_maintenance'); conn.commit()
     assert conn.execute(text("SELECT oid,proowner,proacl::text,prosrc FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND proname='maintenance_validate'")).one() == before
     conn.commit()
-    alembic.upgrade(cfg, '0014_append_batch'); conn.commit(); alembic.check(cfg); conn.commit()
+    alembic.upgrade(cfg, 'head'); conn.commit(); alembic.check(cfg); conn.commit()
 
 
 @pytest.mark.parametrize('fault', ['unknown_version', 'wrong_decision', 'wrong_action', 'source_missing', 'source_corrupt'])

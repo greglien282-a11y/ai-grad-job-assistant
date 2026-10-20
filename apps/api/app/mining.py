@@ -124,6 +124,7 @@ def reserve(factory, sid, token, key, body):
         existing = receipt(db, key, tag)
         if existing:
             return existing.id, False
+        facts.require_legacy(db, sid)
         from app.maintenance_guard import input_consumed
         if body.input_turn_id:
             input_consumed(db, sid, turn_ids=[body.input_turn_id])
