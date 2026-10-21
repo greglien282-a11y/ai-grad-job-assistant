@@ -54,7 +54,7 @@ Command: `python -m pytest -q -ra tests/test_overnight_r03.py` in apps/api using
 
 12 real restricted PostgreSQL/HTTP observations reproduce: manual/mining spelling/synonym/unrelated additions allowed vs append D3 refused with all-table zero effects; shared guard history-only gap for pending/confirmed; legacy Turn can remain after a separate exact Fact rejection. Existing accepted behavior is asserted honestly, not silently tightened. Scripted calls are synthetic; paid_calls=0.
 
-CI for #46 exact HEAD: IN_PROGRESS / pending observation. Full-regression/CI evidence will be appended; no future model result is claimed as independent evidence for #46.
+CI for #46 exact HEAD: [39639366346](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39639366346) **completed/success**; workflow and three jobs successful. Linux backend **2128 passed, 1 existing Windows-only skip**, 1138.95s; migrations/12/48/DRAFT quality/Mock also passed. React/Chromium jobs successful; their actual counts/logs will be archived at M5. No future model result is claimed as independent evidence for #46.
 
 ## M3 — failure model and real read-only evidence
 
@@ -70,17 +70,32 @@ Real restricted LOGIN covers eight faults across all three read projections, aut
 
 Future CO3 first success/replay/response loss/key conflicts/version boundaries, crash/rollback, typed history, tombstone, legacy birth and worker drain obligations are explicitly NOT_IMPLEMENTED. Existing CO1/CO2 real process, delete and worker tests are cited by exact names and will run in full regression; they are not CO3 guarantees.
 
-## M4–M5
+## M4 — strictly isolated reference model
 
-- M4 isolated in-memory reference model: READY_TO_START within M1–M3's restrictive candidate assumptions. No source/basis/write approval inferred.
-- M5 integration audit, full regressions, cleanup and final report: NOT_STARTED.
+Status: **COMPLETE (SIMULATED only)**.
+
+Files: `apps/api/tests/overnight_research/typed_model.py`; `apps/api/tests/test_overnight_typed_model.py`; `docs/overnight/TYPED_REFERENCE_MODEL.md`.
+
+Content commit `3b27a96c72ea903a4984e85ac5d654d6ed7bcec8`, explicit-uncertainty audit commit/final HEAD `ec0c961b5cb6944472cf60f5b0298c7642bcff3f`. [Draft PR #47](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47), base #46 branch/HEAD above. Incremental diff is 5 files (M3+M4), not the inherited M2 code. #44 is not imported.
+
+Command: `python -m pytest -q -ra tests/test_overnight_typed_model.py` => **100 passed**, 0.29s, no DB. Log `.e2e/overnight-m4-targeted.log`.
+
+Model supports immutable candidate graph/initial pending-v1/declaration edge, atomic all-or-none state replacement, payload/key/version isolation, GET-like replay, abstract pre/post commit faults, serial schedules, revision/history gates, tombstone and capability distinctions. It uses existing Classification and unchanged c3a plus M2 risk diagnostics. Toy keys/principals and revision epochs are not real crypto/auth/DB semantics.
+
+Actual model defect found/fixed: True equaled version 1 through dataclass equality; strict integer/type-preserving snapshot/source checks and bool-slot/tombstone regressions now reject corruption. No production or old-test change. An explicit service/recommendation-service counterexample demonstrates missing general semantic identity even when the toy transition succeeds. Every outcome retains SIMULATED_ONLY, NOT_PROVEN, transaction_review_required=true, truth_verified=false and persistence_authorized=false.
+
+M4's declaration basis is hypothetical, not a real classification_citations field or approved migration. No routes/factories/DB/Provider/paid calls; no persisted typed writer. Real process/concurrency/SQL enforcement is still NOT_IMPLEMENTED for CO3.
+
+## M5
+
+- M5 integration audit, full regressions, cleanup and final report: IN_PROGRESS. Freeze #47 ec0c961... for full integrated runs; do not edit/remove its files while local tests execute.
 
 ## Verification ledger
 
-M2 targeted 42 passed; M3 targeted 30 passed. Full overnight regressions not yet run. #46 [CI 39639366346](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39639366346) is running at fc9286e8... . c3b's prior results above are evidence for #44 only, not proof that later branches pass. Each branch/CI will be bound to an exact SHA. No branch dependency will be reported as independent main verification.
+M2 targeted 42 passed; M3 30 passed; M4 100 passed. #46 full independent CI success as above. #47 integrated [CI 39643557810](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39643557810) is IN_PROGRESS at ec0c961... . c3b's prior results are evidence for #44 only, not proof that later branches pass. No branch dependency is reported as independent main verification.
 
 ## Risks / next resumption
 
 Confirmed existing risks: old manual/mining reworded rejected claims can create new legacy pending facts; legacy confirmed can contain plan text; source-basis projection cannot yet express recorded classification evidence. Future semantic independence and writer atomicity remain unimplemented.
 
-Next: M4 in-memory reference, then M5 integrated regressions/audit. M3/M4 stack on #46 with explicit parent SHA because the simulator consumes its test-only R03 evaluator. Preserve #44/#45/#46 Draft; no production fix. Dedicated 15487 synthetic cluster restarted for overnight tests; cleanup is still pending. Local long logs belong only in ignored `.e2e/overnight-*` paths and must not be uploaded with credentials or raw diagnostics.
+Next: M5 full integrated regressions and source/scope audit, verify all exact CI heads, clean test resources, update every PR and produce final report. Preserve #44/#45/#46/#47 Draft. Dedicated 15487 synthetic cluster remains test-only; cleanup pending. Long logs only in ignored `.e2e/overnight-*`; no credential/diagnostic upload.
