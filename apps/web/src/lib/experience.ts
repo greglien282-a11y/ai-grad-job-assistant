@@ -37,6 +37,8 @@ export type Mutation = { action: 'edit'; statement: string; expected_version: nu
   | { action: 'verify_material'; expected_version: number; material_reference: string; basis: string }
   | { action: 'set_memory'; expected_version: number; memory_state: 'unspecified' | 'certain' | 'approximate' | 'needs_check' }
 
+export const UPGRADE_MESSAGE = '当前会话需要新版读取合同，旧工作台不能完整展示。本次读取没有修改资料。'
+const UPGRADE_CODES = ['fact_contract_upgrade_required', 'summary_contract_upgrade_required', 'export_contract_upgrade_required']
 export class ApiError extends Error {
   constructor(public status: number, public code: string, public retryAt = 0) {
     super(code === 'idempotency_payload_mismatch' ? '这次输入与先前提交不同，请先恢复并核对；没有覆盖资料。' : code === 'idempotency_creation_not_found' ? '尚未找到刚才的创建结果。请重新输入原经历，用原操作重试；不会自动创建。' : status === 410 ? '临时操作已删除、过期或不可恢复。24 小时不是长期账号恢复；没有自动新建，请先核对原资料。' : status === 429 ? '请求过于频繁，请按服务提示稍后手动重试，原操作仍保留。' : ({ 401: '会话凭证无效，请检查当前会话。', 404: '会话不存在或无法访问。',
@@ -45,10 +47,16 @@ export class ApiError extends Error {
   }
 }
 
+export function isContractUpgrade(cause: unknown): cause is ApiError {
+  return cause instanceof ApiError && cause.status === 409 && UPGRADE_CODES.includes(cause.code)
+}
+
 export function createExperienceApi(fetcher: typeof fetch = fetch) {
   const base = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
   let retryUntil = 0
+  let contractUpgrade: ApiError | null = null
   async function request<T>(path: string, schema: z.ZodType<T> | null, credentials?: { token: string }, method = 'GET', body?: unknown, signal?: AbortSignal, key?: string): Promise<T> {
+    if (contractUpgrade) throw contractUpgrade
     if (Date.now() < retryUntil) throw new ApiError(429, 'rate_limited', retryUntil)
     let response: Response
     try {
@@ -58,6 +66,7 @@ export function createExperienceApi(fetcher: typeof fetch = fetch) {
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       })
     } catch (error) {
+      if (contractUpgrade) throw contractUpgrade
       if (error instanceof DOMException && error.name === 'AbortError') throw error
       throw new Error('暂时无法连接服务。输入已保留，请检查 API 后重试。')
     }
@@ -69,10 +78,14 @@ export function createExperienceApi(fetcher: typeof fetch = fetch) {
         const until = after && /^\d+$/.test(after) ? Date.now() + Number(after) * 1000 : after ? Date.parse(after) : 0
         if (Number.isFinite(until)) retryUntil = Math.max(retryUntil, until)
       }
-      throw new ApiError(response.status, parsed.success ? parsed.data.error.code : 'request_failed', retryUntil)
+      const error = new ApiError(response.status, parsed.success ? parsed.data.error.code : 'request_failed', retryUntil)
+      if (credentials && isContractUpgrade(error)) contractUpgrade = error
+      throw contractUpgrade ?? error
     }
+    if (contractUpgrade) throw contractUpgrade
     if (schema === null) return undefined as T
     const parsed = schema.safeParse(await response.json().catch(() => null))
+    if (contractUpgrade) throw contractUpgrade
     if (!parsed.success) throw new Error('服务返回的资料格式异常，请重新读取。')
     return parsed.data
   }

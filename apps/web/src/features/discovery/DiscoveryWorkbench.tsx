@@ -10,6 +10,7 @@ import SummaryView from './SummaryView'
 import { DiscoveryLink } from './DiscoveryLink'
 import { interactionState } from './interactionState'
 import { InteractionStatus } from './InteractionStatus'
+import { UpgradeNotice } from './UpgradeNotice'
 
 export default function DiscoveryWorkbench({ api = createExperienceApi(), view = 'workspace', copy = (text: string) => navigator.clipboard.writeText(text) }: { api?: ExperienceApi; view?: 'workspace' | 'summary'; copy?: (text: string) => Promise<void> }) {
   const d = useDiscovery(api)
@@ -41,6 +42,7 @@ export default function DiscoveryWorkbench({ api = createExperienceApi(), view =
       input?.focus({ preventScroll: true }); input?.scrollIntoView({ block: 'center', behavior: 'instant' })
     })
   }
+  if (d.contractState === 'upgrade_required') return <div className="discovery"><UpgradeNotice /></div>
   return <div className="discovery">
     <header className="discovery-header"><a className="brand" href="/">✦ 启程 <span>Pathwise</span></a><nav><a href="/manual">手工工作台</a><span className="mode-tag">零费用 · 合成测试模式</span></nav></header>
     {view === 'summary' && <SummaryView d={d} copy={copy} />}
@@ -64,7 +66,7 @@ export default function DiscoveryWorkbench({ api = createExperienceApi(), view =
             {retry && <div className="confirm-box" aria-label="重新整理确认"><p>将明确运行一次零费用合成整理，复用原回答及问题关联，不新增回答。不会自动重试。</p><button disabled={manageBlocked} onClick={() => void d.act(async () => { await d.retrySaved(retry); setRetry(null) })}>确认重新整理</button><button className="secondary" onClick={() => setRetry(null)}>取消重新整理</button></div>}
             {s.mining_status !== 'stopped' && !readonly && <AnswerComposer d={d} blocked={blocked || interaction.pauseMining} />}
           </section><aside className="review-column"><FactReview d={d} active={tab === 'facts'} disabled={blocked || !!readonly} />
-            <section className="result-entry"><h2>{confirmedCount ? `${confirmedCount} 条已确认，可以阅读了` : '确认一条事实，就能看到整理稿'}</h2><p>{confirmedCount ? '前往 03 查看当前已确认的原文整理，之后仍可返回完善。' : '待确认或已拒绝的内容不会进入正文；也可以先看看空白成果页。'}</p><p className="result-disclaimer">这是原文整理，不是 AI 专业改写或正式简历。</p><DiscoveryLink href="/discovery/summary">03 阅读整理稿 →</DiscoveryLink><details className="technical-backup"><summary>技术备份（JSON，非正式简历）</summary><p>包含原文、待确认/拒绝事实、来源与历史，仅供资料备份。</p><button className="secondary" disabled={blocked} onClick={() => void d.act(async () => { downloadJson(await d.api.export(d.credentials!), 'pathwise-technical-backup.json') })}>下载 JSON 技术备份</button></details></section>
+            <section className="result-entry"><h2>{confirmedCount ? `${confirmedCount} 条已确认，可以阅读了` : '确认一条事实，就能看到整理稿'}</h2><p>{confirmedCount ? '前往 03 查看当前已确认的原文整理，之后仍可返回完善。' : '待确认或已拒绝的内容不会进入正文；也可以先看看空白成果页。'}</p><p className="result-disclaimer">这是原文整理，不是 AI 专业改写或正式简历。</p><DiscoveryLink href="/discovery/summary">03 阅读整理稿 →</DiscoveryLink><details className="technical-backup"><summary>技术备份（JSON，非正式简历）</summary><p>包含原文、待确认/拒绝事实、来源与历史，仅供资料备份。</p><button className="secondary" disabled={blocked} onClick={() => void d.act(async () => { const backup = await d.api.export(d.credentials!); d.assertLegacy(); downloadJson(backup, 'pathwise-technical-backup.json') })}>下载 JSON 技术备份</button></details></section>
           </aside></div></>}
       </>}
       {d.credentials && <section className="session-management" aria-label="会话管理">
