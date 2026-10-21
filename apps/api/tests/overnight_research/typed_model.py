@@ -168,6 +168,9 @@ class Outcome:
     facts: tuple[str, ...] = ()
     revision: int | None = None
     evidence_class: str = 'SIMULATED'
+    source_binding: str = 'SIMULATED_ONLY'
+    semantic_independence: str = 'NOT_PROVEN'
+    transaction_review_required: bool = True
     truth_verified: bool = False
     persistence_authorized: bool = False
 

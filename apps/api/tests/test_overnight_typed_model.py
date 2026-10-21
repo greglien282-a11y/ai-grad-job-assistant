@@ -39,6 +39,8 @@ def review_fixture(state,status):
 
 def safe(outcome):
     assert outcome.evidence_class=='SIMULATED'
+    assert outcome.source_binding=='SIMULATED_ONLY' and outcome.semantic_independence=='NOT_PROVEN'
+    assert outcome.transaction_review_required is True
     assert outcome.truth_verified is False and outcome.persistence_authorized is False
 
 
@@ -148,6 +150,16 @@ def test_simulated_finite_risk_hint_is_not_a_general_semantic_oracle():
     fresh=command('我验证了3个导出按钮。',key='SIM-B',revision=state.sessions[0].revision)
     after,r=submit(state,fresh,'u1');safe(r)
     assert after is state and r.code=='semantic_review_required'
+
+
+def test_simulated_no_family_match_can_still_be_a_related_claim_not_write_authority():
+    state=applied()  # 我部署了服务。
+    # Both finite c3a sentences match. The public adversarial hint list does
+    # not establish whether this is the same service or an independent one.
+    fresh=command('我部署了推荐服务。',key='SIM-B',revision=state.sessions[0].revision)
+    after,r=submit(state,fresh,'u1');safe(r)
+    assert r.code=='simulated_applied' and len(after.facts)==2
+    assert not r.persistence_authorized and r.semantic_independence=='NOT_PROVEN'
 
 
 @pytest.mark.parametrize('case',['wrong_owner','foreign_session','foreign_project','bad_revision','bool_revision',
