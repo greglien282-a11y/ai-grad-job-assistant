@@ -38,21 +38,36 @@ Concrete findings/decisions:
 
 Validation: documentation/source audit and `git diff --check`; no runtime change or database request. Ordinary design alternatives were decided within research scope; all production decisions remain REQUIRES_USER_APPROVAL in the contract's approval register.
 
-Commit / Draft PR: pending first checkpoint.
+Content commit: `05264aba90cf3795f0e9510a87e61972a27576d9`; [Draft PR #45](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/45). Base main `17a35e9...`, documentation only. GitHub connector briefly failed before creation; public read-only listing proved no PR existed before the successful create, avoiding duplicates. No application CI is expected for docs-only paths.
 
-## M2–M5
+## M2 — R03 adversarial research
 
-- M2 adversarial corpus and real compatibility observations: NOT_STARTED.
+Status: **COMPLETE (SIMULATED + OBSERVED_EXISTING_BEHAVIOR)**.
+
+Independent branch `codex/overnight-r03-research`, base main `17a35e9cf23d4d9f11b757a426793e575f861223`; content/final HEAD `fc9286e8f1b8e0e62f6d59d2821584391d03fd88`; [Draft PR #46](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/46). No c3b or #45 code dependency. M1 policy is an explicit design reference only.
+
+Files: `apps/api/tests/overnight_research/__init__.py`, `r03.py`, `r03_cases.json`; `apps/api/tests/test_overnight_r03.py`; `docs/overnight/R03_ADVERSARIAL_REVIEW.md`.
+
+Command: `python -m pytest -q -ra tests/test_overnight_r03.py` in apps/api using explicit loopback15487 synthetic database => **42 passed**, 7.70s, existing Starlette/httpx warning. Log `.e2e/overnight-m2-targeted.log`. No new skip/xfail/retry/timeout changes.
+
+24 corpus cases distinguish all six requested diagnostic classes. These are finite risk hints, not semantic equivalence or c3a grammar expansion. All assessments deny truth and persistence permission. Unrelated controls with rejected history: **5/5 blocked**; clean comparison still lacks independence proof.
+
+12 real restricted PostgreSQL/HTTP observations reproduce: manual/mining spelling/synonym/unrelated additions allowed vs append D3 refused with all-table zero effects; shared guard history-only gap for pending/confirmed; legacy Turn can remain after a separate exact Fact rejection. Existing accepted behavior is asserted honestly, not silently tightened. Scripted calls are synthetic; paid_calls=0.
+
+CI for #46 exact HEAD: IN_PROGRESS / pending observation. Full-regression/CI evidence will be appended; no future model result is claimed as independent evidence for #46.
+
+## M3–M5
+
 - M3 future failure specification and real read-only failure evidence: NOT_STARTED.
 - M4 isolated in-memory reference model: NOT_STARTED; conditional on M1–M3 bounds.
 - M5 integration audit, full regressions, cleanup and final report: NOT_STARTED.
 
 ## Verification ledger
 
-New overnight tests: NOT_RUN yet. c3b's prior results above are evidence for #44 only, not proof that later branches pass. Each branch/CI will be bound to an exact SHA. No branch dependency will be reported as independent main verification.
+M2 targeted 42 passed. Full overnight regressions not yet run; #46 CI queued/active. c3b's prior results above are evidence for #44 only, not proof that later branches pass. Each branch/CI will be bound to an exact SHA. No branch dependency will be reported as independent main verification.
 
 ## Risks / next resumption
 
 Confirmed existing risks: old manual/mining reworded rejected claims can create new legacy pending facts; legacy confirmed can contain plan text; source-basis projection cannot yet express recorded classification evidence. Future semantic independence and writer atomicity remain unimplemented.
 
-Resume M2 on stable main, preserve #44 Draft, do not implement any production fix. Update this handoff after each milestone and record exact evidence/approval dependencies. Local long logs belong only in ignored `.e2e/overnight-*` paths and must not be uploaded with credentials or raw diagnostics.
+Next: M3 failure specification/real read-only faults, then M4 in-memory reference. They may stack on #46 only with explicit parent SHA because the simulator will consume its test-only R03 evaluator. Preserve #44/#45/#46 Draft; no production fix. Dedicated 15487 synthetic cluster restarted for overnight tests; cleanup is still pending. Local long logs belong only in ignored `.e2e/overnight-*` paths and must not be uploaded with credentials or raw diagnostics.
