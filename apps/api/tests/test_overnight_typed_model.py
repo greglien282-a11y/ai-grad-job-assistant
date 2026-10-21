@@ -200,7 +200,8 @@ def test_simulated_language_and_source_rejections_are_atomic(case):
 @pytest.mark.parametrize('corruption',['current_label','memory','origin','ai_run','version_bool','created_before',
     'created_trust','source_range','source_quote','source_missing','history_missing','basis_missing','basis_rule',
     'basis_type','audit_missing','audit_slot','audit_bool_slot','basis_bool_slot','audit_source_bool',
-    'extra_turn','receipt_version','receipt_decision','receipt_tag','receipt_digest','worker_unknown'])
+    'extra_turn','turn_unquoted_tail','receipt_version','receipt_decision','receipt_tag','receipt_tag_drift',
+    'receipt_digest','worker_unknown'])
 def test_simulated_graph_integrity_failure_no_partial_read_or_write(corruption):
     state=applied();fact=state.facts[0];change=state.changes[0]
     if corruption in ('current_label','memory','origin','ai_run','version_bool'):
@@ -224,8 +225,10 @@ def test_simulated_graph_integrity_failure_no_partial_read_or_write(corruption):
     elif corruption=='audit_source_bool':
         state=replace(state,audits=(replace(state.audits[0],source=replace(state.sources[0],end=True)),))
     elif corruption=='extra_turn':state=replace(state,turns=state.turns+(SimTurn('extra','s1','我部署了服务。'),))
+    elif corruption=='turn_unquoted_tail':state=replace(state,turns=(replace(state.turns[0],content=state.turns[0].content+'我编写了脚本。'),))
     elif corruption=='worker_unknown':state=replace(state,sessions=(replace(state.sessions[0],worker_state='unrecognized'),state.sessions[1]))
     elif corruption=='receipt_tag':state=replace(state,receipts=(replace(state.receipts[0],request_tag=None),))
+    elif corruption=='receipt_tag_drift':state=replace(state,receipts=(replace(state.receipts[0],request_tag='0'*64),))
     elif corruption=='receipt_digest':state=replace(state,receipts=(replace(state.receipts[0],key_digest='invalid'),))
     else:state=replace(state,receipts=(replace(state.receipts[0],**({'contract_version':99} if corruption=='receipt_version' else {'decision_contract':'unknown'})),))
     after,r=submit(state,command('我编写了脚本。',key='SIM-B',revision=2),'u1');safe(r)

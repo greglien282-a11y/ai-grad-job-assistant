@@ -282,9 +282,10 @@ def validate(state):
         _need(not row.opaque_legacy and row.decision_contract==CONTRACT and row.turn in turns
             and turns[row.turn].session==row.session and 1<=len(row.facts)<=5
             and len(row.facts)==len(set(row.facts))==len(row.changes)==len(set(row.changes))==len(row.bases)
-            and type(row.result_revision) is int and row.result_revision<=sessions[row.session].revision)
+            and type(row.result_revision) is int and 2<=row.result_revision<=sessions[row.session].revision)
         audits=sorted((a for a in state.audits if a.operation==row.id),key=lambda a:a.slot)
         _need([a.slot for a in audits]==list(range(1,len(row.facts)+1)))
+        declared=[]
         for slot,(fid,cid,bid) in enumerate(zip(row.facts,row.changes,row.bases),1):
             _need(fid in facts and cid in changes and bid in bases)
             change=changes[cid];basis=bases[bid];fact=facts[fid];audit=audits[slot-1]
@@ -297,6 +298,15 @@ def validate(state):
                 and basis.change==cid and _same(basis.source,source) and _triple(basis)==_triple(change.after)
                 and basis.validation_contract==LANGUAGE_CONTRACT
                 and basis.evidence_class=='SIMULATED_DECLARATION_ONLY')
+            declared.append(Item(*_triple(change.after),source.quote,source.start,source.end))
+        # Reconstruct the original modeled body from immutable graph edges.
+        # Checking each source slice alone misses an unquoted trailing sentence;
+        # a structurally nonempty tag alone misses a drifted receipt digest.
+        original=Command(row.session,sessions[row.session].project,'SIMULATED-ignored-key',0,
+            row.result_revision-1,turns[row.turn].content,tuple(declared))
+        language=validate_candidate(dict(validation_contract=LANGUAGE_CONTRACT,synthetic=True,
+            raw_text=original.content,items=[asdict(i) for i in original.items]))
+        _need(language.status=='eligible_candidate' and row.request_tag==fingerprint(original))
     _need(all(a.operation in receipts and a.fact in facts and a.change in changes for a in state.audits))
     _need(all(b.operation in receipts and b.fact in facts and b.change in changes for b in state.bases))
     live=[r for r in state.receipts if r.contract_version==3 and r.state=='applied']

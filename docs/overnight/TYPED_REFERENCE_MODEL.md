@@ -46,11 +46,13 @@ The model contains no dynamic SELECT/ACL/schema flags or history_safe escape par
 
 ## Executed tests and discovered bug
 
-`python -m pytest -q -ra tests/test_overnight_typed_model.py`: **100 passed**, 0.29s locally, no database required. Tests cover graph size 1–5, type/stage/trust separation, all fault boundaries, every payload field, version isolation, serial orders, review/rejected history, source/language rejection, corruption, tombstone privacy, expiry, capability distinctions and import isolation.
+`python -m pytest -q -ra tests/test_overnight_typed_model.py`: M4 checkpoint **100 passed**, 0.29s locally; after M5's two red/green integrity cases, **102 passed**, 0.27s. No database required. Tests cover graph size 1–5, type/stage/trust separation, all fault boundaries, every payload field, version isolation, serial orders, review/rejected history, source/language rejection, corruption, tombstone privacy, expiry, capability distinctions and import isolation.
 
 Actual initial model defect: Python/dataclass equality aliases current Snapshot.version=True with 1. A red test reproduced acceptance in that case (1 failed, 86 passed), so the model was corrected with strict integer checks and type-preserving canonical comparisons across snapshots/sources. Additional bool slot/source, missing tag/digest, unknown worker state and tombstone corruption regressions were added; no production constraint or old test changed.
 
 An additional audit counterexample deliberately passes both finite rules and misses the family hint: “我部署了服务。” then “我部署了推荐服务。” with no rejected history. The model can produce two candidate values but cannot determine if they describe the same service. Every result explicitly retains NOT_PROVEN / transaction_review_required / no persistence authority. This is evidence of the remaining semantic limit, not a positive independence result or a reason to enable a writer.
+
+M5 deep audit reproduced two additional reference-model integrity gaps: an unquoted trailing sentence on a saved model Turn, and a nonempty but drifted receipt digest. Both initially passed recovery/state validation (two red tests). The model now reconstructs the original body from its graph, reruns unchanged full-text c3a coverage/language checks and verifies its canonical body fingerprint. This is still a toy digest, not real HMAC, database immutability or a production writer fix. The earlier full run at ec0c961 is superseded for final model validation; the corrected HEAD must pass its own full regression/CI.
 
 The model reuses existing Classification/c3a functions by identity; tests check all 75 kind/stage/contract combinations against the existing finite matrix. This does not replace the real database CHECK tests in the full suite. No modified frozen expectations, skip/xfail, retries, sleeps or timeout increases.
 
