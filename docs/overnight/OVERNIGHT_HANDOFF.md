@@ -56,18 +56,31 @@ Command: `python -m pytest -q -ra tests/test_overnight_r03.py` in apps/api using
 
 CI for #46 exact HEAD: IN_PROGRESS / pending observation. Full-regression/CI evidence will be appended; no future model result is claimed as independent evidence for #46.
 
-## M3–M5
+## M3 — failure model and real read-only evidence
 
-- M3 future failure specification and real read-only failure evidence: NOT_STARTED.
-- M4 isolated in-memory reference model: NOT_STARTED; conditional on M1–M3 bounds.
+Status: **COMPLETE (NOT_IMPLEMENTED future CO3 specification + EXECUTABLE_ISOLATED_TEST reads)**.
+
+Branch `codex/overnight-typed-model`; BASE_BRANCH=codex/overnight-r03-research; BASE_SHA=`fc9286e8f1b8e0e62f6d59d2821584391d03fd88`; DEPENDS_ON_PR=#46. M3 content commit `23d6e1295a64971c4eae9e117f06ae58ce07d5d9`. PR will be created after the related M4 increment stabilizes; no upstream result is mislabeled independent.
+
+Files: `apps/api/tests/test_overnight_failures.py`, `docs/overnight/TYPED_FAILURE_MODEL.md`.
+
+Command: `python -m pytest -q -ra tests/test_overnight_failures.py` => **30 passed**, 18.05s, existing warning. Log `.e2e/overnight-m3-targeted.log`. Initial 3 failures were incorrect new-test assumptions about generic error prefix; final assertions use exact per-fault existing codes. No production behavior or old assertion changed.
+
+Real restricted LOGIN covers eight faults across all three read projections, auth-before-disclosure, honest missing classification basis, source DELETE privilege failure, default closed factory and real two-connection RR snapshot behavior. Failure comparisons cover all tables. The intentional external writer commit is not counted as a reader effect.
+
+Future CO3 first success/replay/response loss/key conflicts/version boundaries, crash/rollback, typed history, tombstone, legacy birth and worker drain obligations are explicitly NOT_IMPLEMENTED. Existing CO1/CO2 real process, delete and worker tests are cited by exact names and will run in full regression; they are not CO3 guarantees.
+
+## M4–M5
+
+- M4 isolated in-memory reference model: READY_TO_START within M1–M3's restrictive candidate assumptions. No source/basis/write approval inferred.
 - M5 integration audit, full regressions, cleanup and final report: NOT_STARTED.
 
 ## Verification ledger
 
-M2 targeted 42 passed. Full overnight regressions not yet run; #46 CI queued/active. c3b's prior results above are evidence for #44 only, not proof that later branches pass. Each branch/CI will be bound to an exact SHA. No branch dependency will be reported as independent main verification.
+M2 targeted 42 passed; M3 targeted 30 passed. Full overnight regressions not yet run. #46 [CI 39639366346](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39639366346) is running at fc9286e8... . c3b's prior results above are evidence for #44 only, not proof that later branches pass. Each branch/CI will be bound to an exact SHA. No branch dependency will be reported as independent main verification.
 
 ## Risks / next resumption
 
 Confirmed existing risks: old manual/mining reworded rejected claims can create new legacy pending facts; legacy confirmed can contain plan text; source-basis projection cannot yet express recorded classification evidence. Future semantic independence and writer atomicity remain unimplemented.
 
-Next: M3 failure specification/real read-only faults, then M4 in-memory reference. They may stack on #46 only with explicit parent SHA because the simulator will consume its test-only R03 evaluator. Preserve #44/#45/#46 Draft; no production fix. Dedicated 15487 synthetic cluster restarted for overnight tests; cleanup is still pending. Local long logs belong only in ignored `.e2e/overnight-*` paths and must not be uploaded with credentials or raw diagnostics.
+Next: M4 in-memory reference, then M5 integrated regressions/audit. M3/M4 stack on #46 with explicit parent SHA because the simulator consumes its test-only R03 evaluator. Preserve #44/#45/#46 Draft; no production fix. Dedicated 15487 synthetic cluster restarted for overnight tests; cleanup is still pending. Local long logs belong only in ignored `.e2e/overnight-*` paths and must not be uploaded with credentials or raw diagnostics.
