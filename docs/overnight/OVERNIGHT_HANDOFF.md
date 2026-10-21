@@ -76,9 +76,9 @@ Status: **COMPLETE (SIMULATED only)**.
 
 Files: `apps/api/tests/overnight_research/typed_model.py`; `apps/api/tests/test_overnight_typed_model.py`; `docs/overnight/TYPED_REFERENCE_MODEL.md`.
 
-Content commit `3b27a96c72ea903a4984e85ac5d654d6ed7bcec8`, explicit-uncertainty audit commit/final HEAD `ec0c961b5cb6944472cf60f5b0298c7642bcff3f`. [Draft PR #47](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47), base #46 branch/HEAD above. Incremental diff is 5 files (M3+M4), not the inherited M2 code. #44 is not imported.
+Content commit `3b27a96c72ea903a4984e85ac5d654d6ed7bcec8`, explicit-uncertainty checkpoint `ec0c961b5cb6944472cf60f5b0298c7642bcff3f`, M5 integrity correction/final HEAD **`afe82bb10c3dff0eaacfba22406675d1d31b66c3`**. [Draft PR #47](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47), base #46 branch/HEAD above. Incremental diff is 5 files (M3+M4), not the inherited M2 code. #44 is not imported.
 
-Command: `python -m pytest -q -ra tests/test_overnight_typed_model.py` => **100 passed**, 0.29s, no DB. Log `.e2e/overnight-m4-targeted.log`.
+Command: `python -m pytest -q -ra tests/test_overnight_typed_model.py` => checkpoint100 passed; **final102 passed**, 0.27s, no DB. Final log `.e2e/overnight-m4-final-targeted.log`.
 
 Model supports immutable candidate graph/initial pending-v1/declaration edge, atomic all-or-none state replacement, payload/key/version isolation, GET-like replay, abstract pre/post commit faults, serial schedules, revision/history gates, tombstone and capability distinctions. It uses existing Classification and unchanged c3a plus M2 risk diagnostics. Toy keys/principals and revision epochs are not real crypto/auth/DB semantics.
 
@@ -86,16 +86,38 @@ Actual model defect found/fixed: True equaled version 1 through dataclass equali
 
 M4's declaration basis is hypothetical, not a real classification_citations field or approved migration. No routes/factories/DB/Provider/paid calls; no persisted typed writer. Real process/concurrency/SQL enforcement is still NOT_IMPLEMENTED for CO3.
 
-## M5
+## M5 — integrated audit and final evidence
 
-- M5 integration audit, full regressions, cleanup and final report: IN_PROGRESS. Freeze #47 ec0c961... for full integrated runs; do not edit/remove its files while local tests execute.
+Status: **LOCAL_COMPLETE / CI_IN_PROGRESS**, final report below and in `OVERNIGHT_REPORT.md`. Final acceptance must use #47 afe82bb..., not the earlier checkpoint.
+
+Deep audit found two additional real **model** gaps at ec0c961: unquoted trailing Turn text and a nonempty but drifted receipt tag could pass recovery/state checks. Command `python -m pytest -q tests/test_overnight_typed_model.py -k 'turn_unquoted_tail or receipt_tag_drift'` => **2 failed, 100 deselected**. Log `.e2e/overnight-m5-red.log`. Fix afe82bb reconstructs the body from graph edges, reruns unchanged c3a full sentence coverage and verifies the canonical fingerprint. Both cases now pass; no production/old-test changes.
+
+The old full collection at ec0c961 completed2259 passed921.92s but is **SUPERSEDED**, not final evidence. The causal new defect justified a new exact-head full run; no failure was retried without a code/test cause or hidden by relaxing assertions. Earlier CI39643557810 is also superseded for final acceptance.
+
+Final #47 local backend: `python -m pytest -q -ra` => **2261 passed**, 906.99s, existing Starlette/httpx warning only; log `.e2e/overnight-final-backend.log`. This integrates main + #46 + #47, **not** unmerged c3b #44. New overnight test cases:42+30+102=174; old tests unchanged.
+
+Other executed local commands (apps/web or apps/api respectively):
+
+- `npm run test -- --reporter=dot`: **158 passed**; `.e2e/overnight-react.log`.
+- `npm run build`; `npm run test:e2e:types`: passed; `.e2e/overnight-build.log`, `.e2e/overnight-e2e-types.log`.
+- `PATHWISE_E2E_CHANNEL=msedge npm run test:e2e`: **59 passed**, 3.0m, actual Edge Chromium kernel/HTTP/PostgreSQL; `.e2e/overnight-e2e.log`. CI uses bundled Chromium. Original timeout/retries retained.
+- `python ../../scripts/check_isolated_migrations.py`: passed, no new upgrade operations, existing cleanup smoke; static head0015_fact_classification. `.e2e/overnight-migrations.log`.
+- `python ../../scripts/check_m12c2_contracts.py`: **12/12**; `python ../../scripts/check_s03b_output_contract.py`: **48/48**; corresponding contract12/contract48 logs. Existing S02 diagnostic and TOKENIZER_NOT_PROVIDED retained.
+- `python ../../scripts/evaluate_mining_quality.py --outputs ../../docs/evaluation/quality-v1/oracle.outputs.json --output-dir ../../.e2e/overnight-quality`: passed, DRAFT/human unreviewed/real quality null/provider_requests0; `.e2e/overnight-quality.log`.
+- `python ../../scripts/run_offline_evaluation.py --profile 0 --output ../../.e2e/overnight-mock.json`: passed, real requests0/actual cost0, quality/latency null; `.e2e/overnight-mock.log`.
+
+The local nonbackend components completed before the test-model-only afe correction; `git diff --exit-code ec0c961..afe82bb -- apps/api/app apps/api/alembic apps/web scripts .github docs/evaluation` proves their runtime/frozen component trees identical. Final CI reruns every component on exact afe. No stale full result is used for changed model behavior.
+
+Isolation audit: all #46/#47 changes are added test/research/docs files; zero diff under production app, frontend, migrations, scripts, workflow and frozen evaluation. App import scans forbid overnight_research. Existing role/owner/ACL/source immutability, legacy JSON and writer semantics unchanged. Matrix reused from actual Classification/c3a; no source consistency/finite match is described as truth or semantic independence. No cross-PR dependency is hidden.
+
+Cleanup after both local full processes were terminal: both synthetic databases have **temporary_schemas=0, temporary_roles=0** (all non-system namespaces plus UUID-suffix/known test-role patterns checked). Dedicated15487 cluster stopped;15487/15173/18000 have no listeners. No unknown directory/schema/role deletion was needed. Worktree clean before final docs edits.
 
 ## Verification ledger
 
-M2 targeted 42 passed; M3 30 passed; M4 100 passed. #46 full independent CI success as above. #47 integrated [CI 39643557810](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39643557810) is IN_PROGRESS at ec0c961... . c3b's prior results are evidence for #44 only, not proof that later branches pass. No branch dependency is reported as independent main verification.
+M2 targeted42, M3 targeted30, M4 final102 passed; final integrated backend2261 passed. #46 exact-head independent CI success as above, React158/build and Chromium59/types verified in job logs. #47 final [CI39644769165](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39644769165) is still IN_PROGRESS at afe82bb...; React/Chromium successful, FastAPI pending final verification. #45 is documentation-only and does not match application workflow paths; not falsely called a new green full run. c3b's earlier results remain evidence for #44 only.
 
 ## Risks / next resumption
 
 Confirmed existing risks: old manual/mining reworded rejected claims can create new legacy pending facts; legacy confirmed can contain plan text; source-basis projection cannot yet express recorded classification evidence. Future semantic independence and writer atomicity remain unimplemented.
 
-Next: M5 full integrated regressions and source/scope audit, verify all exact CI heads, clean test resources, update every PR and produce final report. Preserve #44/#45/#46/#47 Draft. Dedicated 15487 synthetic cluster remains test-only; cleanup pending. Long logs only in ignored `.e2e/overnight-*`; no credential/diagnostic upload.
+Next: verify final CI head/status/counts/skip; replace CI_IN_PROGRESS, update PR bodies and final report, commit/push documentation, verify latest main/Draft states, then completion audit/stop. Preserve #44/#45/#46/#47 Draft. Test cluster is stopped/resources clear; do not restart without a new testing need. Full raw logs stay ignored; no credential/diagnostic upload.
