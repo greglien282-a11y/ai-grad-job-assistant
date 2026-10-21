@@ -28,6 +28,22 @@ def main():
         from test_experience_read import synthetic, corrupt
         from test_maintenance_api import seed
         from test_fact_classification import VALID
+        if action=='seed-legacy':
+            b=seed(s,status='user_confirmed');foreign=seed(s)
+            print(json.dumps(dict(sessionId=str(b.sid),projectId=str(b.pid),token=b.token,foreignToken=foreign.token,fid=str(b.fid))));return
+        if action in ('upgrade-existing','history-only'):
+            from uuid import UUID
+            from app.models import ExperienceProject
+            from sqlalchemy import select
+            data=json.loads(sys.stdin.read())
+            sid=UUID(data['sessionId'])
+            with s.admin() as db:pid=db.scalar(select(ExperienceProject.id).where(ExperienceProject.session_id==sid))
+            if pid is None:raise ValueError('Missing synthetic project')
+            b=SimpleNamespace(sid=sid,pid=pid,token=data['token'])
+            ids=[synthetic(s,b,VALID[i]) for i in (4,6)]
+            if action=='history-only':
+                for fid in ids:corrupt(s,'experience_facts',"UPDATE experience_facts SET fact_kind='legacy_unspecified',progress_stage='legacy_unknown',classification_contract='legacy-v0' WHERE id=:id",{'id':fid})
+            print(json.dumps(dict(facts=list(map(str,ids)))));return
         if action=='seed':
             b=seed(s,status='user_confirmed');foreign=seed(s)
             ids=[synthetic(s,b,v) for v in VALID]

@@ -8,7 +8,8 @@ from sqlalchemy.engine import make_url
 from environment import validate_url
 from app.main import app as real_app
 from fastapi import Request
-from app.mining_api import get_provider
+from app.mining_api import get_provider, get_mining_factory
+from app.experience_api import get_db
 from app.mining_provider import ScriptedProvider, MiningOutput
 from app.experience_read_api import get_read_factory
 from sqlalchemy import create_engine
@@ -65,6 +66,20 @@ if 'reader_url' in config:
         if request.headers.get('x-pathwise-e2e-read-disabled')=='1':return get_read_factory()
         return reader
     real_app.dependency_overrides[get_read_factory]=isolated_reader
+
+if 'legacy_read_url' in config:
+    legacy_url=make_url(config['legacy_read_url'])
+    if (legacy_url.host,legacy_url.port,legacy_url.database,legacy_url.query)!=(url.host,url.port,url.database,url.query):
+        raise RuntimeError('Isolated legacy reader target mismatch')
+    legacy_reader=sessionmaker(create_engine(legacy_url,poolclass=NullPool,hide_parameters=True),expire_on_commit=False)
+    def isolated_legacy_db(request:Request):
+        if request.method=='GET' and request.headers.get('x-pathwise-e2e-legacy-read')=='1':
+            with legacy_reader() as db,db.begin():yield db
+        else:yield from get_db()
+    def isolated_mining_factory(request:Request):
+        return legacy_reader if request.method=='GET' and request.headers.get('x-pathwise-e2e-legacy-read')=='1' else get_mining_factory()
+    real_app.dependency_overrides[get_db]=isolated_legacy_db
+    real_app.dependency_overrides[get_mining_factory]=isolated_mining_factory
 
 
 class IsolatedApp:

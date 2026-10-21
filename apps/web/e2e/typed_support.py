@@ -1,7 +1,8 @@
 """Owner-only synthetic provisioning. Never imported by the production app.
 
-The HTTP child receives only a SELECT-only LOGIN. Provisioning requires the
-disposable CI service credential or an explicit same-database local test URL.
+V2 receives a SELECT-only LOGIN; v1 additionally needs two Session column
+privileges for its existing row lock. Neither identity owns objects. Provisioning
+requires the disposable CI credential or an explicit same-database test URL.
 """
 import os
 import re
@@ -33,20 +34,29 @@ def provision(url,schema):
     from app.read_permissions import READ_TABLES
     engine=owner_engine(url,schema)
     role='c2c_read_'+uuid4().hex;owner='c2c_owner_'+uuid4().hex;password=secrets.token_urlsafe(32)
+    legacy='c2d_legacy_read_'+uuid4().hex;legacy_password=secrets.token_urlsafe(32)
     try:
         with engine.begin() as db:
             db.execute(text(f'CREATE ROLE "{role}" LOGIN PASSWORD \'{password}\' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT'))
             db.execute(text(f'CREATE ROLE "{owner}" NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT'))
+            db.execute(text(f'CREATE ROLE "{legacy}" LOGIN PASSWORD \'{legacy_password}\' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT'))
             # CI revokes PUBLIC CONNECT on its disposable database. Do not rely
             # on a developer cluster's default ACL for the actual reader LOGIN.
             db.execute(text(f'GRANT CONNECT ON DATABASE "{url.database}" TO "{role}"'))
+            db.execute(text(f'GRANT CONNECT ON DATABASE "{url.database}" TO "{legacy}"'))
+            db.execute(text(f'GRANT USAGE ON SCHEMA "{schema}" TO "{legacy}"'))
+            for t in READ_TABLES+('ai_mining_receipts',):db.execute(text(f'GRANT SELECT ON "{schema}".{t} TO "{legacy}"'))
+            # v1 GET takes a Session FOR UPDATE lock. Only these lock-enabling
+            # column privileges are granted; no fact/Turn/Run/key DML or owner.
+            db.execute(text(f'GRANT UPDATE(updated_at,context_revision) ON experience_sessions TO "{legacy}"'))
             db.execute(text(f'GRANT USAGE ON SCHEMA "{schema}" TO "{role}","{owner}"'))
             for t in READ_TABLES:db.execute(text(f'GRANT SELECT ON "{schema}".{t} TO "{role}","{owner}"'))
             db.execute(text(f'GRANT UPDATE(updated_at,context_revision) ON experience_sessions TO "{owner}"'))
             db.execute(text(f'GRANT UPDATE ON conversation_operations TO "{owner}"'))
             for fn in db.scalars(text("SELECT oid::regprocedure::text FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND (proname LIKE 'maintenance_%' OR proname LIKE 'classification_%')")):
                 db.execute(text(f'ALTER FUNCTION {fn} OWNER TO "{owner}"'))
-        return dict(reader_url=url.set(username=role,password=password).render_as_string(hide_password=False),read_role=role,read_owner=owner)
+        return dict(reader_url=url.set(username=role,password=password).render_as_string(hide_password=False),read_role=role,read_owner=owner,
+                    legacy_read_url=url.set(username=legacy,password=legacy_password).render_as_string(hide_password=False),legacy_read_role=legacy)
     finally:engine.dispose()
 
 
@@ -57,7 +67,7 @@ def cleanup(url,schema,config):
             # Restore only the functions in this run-owned schema before role cleanup.
             for fn in db.scalars(text("SELECT oid::regprocedure::text FROM pg_proc WHERE pronamespace=current_schema()::regnamespace AND (proname LIKE 'maintenance_%' OR proname LIKE 'classification_%')")):
                 db.execute(text(f'ALTER FUNCTION {fn} OWNER TO "{url.username}"'))
-            for key,prefix in (('read_role','c2c_read_'),('read_owner','c2c_owner_')):
+            for key,prefix in (('read_role','c2c_read_'),('read_owner','c2c_owner_'),('legacy_read_role','c2d_legacy_read_')):
                 role=config[key]
                 if not re.fullmatch(prefix+'[0-9a-f]{32}',role):raise ValueError('Invalid run role')
                 db.execute(text(f'DROP OWNED BY "{role}" RESTRICT'));db.execute(text(f'DROP ROLE "{role}"'))
