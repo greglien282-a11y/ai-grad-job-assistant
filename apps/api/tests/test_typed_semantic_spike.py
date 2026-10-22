@@ -249,4 +249,8 @@ def test_pure_repeatable_input_immutable_result_and_no_runtime_import():
     assert imports=={'dataclasses','re'}
     for source in (ROOT/'apps/api/app').rglob('*.py'):
         if source==module:continue
-        assert 'typed_semantic_spike' not in source.read_text(encoding='utf-8')
+        # c3b explicitly authorizes this single, unrouted read-only consumer.
+        if source.name=='typed_source_preflight.py':continue
+        content=source.read_text(encoding='utf-8')
+        assert 'typed_semantic_spike' not in content
+        assert 'typed_source_preflight' not in content
