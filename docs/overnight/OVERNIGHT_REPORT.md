@@ -1,10 +1,10 @@
 # Pathwise Overnight Development Report
 
-报告状态：本地回归及清理完成，#47 最终 CI 待完成核验；尚不宣称 M5 最终完成。开始时间2026-10-22 00:46（Asia/Shanghai）；本次只交付设计、证据和隔离原型，所有 PR 保持 Draft。
+报告状态：**M1–M5 研究交付完成，最终精确HEAD CI成功，测试资源已清理**。开始时间2026-10-22 00:46（Asia/Shanghai）；最终CI于当日01:56完成。本次只交付设计、证据和隔离原型，不批准任何产品/生产政策，所有 PR 保持 Draft。
 
 ## 1. 基线、范围与 B2-c3b
 
-起始远程 main：`17a35e9cf23d4d9f11b757a426793e575f861223`。最后实际核验的远程 main 仍为该 SHA，交付前会再核对；没有直接改动或推送 main。
+起始及最终实际核验的远程 main 均为：`17a35e9cf23d4d9f11b757a426793e575f861223`。没有直接改动或推送 main。
 
 B2-c3b 已完成：[Draft #44](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/44)，HEAD `2020eaa9d3e2852671519f08894870cead7f3108`，[CI39633793288](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39633793288) completed/success。本地后端2158；Linux2157+1既有平台skip；React158；Chromium59及迁移/12/48/质量/Mock通过。其来源绑定与保守历史审核不授权保存，也未解决 R03。
 
@@ -16,7 +16,7 @@ B2-c3b 已完成：[Draft #44](https://github.com/greglien282-a11y/ai-grad-job-a
 - **M2 COMPLETE / SIMULATED + OBSERVED_EXISTING_BEHAVIOR**：24条合成对抗语料、六类诊断、42项测试；12项真实限权PG/HTTP观察复现旧手工/Mining与append保护差异。5/5有rejected历史的无关贡献被保守阻断；不是总体误拒率或 R03 已解决。
 - **M3 COMPLETE / future specification + EXECUTABLE_ISOLATED_TEST**：17类失败义务明确未实现CO3与既有CO1/CO2证据边界；30项真实只读测试验证三种投影、安全错误、权限、整表零效果和实际两连接快照。
 - **M4 COMPLETE / SIMULATED**：纯内存不可变状态模型，最终102项测试；模拟1–5图关系、重放/恢复、八个故障点、串行调度、历史风险、墓碑与分立能力。没有真实事务、HMAC、来源认证或权限保障。
-- **M5 LOCAL_COMPLETE / CI_IN_PROGRESS**：范围/依赖/隔离/旧合同审计；发现并修复参考模型的bool版本混淆、恢复时未引用尾句及摘要漂移。最终本地后端2261通过，资源已清理；最终CI待核验。
+- **M5 COMPLETE / 已核验证据交付**：范围/依赖/隔离/旧合同审计；发现并修复参考模型的bool版本混淆、恢复时未引用尾句及摘要漂移。最终本地后端2261通过，最终CI全部成功，资源已清理。此完成状态不解除任何正式writer或生产BLOCK。
 
 ## 3. Draft PR、HEAD、依赖和提交
 
@@ -31,7 +31,7 @@ B2-c3b 已完成：[Draft #44](https://github.com/greglien282-a11y/ai-grad-job-a
 - M2：[fc9286e](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/fc9286e8f1b8e0e62f6d59d2821584391d03fd88)。
 - M3：[23d6e12](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/23d6e1295a64971c4eae9e117f06ae58ce07d5d9)；日志：[e2b9205](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/e2b9205285d66749f1956f5c7a7193fdf3ea7cfe)。
 - M4：[3b27a96](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/3b27a96c72ea903a4984e85ac5d654d6ed7bcec8)、[ec0c961](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/ec0c961b5cb6944472cf60f5b0298c7642bcff3f)；日志：[53ac569](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/53ac5696b89649d58470919a6afafe797273a648)。
-- M5模型修复：[afe82bb](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/afe82bb10c3dff0eaacfba22406675d1d31b66c3)。后续最终日志/报告提交完整列表：[45 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/45/commits)、[46 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/46/commits)、[47 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47/commits)。
+- M5模型修复：[afe82bb](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/afe82bb10c3dff0eaacfba22406675d1d31b66c3)；本地最终验证/清理检查点：[1337af0](https://github.com/greglien282-a11y/ai-grad-job-assistant/commit/1337af09060d70bb34097aa186a0067158925771)。包括本报告最终提交在内的完整列表：[45 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/45/commits)、[46 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/46/commits)、[47 commits](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47/commits)。
 
 ## 4. 精确变更文件清单
 
@@ -69,10 +69,10 @@ B2-c3b 已完成：[Draft #44](https://github.com/greglien282-a11y/ai-grad-job-a
 - 隔离Alembic升级/check/清理通过，无新增迁移，head仍0015_fact_classification。
 - 冻结离线合同 **12/12、48/48**；S02诊断及TOKENIZER_NOT_PROVIDED保留。质量脚手架通过但仍DRAFT/人审未完成/真实质量null；Mock真实请求和费用0。
 - #46 [CI39639366346](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39639366346) 精确fc9286e，workflow和三job全部completed/success：后端2128+1既有Windows-only skip，React158/build，Chromium59/types及迁移/离线检查通过。
-- #47 [最终CI39644769165](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39644769165) 精确afe82bb，React/Chromium已成功，FastAPI最终待核验。旧CI39643557810对应ec0，已被替代，不作为最终证据。
-- #45仅文档，不匹配应用CI paths；状态是NOT_TRIGGERED，不是假称跑过全量。最终HEAD仍需只读核验。
+- #47 [最终CI39644769165](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39644769165) 精确afe82bb，workflow及三job均completed/success：Linux后端 **2260 passed、1既有平台skip / 1371.16s**，React158/build、Chromium59/types和迁移/离线检查全部通过。skip是`test_probe_secret_safety.py:195`的Windows PowerShell5.1 Fake Native harness，本地Windows同用例通过。旧CI39643557810对应ec0，已被替代，不作为最终证据。
+- #45仅文档，不匹配应用CI paths；状态是NOT_TRIGGERED，不是假称跑过全量；精确最终文档HEAD以PR和最终答复为准。
 
-本地非后端组件运行后仅有测试模型修复；对应生产/前端/脚本/frozen树经git diff证实相同。最终CI会在afe精确HEAD重新运行所有组件，避免把不同HEAD的模型结果混用。
+本地非后端组件运行后仅有测试模型修复；对应生产/前端/脚本/frozen树经git diff证实相同。最终CI已在afe精确HEAD重新运行所有组件，避免把不同HEAD的模型结果混用。曾发生短暂TLS/连接器错误，已恢复并核验推送与CI；没有修改网络安全配置或重跑workflow掩盖结果。
 
 ## 6. 复现问题、限制与审批
 
@@ -102,4 +102,4 @@ B2-c3b 已完成：[Draft #44](https://github.com/greglien282-a11y/ai-grad-job-a
 
 下一阶段候选：先审分类依据/来源投影候选与R03可用性政策，再决定正式CO3事务/幂等/限权Schema和完整读取/审核/恢复链的实现许可。没有上述审批，不进入typed writer、classify、关系、截止或生产阶段。
 
-最终边界：**生产部署否；真实付费Provider否；生产数据库修改否；Merge/直接修改main否；正式typed writer开放否。** 所有PR保持Draft；CI、文档和最终审计完成后停止等待用户及ChatGPT独立审查。
+最终边界：**生产部署否；真实付费Provider否；生产数据库修改否；Merge/直接修改main否；正式typed writer开放否。** 所有PR保持Draft；完成最终文档提交和只读状态审计后停止，等待用户及ChatGPT独立审查。

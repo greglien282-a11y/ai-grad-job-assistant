@@ -88,7 +88,7 @@ M4's declaration basis is hypothetical, not a real classification_citations fiel
 
 ## M5 — integrated audit and final evidence
 
-Status: **LOCAL_COMPLETE / CI_IN_PROGRESS**, final report below and in `OVERNIGHT_REPORT.md`. Final acceptance must use #47 afe82bb..., not the earlier checkpoint.
+Status: **COMPLETE (research/evidence delivery only)**, final report below and in `OVERNIGHT_REPORT.md`. Final acceptance uses #47 afe82bb..., not the earlier checkpoint. No product/production BLOCK is closed.
 
 Deep audit found two additional real **model** gaps at ec0c961: unquoted trailing Turn text and a nonempty but drifted receipt tag could pass recovery/state checks. Command `python -m pytest -q tests/test_overnight_typed_model.py -k 'turn_unquoted_tail or receipt_tag_drift'` => **2 failed, 100 deselected**. Log `.e2e/overnight-m5-red.log`. Fix afe82bb reconstructs the body from graph edges, reruns unchanged c3a full sentence coverage and verifies the canonical fingerprint. Both cases now pass; no production/old-test changes.
 
@@ -114,10 +114,18 @@ Cleanup after both local full processes were terminal: both synthetic databases 
 
 ## Verification ledger
 
-M2 targeted42, M3 targeted30, M4 final102 passed; final integrated backend2261 passed. #46 exact-head independent CI success as above, React158/build and Chromium59/types verified in job logs. #47 final [CI39644769165](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39644769165) is still IN_PROGRESS at afe82bb...; React/Chromium successful, FastAPI pending final verification. #45 is documentation-only and does not match application workflow paths; not falsely called a new green full run. c3b's earlier results remain evidence for #44 only.
+M2 targeted42, M3 targeted30, M4 final102 passed; final integrated backend2261 passed. #46 exact-head independent CI success as above, React158/build and Chromium59/types verified in job logs. #47 final [CI39644769165](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39644769165), head_sha **afe82bb10c3dff0eaacfba22406675d1d31b66c3**, is **completed/success**, workflow and all three jobs:
+
+- Linux backend **2260 passed, 1 existing platform skip**,1371.16s. `tests/test_probe_secret_safety.py:195`: PowerShell5.1 Fake Native harness requires Windows; that existing case passes in local Windows2261. No new skip/xfail/timeout change.
+- React **158 passed** plus TypeScript/Vite build; real bundled Chromium **59 passed** plus E2E types.
+- Isolated migrations,12/48,DRAFT quality and Mock passed; real requests/fees0, actual real quality remains null.
+
+#45 is documentation-only and does not match application workflow paths; not falsely called a new green full run. c3b's earlier results remain evidence for #44 only. Brief GitHub TLS/connector transport errors did not cause CI reruns or false terminal claims; document checkpoint1337af0 was retried as a fast-forward push after connectivity recovered.
 
 ## Risks / next resumption
 
 Confirmed existing risks: old manual/mining reworded rejected claims can create new legacy pending facts; legacy confirmed can contain plan text; source-basis projection cannot yet express recorded classification evidence. Future semantic independence and writer atomicity remain unimplemented.
 
-Next: verify final CI head/status/counts/skip; replace CI_IN_PROGRESS, update PR bodies and final report, commit/push documentation, verify latest main/Draft states, then completion audit/stop. Preserve #44/#45/#46/#47 Draft. Test cluster is stopped/resources clear; do not restart without a new testing need. Full raw logs stay ignored; no credential/diagnostic upload.
+Completion artifact: `OVERNIGHT_REPORT.md` records all13 new files, exact content commits/PRs, full commands/results, evidence classes, known/possible/unresolved risks and seven REQUIRES_USER_APPROVAL groups. Source audit found zero production/frozen/old-test changes; no user edits were overwritten or removed. Latest remote main rechecked as17a35e9... before final documentation. Final docs own SHA is reported by #45/current Git HEAD rather than self-invented in its content.
+
+Stop after final push/PR-state audit: preserve #44/#45/#46/#47 Draft. No Ready/Merge/Deploy/typed writer/production role/provider/paid operation. R03/D4/D5/D6 remaining/D8 and basis/born-contract/cutoff/CO3 real transaction/HMAC/permissions all remain BLOCK/REQUIRES_USER_APPROVAL. Test cluster stopped/resources clear; no restart. Full raw logs stay ignored; no credential/diagnostic upload.
