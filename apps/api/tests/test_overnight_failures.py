@@ -57,13 +57,18 @@ def test_executable_isolated_read_failure_no_partial_or_business_effect(reader,k
 @pytest.mark.parametrize('kind',['fact','summary','export'])
 def test_observed_typed_basis_is_missing_not_verified_and_reads_are_zero_effect(reader,kind):
     s=reader;b=seed(s);fid=synthetic(s,b);before=digest(s.admin);result=get(s,b,kind)
-    if kind=='fact':facts_out=[result]
+    if kind=='fact':
+        assert result.id==b.fid and result.classification_basis_status=='legacy_unclassified'
+        assert result.classification_citations==[]
+        assert digest(s.admin)==before
+        # The helper reads the legacy sibling; explicitly read the typed fact too.
+        typed=read(s.reader,b.token,sid=b.sid,fid=fid)
+        assert typed.id==fid
+        facts_out=[typed]
     elif kind=='summary':facts_out=[*result.confirmed,*result.pending,*[i.fact for i in result.reviewed_non_contributions]]
     else:facts_out=result.data.facts
-    if kind!='fact':
-        fact=next(f for f in facts_out if f.id==fid)
-        assert fact.classification_citations==[] and fact.classification_basis_status=='not_recorded'
-    else:assert result.classification_basis_status=='legacy_unclassified'
+    fact=next(f for f in facts_out if f.id==fid)
+    assert fact.classification_citations==[] and fact.classification_basis_status=='not_recorded'
     assert all(f.classification_citations==[] for f in facts_out)
     assert digest(s.admin)==before
 
