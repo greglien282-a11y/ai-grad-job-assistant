@@ -13,10 +13,10 @@
   "enabled": false,
   "thread_id": "01a1542e-e712-7f21-b0ae-831becbeec32",
   "branch": "codex/goal-recovery-preflight",
-  "checkpoint_parent_head": "698b8aed005d826af7a0767def3559637cff32fb",
-  "last_successful_commit": "2dc0c6158072438f16eeca181be1d882c77b20a0",
+  "checkpoint_parent_head": "66c7d2e88a9dc9d6ab0676a33313c77a502bf2e0",
+  "last_successful_commit": "66c7d2e88a9dc9d6ab0676a33313c77a502bf2e0",
   "current_subtask": "G0 environment evidence and disabled recovery preflight",
-  "next_instruction": "Read this checkpoint and RECOVERY_PREFLIGHT.md; recheck authoritative PR46/main CI and current Goal/runtime. Keep scheduler disabled. Finish G0 dry-run/CI evidence before G1 or G2.",
+  "next_instruction": "Read this checkpoint, RECOVERY_REHEARSAL.md and RECOVERY_PREFLIGHT.md. Verify Draft PR48 exact-HEAD CI; recheck PR46/main CI and current Goal/runtime. Keep scheduler disabled. G1 needs merged PR46 plus green main CI; G2 remains candidate-only.",
   "blockers": [
     "PR46_NOT_MERGED",
     "POST_PR46_MAIN_CI_NOT_AVAILABLE",
@@ -42,6 +42,10 @@
 
 本轮隔离 worktree：仓库根目录下 `.e2e/worktrees/goal-recovery-preflight`；分支 `codex/goal-recovery-preflight`；从 main 698 建立。根工作区仍保留 #47，未重整、强推、删除或改基线。
 
+本轮 [Draft PR #48](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/48) 包含 G0 和 G1/G2 计划；首个提交 `66c7d2e88a9dc9d6ab0676a33313c77a502bf2e0`，本检查点为其演练证据后继。最终 HEAD 用 Git 锚点及 PR API 核验；CI 结果按 SHA 在 PR 说明更新，不将 pending 当成功。
+
+66c7d2e 的 [CI 39802741779](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39802741779) 已核验 head_sha 一致、workflow 与 Windows/Linux 两个作业 completed/success。这个提交现在是 last_successful_commit；后继检查点自己的 CI 仍需单独核验。
+
 ## 当前结果与未完成项
 
 G0 本机 CLI `0.162.0-alpha.17.2`、goals stable/true、ChatGPT 登录已核验。桌面版本 `26.1007.71326` build `20398`，更新检查返回 restart_required；本轮未重启或更新。宿主当前账户未提权；Task Scheduler Running/Automatic；名称含 Pathwise/Codex 的现存计划任务查询为空。
@@ -50,13 +54,15 @@ G0 本机 CLI `0.162.0-alpha.17.2`、goals stable/true、ChatGPT 登录已核验
 
 原型：`scripts/goal_recovery/preflight.py`，默认禁用且没有执行/安装入口；可选 `--inspect-local` 仅尝试连接已运行 daemon 的白名单读取。它没有模型、业务数据库、Git 写入、Provider 或 scheduler API。检查通过也返回 `DISABLED_ATOMIC_RESUME_UNPROVEN`，不启动工作轮次。
 
-本地专项命令：`python -B -m unittest discover -s scripts/goal_recovery -p "test_*.py" -v`，33 passed，3.546s。首次工具沙箱中 29 passed/4 临时 Git 初始化权限错误；原断言不变，获准宿主测试权限后 33 passed。没有 skip/xfail。真实只读演练和本 HEAD CI 尚待后续记录；不得提前报告成功。
+本地专项命令：`python -B -m unittest discover -s scripts/goal_recovery -p "test_*.py" -v`，33 passed，3.546s。首次工具沙箱中 29 passed/4 临时 Git 初始化权限错误；原断言不变，获准宿主测试权限后 33 passed。没有 skip/xfail。真实只读演练已完成，见 [RECOVERY_REHEARSAL.md](RECOVERY_REHEARSAL.md)；结果为安全拒绝，自动恢复未验证。本 HEAD CI 以 PR 的精确 SHA 结果为准，未核验前不得报告成功。
 
 ## 恢复记录
 
 1. 2026-10-22：读取实际 active Goal；核验 PR/main/CI；#46 未合并，因此 G1 停止，未改正式产品代码。
 2. 2026-10-22：完成 CLI/桌面/认证/额度/任务计划服务核验；发现共享 daemon 连接限制；未调用 turn/start、exec/resume、Goal set/clear 或额度重置接口。
 3. 2026-10-22：建立独立 G0 worktree、默认禁用原型、33 项隔离测试和双平台 CI 候选。下一步：提交检查点，真实只读演练，Draft PR、精确 HEAD CI，然后再次核验 G1 门槛。
+4. 2026-10-22：66c7d2e 上真实默认/本机只读演练：Git 匹配，runtime 不可用，安全停止；HEAD/status/检查点 SHA256 不变，scheduler=0、测试 DB listeners=0。创建 Draft #48；没有启动任何恢复工作轮次。
+5. 2026-10-22：66c7d2e Windows/Linux CI 成功；再次查询 #46 仍未合并。G1 门槛未解除。
 
 每次后续记录必须区分实际执行与合成测试。若真正遇到额度拒绝，记录 RATE_LIMITED、原 attempt ID、准确停止原因与可用的 reset 提示；不得将限额停止记成完成。过期 reset 提示不是恢复许可，必须重新读实时额度和 Goal/runtime。无法记录时不自动再执行，交人工核对。
 
