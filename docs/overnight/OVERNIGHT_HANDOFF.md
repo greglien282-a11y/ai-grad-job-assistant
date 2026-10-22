@@ -60,7 +60,7 @@ CI for #46 exact HEAD: [39639366346](https://github.com/greglien282-a11y/ai-grad
 
 Status: **COMPLETE (NOT_IMPLEMENTED future CO3 specification + EXECUTABLE_ISOLATED_TEST reads)**.
 
-Branch `codex/overnight-typed-model`; BASE_BRANCH=codex/overnight-r03-research; BASE_SHA=`fc9286e8f1b8e0e62f6d59d2821584391d03fd88`; DEPENDS_ON_PR=#46. M3 content commit `23d6e1295a64971c4eae9e117f06ae58ce07d5d9`. PR will be created after the related M4 increment stabilizes; no upstream result is mislabeled independent.
+Branch `codex/overnight-typed-model`; BASE_BRANCH=codex/overnight-r03-research; BASE_SHA=`fc9286e8f1b8e0e62f6d59d2821584391d03fd88`; DEPENDS_ON_PR=#46. M3 content commit `23d6e1295a64971c4eae9e117f06ae58ce07d5d9`. [Draft PR #47](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/47) contains the M3/M4 increments; its final HEAD and integrated evidence are recorded below. No upstream result is mislabeled independent.
 
 Files: `apps/api/tests/test_overnight_failures.py`, `docs/overnight/TYPED_FAILURE_MODEL.md`.
 
