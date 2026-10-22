@@ -1,0 +1,26 @@
+name: Goal recovery preflight checks
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/goal_recovery/**'
+      - 'docs/goal/**'
+      - '.github/workflows/goal-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic policy and temporary Git regression (no Codex/model/network)
+        run: python -m unittest discover -s scripts/goal_recovery -p "test_*.py" -v
