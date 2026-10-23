@@ -75,3 +75,7 @@ $goalSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -Execu
 ## 持续 BLOCK
 
 自动重启与 scheduler 启用、R03、D4/D5 正式批准、D6 剩余、D8、typed writer、classify、related_plan、born-contract/新迁移、生产工厂/角色、真实 Provider、付费调用和部署均未开放。G1 #46/main gate 已解除且 #49 已合并，不再作为当前阻塞。原生 Goal 当前为空需要用户通过支持控制确认；不替它创建或解除预算/暂停。单元测试和可用 Plus 额度不能解除安全或生产 BLOCK。
+
+## 2026-10-24 G2 收尾复核
+
+G2.1–G2.4 已有独立 Draft 和真实工程证据（见 G2_DELIVERY_REPORT.md），不再列为未启动。原生 get_goal 仍为 null，CLI 共享 daemon 仍无成功连接证据，安全 idle→单次执行的原子边界仍未证明。官方 Goal/App Server/exec resume 文档提供状态和命令接口，不提供本机已经满足这些准入条件的证明；更换目标还可能改变预算记账，因此本轮未 set/clear/resume。没有安装调度、启动新 daemon 或模型子进程。33 项预检通过仅证明默认禁用和拒绝策略，自动恢复依然未实现、未启用。

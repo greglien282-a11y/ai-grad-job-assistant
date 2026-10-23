@@ -1,6 +1,6 @@
 # Pathwise 下一轮持续开发检查点
 
-最后核验：2026-10-23 UTC。这是人工可审计、Git 版本化的检查点，**不是恢复授权、进程存活证明或额度凭证**。原生 `get_goal` 实际返回 null，不能沿用旧记录的 active。用户已授权本轮普通工程工作；原生 Goal 注册/恢复由用户通过受支持控制确认，本预检不得代为设置。G1 已由合并的 #49 完成，#47 已关闭。G2.1/#50 和 G2.2/#51 已有独立 Draft 与同 HEAD 全绿专项 CI；G2.3/#52 和 G2.4 尚在实现/验证，不能记为完成。旧 G2.1 staged worktree 仍保留。
+最后核验：2026-10-23 UTC。这是人工可审计、Git 版本化的检查点，**不是恢复授权、进程存活证明或额度凭证**。原生 `get_goal` 实际返回 null，不能沿用旧记录的 active。用户已授权本轮普通工程工作；原生 Goal 注册/恢复由用户通过受支持控制确认，本预检不得代为设置。G1 已由合并的 #49 完成，#47 已关闭。G2.1–G2.4 已有 Draft #50/#51/#52/#53 与精确最终 HEAD 全绿 CI。仅交付隔离候选，不是正式 writer 或生产政策完成。旧 G2.1 staged worktree 仍保留。
 
 ## 机器可读状态
 
@@ -13,19 +13,21 @@
   "enabled": false,
   "thread_id": "01a1542e-e712-7f21-b0ae-831becbeec32",
   "branch": "codex/goal-recovery-preflight",
-  "checkpoint_parent_head": "1e1fc3ebd4de8d0c9119c853c09d85015dbe0bb4",
-  "last_successful_commit": "1e1fc3ebd4de8d0c9119c853c09d85015dbe0bb4",
-  "current_subtask": "G2.1 and G2.2 Draft delivered; G2.3 PostgreSQL reference/full regression and G2.4 UI in progress",
-  "next_instruction": "Read actual native Goal and limits; do not create/clear/resume native Goal. G0 1e1fc3e CI39979217045, G2.1 PR50 fff29fe CI39983033157, G2.2 PR51 203bd69 CI39983508241 succeeded. Continue authorized G2.3 PR52 and G2.4 isolated UI, verify exact HEAD tests/CI, then update checkpoint. Do not redo PR47/49 or enable scheduler/writer.",
+  "checkpoint_parent_head": "1995bcec9266b70280af720ae2989197d9bdee60",
+  "last_successful_commit": "1995bcec9266b70280af720ae2989197d9bdee60",
+  "current_subtask": "G2.1-G2.4 isolated Draft candidates delivered; independent review and production protocol approvals remain",
+  "next_instruction": "Recheck native Goal, main and exact PR/CI HEADs. Native Goal last returned null; never create/clear/resume it or bypass budgets. G2.1 PR50 aa09128 CI39988619663, G2.2 PR51 203bd69 CI39983508241, G2.3 PR52 157e558 CI39984420088, G2.4 PR53 31094a4 CI39988750337 all succeeded. PR53 depends on PR50. Review G2_DELIVERY_REPORT.md and await independent review; fix authorized review findings only. Do not enable writer, change policy, merge PRs, deploy or schedule recovery.",
   "blockers": [
     "NATIVE_GOAL_NOT_REGISTERED",
     "SHARED_CLI_RUNTIME_UNAVAILABLE",
     "ATOMIC_IDLE_TO_RESUME_NOT_PROVEN",
-    "SCHEDULER_NOT_APPROVED"
+    "SCHEDULER_NOT_APPROVED",
+    "INDEPENDENT_REVIEW_REQUIRED",
+    "CO3_CHOICE_SOURCE_PROTOCOL_NOT_APPROVED"
   ],
   "scheduler_approval": "NOT_APPROVED",
   "not_before_utc": 0,
-  "last_attempt_id": "g2-milestones-1-2-20261024"
+  "last_attempt_id": "g2-delivery-checkpoint-20261024"
 }
 ```
 
@@ -44,7 +46,7 @@ G0 worktree：`.e2e/worktrees/goal-recovery-preflight`，分支 `codex/goal-reco
 
 本轮 [Draft PR #48](https://github.com/greglien282-a11y/ai-grad-job-assistant/pull/48) 包含 G0 和 G1/G2 计划；首个提交 `66c7d2e88a9dc9d6ab0676a33313c77a502bf2e0`，本检查点为其演练证据后继。最终 HEAD 用 Git 锚点及 PR API 核验；CI 结果按 SHA 在 PR 说明更新，不将 pending 当成功。
 
-上一已验证交付为 `f28da72740aefaf5b792ed898e2ff54bd2c7bc37`，[CI 39803535806](https://github.com/greglien282-a11y/ai-grad-job-assistant/actions/runs/39803535806) 的 Windows/Linux 33 项预检全绿。last_successful_commit 指向它。当前后继检查点自己的专项/CI 需按新 HEAD 单独记录，不沿用旧 CI。
+早期交付 f28da727 的 CI 39803535806 是历史证据。当前上一已验证 G0 检查点是 `1995bcec9266b70280af720ae2989197d9bdee60`，CI 39985839254 Windows/Linux 33 项全绿；last_successful_commit 指向它。本后继检查点自己的专项/CI 必须按新 HEAD 单独记录，不沿用旧结果。
 
 ## 当前结果与未完成项
 
@@ -54,7 +56,7 @@ G0 worktree：`.e2e/worktrees/goal-recovery-preflight`，分支 `codex/goal-reco
 
 原型：`scripts/goal_recovery/preflight.py`，默认禁用且没有执行/安装入口；可选 `--inspect-local` 仅尝试连接已运行 daemon 的白名单读取。它没有模型、业务数据库、Git 写入、Provider 或 scheduler API。检查通过也返回 `DISABLED_ATOMIC_RESUME_UNPROVEN`，不启动工作轮次。
 
-本地专项命令：`python -B -m unittest discover -s scripts/goal_recovery -p "test_*.py" -v`，33 passed，3.546s。首次工具沙箱中 29 passed/4 临时 Git 初始化权限错误；原断言不变，获准宿主测试权限后 33 passed。没有 skip/xfail。真实只读演练已完成，见 [RECOVERY_REHEARSAL.md](RECOVERY_REHEARSAL.md)；结果为安全拒绝，自动恢复未验证。本 HEAD CI 以 PR 的精确 SHA 结果为准，未核验前不得报告成功。
+早期本地专项记录（历史，不代替本次新 HEAD）：`python -B -m unittest discover -s scripts/goal_recovery -p "test_*.py" -v`，33 passed，3.546s。首次工具沙箱中 29 passed/4 临时 Git 初始化权限错误；原断言不变，获准宿主测试权限后 33 passed。没有 skip/xfail。真实只读演练已完成，见 [RECOVERY_REHEARSAL.md](RECOVERY_REHEARSAL.md)；结果为安全拒绝，自动恢复未验证。本 HEAD CI 以 PR 的精确 SHA 结果为准，未核验前不得报告成功。
 
 ## 恢复记录
 
@@ -79,15 +81,13 @@ G0 worktree：`.e2e/worktrees/goal-recovery-preflight`，分支 `codex/goal-reco
 
 ## 下一轮执行顺序
 
-本轮状态刷新证据：2026-10-23 再次核验 main/#44/#45/#46/#47/#48/#49；main CI 39963621888 同 SHA 全绿。原生 Goal=null；未 set/clear/resume。CLI 仍为 0.162.0-alpha.17.2、ChatGPT 登录，共享 daemon 仍为 Windows 10050。G0 原专项 **33 passed，3.595s**；本提交只改三份文档，脚本、测试与 workflow 无 Diff。检查点 JSON 字段/状态枚举未变，APPROVAL_BLOCKED 只阻止自动预检放行，不撤销用户的普通工程授权。新提交与双平台 CI 将在 #48 说明中按精确 SHA 记录；未知或 pending 不作成功证据。
+1. 读取实际 native Goal、额度、main 和 PR/CI HEAD；null 不是 active/idle，不以文档启用调度或代替用户设置 Goal。
+2. G0 默认禁用预检已整理并保持33项专项；脚本/测试/workflow不变。G1 #49已合并，#47已关闭，不重做。
+3. G2.1/#50、G2.2/#51、G2.3/#52、G2.4/#53 已交付；最终 HEAD、CI 与实际命令见本页末节和 G2_DELIVERY_REPORT.md。#53依赖#50；不要重建候选或直接更改其base。
+4. 等待独立审查；只按用户后续明确范围修正。R03、选择来源持久协议、D4/D5、D6剩余、D8均未批准，不自行开始正式writer或下一阶段。
+5. 若后续真正限额，保存检查点为RATE_LIMITED；不得根据旧reset提示、可用额度、锁文件或文档自行恢复。native Goal和预算控制保持实际状态优先。
 
-1. 先读原生 Goal 和预算状态，不根据文档恢复；null 不是 idle 或 active。APPROVAL_BLOCKED 是本预检的保守 veto，不是代理设置了原生 Goal 暂停。等待用户通过支持控制确认原生目标，普通已授权工程工作可继续。
-2. 完成 #48 文档更新、33 项专项及新 HEAD 双平台 CI；脚本与测试保持原 blob。自动恢复启动能力仍缺证据，保持禁用。
-3. G1 已完成并合并；#47 已关闭。保留历史记录，禁止重复移植或重开旧 PR。
-4. 从已核验 main 开始 G2.1 Python/TS 隔离读取合同，再推进 G2.2 澄清、G2.3 数据库约束设计/隔离参考测试、G2.4 合成 React 旅程。现有未提交 G2.1 候选先审计再复用，不当作交付成果。
-5. 每个里程碑用独立 Draft PR、真实专项与 CI 更新检查点。下一项在用户授权内继续，不再沿用上一轮“交付 #49 后等待”的过期工程停止点；原生 Goal/预算控制始终由实际状态约束。
-
-所有 Ready、Merge、Deploy，以及调度器安装/启用均等待用户单独审批。Goal 未完成；不会因为 G0 测试通过而将 G1/G2 删减出目标。
+所有 Ready、GitHub PR Merge、Deploy、生产写入，以及调度器安装/启用均未授权。当前只完成四项隔离工程候选，不把长期产品目标或自动恢复标成完成。
 
 ## 2026-10-24 G2.1/G2.2 已验证检查点
 
@@ -97,3 +97,12 @@ G0 worktree：`.e2e/worktrees/goal-recovery-preflight`，分支 `codex/goal-reco
 - G2.3 Draft #52，HEAD `157e5589a3971608c8d80447e9ed6a38fafa70e8`；8 项真实 PostgreSQL/模型区分参考专项通过，完整后端/CI 尚在运行。旧 React 158/build、隔离迁移、12/48、质量与 Mock 已通过；真实 Chromium 59 尚在运行，不提前标绿。Mock 首次因该命令缺少隔离 DB 环境而拒绝，补齐合成 URL 后通过；未放宽代码。
 - G2.4 已从 G2.1 分支建立隔离 UI worktree，尚未提交/PR/完成浏览器验证。只用预先验证的合成样本，不运行真实分类器或保存。发现 M4 的 statement-source basis 与独立 choice-source 候选不一致，在 G2.3 明确列为待批准方案，未暗改持久语义。
 - 原生 get_goal 仍 null，用户已被提示用支持控制注册/恢复，尚未收到确认。普通工程依照用户明确授权继续；无 native Goal set/clear/resume，无预算/账户/密钥切换或额度重置。所有 Draft 保持 Draft。
+
+## 2026-10-24 最终 G2 工程候选检查点
+
+- G2.1 #50 最终 `aa09128f4ce16c7446e65ccd2acdf2cb0ba0a6b9`，CI 39988619663 Windows/Linux 全绿；Python43（53 共享例）/TS57/typecheck。全角日期年份的跨语言偏差先红灯再修正，仅研究解析器改动。
+- G2.2 #51 仍 `203bd690afad84ad96c5e6927319aed2272c1cfd`，CI39983508241 全绿，9 方法含24对抗例，未保存、未解锁。
+- G2.3 #52 最终 `157e5589a3971608c8d80447e9ed6a38fafa70e8`，CI39984420088 workflow/FastAPI/React/Chromium 全绿。真实本地后端2340，Linux2339+1既有Windows skip，React158、真实PG/Chromium59、迁移/12/48/质量/Mock全部通过。
+- G2.4 #53 最终 `31094a430e156fd040d79d572818c50f8e49eb6a`，明确依赖 #50 的 aa09128；仅普通追加依赖同步、无强推或 GitHub PR 合并，Diff仍15 UI增量文件。CI39988750337 全绿，Python夹具2/TS16/build/bundled Chromium9；请求仅静态GET，无/api/。本机5187预览可看，刷新丢失内存模拟结果。
+- 两个合成库临时Schema/随机角色0，专用15487集群已停止；只有UI预览运行。原生Goal仍null，未设置或解除控制。所有Draft保持Draft，未Ready/Merge/Deploy。
+- 详细文件、命令、模拟边界、失败记录和审批项见 G2_DELIVERY_REPORT.md。R03/D4/D5/D6剩余/D8、真实分类依据/CO3/生产writer/Provider/付费继续BLOCK。工程候选等待独立审查；没有把native Goal标COMPLETE或RATE_LIMITED，也不启用恢复执行器。
