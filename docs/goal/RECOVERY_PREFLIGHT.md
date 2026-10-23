@@ -4,7 +4,7 @@
 
 ## 支持接口与实际限制
 
-本机 `codex exec --help`、`codex exec resume --help` 确认非交互执行及显式 session ID 恢复接口；CLI 是 `0.162.0-alpha.17.2`。`features list` 显示 goals stable/true，当前线程的 active Goal 也由桌面工具读取到。`login status` 显示 ChatGPT，仅证明本地认证方式；桌面实时 quota 成功读取支持本次账号有效，但不能替代未来 CLI 认证检查。
+本机此前 `codex exec --help`、`codex exec resume --help` 确认非交互执行及显式 session ID 恢复接口；2026-10-23 CLI 复查仍是 `0.162.0-alpha.17.2`，`login status` 仍为 ChatGPT。历史 features list 显示 goals stable/true，但本轮原生 `get_goal` 返回 null；此前 active 不能沿用。认证方式、历史 quota 或文档 ACTIVE 均不能替代未来在线认证/额度/原生 Goal 检查。没有调用 Goal set/clear/resume。
 
 官方依据（2026-10-22 已打开正文核对）：
 
@@ -74,4 +74,4 @@ $goalSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -Execu
 
 ## 持续 BLOCK
 
-自动重启与 scheduler 启用、G1 #46/main gate、R03、D4/D5 正式批准、D6 剩余、D8、typed writer、classify、related_plan、born-contract/新迁移、生产工厂/角色、真实 Provider、付费调用和部署均未开放。单元测试和可用 Plus 额度不能解除任何一个 BLOCK。
+自动重启与 scheduler 启用、R03、D4/D5 正式批准、D6 剩余、D8、typed writer、classify、related_plan、born-contract/新迁移、生产工厂/角色、真实 Provider、付费调用和部署均未开放。G1 #46/main gate 已解除且 #49 已合并，不再作为当前阻塞。原生 Goal 当前为空需要用户通过支持控制确认；不替它创建或解除预算/暂停。单元测试和可用 Plus 额度不能解除安全或生产 BLOCK。
