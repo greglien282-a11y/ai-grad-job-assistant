@@ -54,7 +54,7 @@ text_provenance 固定 original/current 两组，每组包含 availability、tur
 
 命令：`python -B -m unittest discover -s research/declaration_read -p "test_*.py" -v`。测试包括记录缺失/显式声明、八种三列组合、四种审核状态、版本/ID/枚举严格拒绝、原始/当前引用替换、未知校验合同、日期、27→28、emoji/组合字符/ZWJ/CRLF、UTF-16 错位、重叠/重复/遗漏引用、JSON 重复键、无部分响应、输入不变、生产隔离，以及上述结构自洽但语义不成立的反例。
 
-本地 Python 43 项（含 52 个共享用例子项）、TypeScript Vitest 56 项及 `tsc --noEmit` 通过。共享 JSON 覆盖八种分类组合 × 四种审核状态，两个实现按显式预期解析同一材料。命令：`npm ci --ignore-scripts --no-audit --no-fund`、`npm run typecheck`、`npm test`，目录 `research/declaration_read/web`。独立 Windows/Linux CI 重复这些检查。Node 22；JSON 文本入口拒绝重复键、非有限数、非整数词法，直接 JS 对象无法区分数字 1 与 1.0，因此跨语言文本边界使用 parseJson。
+本地 Python 43 项（含 53 个共享用例子项）、TypeScript Vitest 57 项及 `tsc --noEmit` 通过。共享 JSON 覆盖八种分类组合 × 四种审核状态，两个实现按显式预期解析同一材料。命令：`npm ci --ignore-scripts --no-audit --no-fund`、`npm run typecheck`、`npm test`，目录 `research/declaration_read/web`。独立 Windows/Linux CI 重复这些检查。Node 22；JSON 文本入口拒绝重复键、非有限数、非整数词法，直接 JS 对象无法区分数字 1 与 1.0，因此跨语言文本边界使用 parseJson。
 
 现有 FastAPI/React/Chromium/迁移/12/48/质量/Mock 均未修改；本 PR 不声称做过正式产品集成验收，也没有数据库身份或持久化证明。后续原型里程碑的综合回归另记实际执行证据。
 
@@ -67,3 +67,5 @@ text_provenance 固定 original/current 两组，每组包含 availability、tur
 3. 旧标签缺记录、typed 编辑后当前声明失效、关系进展另建事实的产品语义仍未批准；本候选不实现 classify 或 typed 编辑。
 4. G2.4 合成界面可试用本合同，但必须直写“合成演示，未保存”和“用户声明不是平台认证”。真实前端和正式 writer 继续关闭。
 5. 所有 R03、D4/D5 正式批准、D6 剩余、D8 及生产 BLOCK 保留。保持 Draft，等待独立审查，不 Ready/Merge/Deploy。
+
+收尾跨语言红灯：全角年份的 recorded_at 原 Python 以 \d 接受、TS 以 ASCII 拒绝；共享用例先实测失败（parsed_candidate），再将 Python 日期格式限定 ASCII 数字。修复不改变正式 DTO、语言规则或时间可信性边界。

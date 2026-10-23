@@ -1,6 +1,6 @@
 # G2.4 — 独立 typed 录入旅程（合成 / 未保存）
 
-基线 main `b96581175f4a2a307a7cfcfb7d60d1609d83983d`；开发分支从 G2.1/#50 的 `fff29fefa238b1ccc738af2ba540bd4e8fab17cb` 建立，Draft PR 明确以 #50 分支为 base，仅展示 UI 增量，不能跳过 #50 独立审查。没有合并任何 PR，也未改正式 apps。
+基线 main `b96581175f4a2a307a7cfcfb7d60d1609d83983d`；开发分支从 G2.1/#50 的 `fff29fefa238b1ccc738af2ba540bd4e8fab17cb` 建立；随后通过追加依赖同步提交纳入 #50 的 ASCII 时间戳修正 `aa09128f4ce16c7446e65ccd2acdf2cb0ba0a6b9`（未强推、未合并任何 GitHub PR）。Draft PR 明确以 #50 分支为 base，仅展示 UI 增量，不能跳过 #50 独立审查。没有合并任何 PR，也未改正式 apps。
 
 ## 本地查看
 
