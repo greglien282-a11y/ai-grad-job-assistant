@@ -1,0 +1,12 @@
+[
+  {"id":"gq03","label":"整理记录","text":"我整理了27条缺失记录。","kind":"personal_action","stage":"completed"},
+  {"id":"progress","label":"进行中","text":"我正在部署服务。","kind":"personal_action","stage":"in_progress"},
+  {"id":"plan","label":"未来计划","text":"我计划部署服务。","kind":"plan","stage":"planned"},
+  {"id":"plan-progress","label":"准备中的计划","text":"我正在准备部署服务。","kind":"plan","stage":"in_progress"},
+  {"id":"team","label":"团队背景","text":"我们部署了服务。","kind":"background","stage":"not_applicable"},
+  {"id":"boundary","label":"个人限制","text":"我没有部署服务。","kind":"boundary","stage":"not_applicable"},
+  {"id":"unicode","label":"Unicode 原话","text":"我制作了👩‍💻原型图。","kind":"personal_action","stage":"completed"},
+  {"id":"numeric_spelling","label":"数字写法变化","text":"我测试了三个导出按钮。","kind":"personal_action","stage":"completed"},
+  {"id":"synonym","label":"同义表述变化","text":"我验证了3个导出按钮。","kind":"personal_action","stage":"completed"},
+  {"id":"team_to_person","label":"责任归属变化","text":"我部署了服务。","kind":"personal_action","stage":"completed"}
+]
