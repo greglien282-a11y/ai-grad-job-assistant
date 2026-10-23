@@ -1,0 +1,39 @@
+name: Synthetic typed journey
+on:
+  pull_request:
+    paths:
+      - 'research/typed_journey/**'
+      - 'research/declaration_read/**'
+      - 'docs/goal/G2_4_TYPED_JOURNEY.md'
+      - '.github/workflows/typed-journey-candidate.yml'
+permissions:
+  contents: read
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -B -m unittest discover -s research/declaration_read -p "test_*.py" -v
+      - run: python -B -m unittest discover -s research/typed_journey -p "test_*.py" -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/typed_journey
+      - run: npm test
+        working-directory: research/typed_journey
+      - run: npm run build
+        working-directory: research/typed_journey
+      - run: npx playwright install --with-deps chromium --only-shell
+        working-directory: research/typed_journey
+      - run: npm run test:browser
+        working-directory: research/typed_journey
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-journey-evidence
+          path: research/typed_journey/test-results/
