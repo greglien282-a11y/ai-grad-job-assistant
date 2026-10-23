@@ -184,7 +184,7 @@ def parse(payload: object) -> Result:
                     and declaration_source["quote"] == declaration_text(s),
                     "candidate_declaration_choice_mismatch")
             require(type(d["recorded_at"]) is str and bool(re.fullmatch(
-                r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", d["recorded_at"])), "candidate_timestamp_invalid")
+                r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", d["recorded_at"])), "candidate_timestamp_invalid")
             from datetime import datetime  # Parsing only; never reads the clock.
             try:
                 datetime.strptime(d["recorded_at"], "%Y-%m-%dT%H:%M:%SZ")
