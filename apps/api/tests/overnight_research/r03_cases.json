@@ -1,0 +1,30 @@
+{
+  "evidence_class": "SIMULATED",
+  "synthetic": true,
+  "cases": [
+    {"id":"exact_new_turn","old":"我测试了3个导出按钮。","new":"我测试了3个导出按钮。","status":"rejected","past":false,"source":"new","expected":["EXACT_REUSE","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"numeric_spelling","old":"我测试了3个导出按钮。","new":"我测试了三个导出按钮。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"synonym","old":"我测试了3个导出按钮。","new":"我验证了3个导出按钮。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"past_rejected_pending","old":"我测试了3个导出按钮。","new":"我测试了三个导出按钮。","status":"pending","past":true,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"past_rejected_confirmed","old":"我测试了3个导出按钮。","new":"我验证了3个导出按钮。","status":"user_confirmed","past":true,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"same_source_overlap","old":"我测试了3个导出按钮。","new":"我部署了服务。","status":"rejected","past":false,"source":"overlap","expected":["SOURCE_REUSE","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"same_turn_disjoint","old":"我测试了3个导出按钮。","new":"我部署了服务。","status":"rejected","past":false,"source":"disjoint","expected":["HISTORY_RISK"],"language":"eligible_candidate","unrelated":true},
+    {"id":"legacy_missing_interval","old":"我测试了3个导出按钮。","new":"我部署了服务。","status":"rejected","past":false,"source":"unknown","expected":["SOURCE_REUSE","HISTORY_RISK"],"language":"eligible_candidate","unrelated":true},
+    {"id":"unrelated_current","old":"我测试了3个导出按钮。","new":"我部署了服务。","status":"rejected","past":false,"source":"new","expected":["HISTORY_RISK"],"language":"eligible_candidate","unrelated":true},
+    {"id":"unrelated_past_pending","old":"我测试了3个导出按钮。","new":"我编写了脚本。","status":"pending","past":true,"source":"new","expected":["HISTORY_RISK"],"language":"eligible_candidate","unrelated":true},
+    {"id":"unrelated_past_confirmed","old":"我测试了3个导出按钮。","new":"我制作了🧪原型图。","status":"user_confirmed","past":true,"source":"new","expected":["HISTORY_RISK"],"language":"eligible_candidate","unrelated":true},
+    {"id":"team_to_person","old":"我们部署了服务。","new":"我部署了服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"plan_to_done","old":"我计划部署服务。","new":"我部署了服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"negation_removed","old":"我没有部署服务。","new":"我部署了服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"quantity_changed","old":"我测试了3个导出按钮。","new":"我测试了4个导出按钮。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"qualifier_removed","old":"我测试了3个导出按钮，但不是独立完成。","new":"我测试了3个导出按钮。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"gq03_number_changed","old":"我整理了27条缺失记录。","new":"我整理了28条缺失记录。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"},
+    {"id":"team_still_in_new","old":"我部署了服务。","new":"我们部署了服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"requires_clarification"},
+    {"id":"plan_still_in_new","old":"我部署了服务。","new":"我计划部署服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"requires_clarification"},
+    {"id":"uncertain_still_in_new","old":"我部署了服务。","new":"我可能部署过服务。","status":"rejected","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"requires_clarification"},
+    {"id":"no_rejection_synonym","old":"我测试了3个导出按钮。","new":"我验证了3个导出按钮。","status":"user_confirmed","past":false,"source":"new","expected":["SEMANTICALLY_SUSPECTED"],"language":"eligible_candidate"},
+    {"id":"no_rejection_unrelated","old":"我测试了3个导出按钮。","new":"我部署了服务。","status":"user_confirmed","past":false,"source":"new","expected":[],"language":"eligible_candidate","unrelated":true},
+    {"id":"unknown_semantics","old":"旧的未支持表达。","new":"新的未支持表达。","status":"pending","past":false,"source":"new","expected":[],"language":"unsupported"},
+    {"id":"historical_exact","old":"我测试了4个导出按钮。","prior":"我测试了3个导出按钮。","new":"我测试了3个导出按钮。","status":"pending","past":true,"source":"new","expected":["EXACT_REUSE","SEMANTICALLY_SUSPECTED","HISTORY_RISK"],"language":"eligible_candidate"}
+  ]
+}
