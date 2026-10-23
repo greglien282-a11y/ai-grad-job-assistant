@@ -1,0 +1,34 @@
+name: Synthetic declaration read candidate
+
+on:
+  pull_request:
+    paths:
+      - 'research/declaration_read/**'
+      - 'docs/goal/G2_1_DECLARATION_READ_CANDIDATE.md'
+      - '.github/workflows/declaration-read-candidate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -B -m unittest discover -s research/declaration_read -p "test_*.py" -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/declaration_read/web
+      - run: npm run typecheck
+        working-directory: research/declaration_read/web
+      - run: npm test
+        working-directory: research/declaration_read/web
