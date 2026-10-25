@@ -56,6 +56,10 @@ npm test
 
 上述修正后完整 G3 本机重新执行：228 passed / 39.15s（137 真实 PostgreSQL、91 纯解析），TS 93/typecheck 通过。最初 88a315d 的 CI 40215280792/40215280494 是修正前源 HEAD 的证据，不能替代最终修正 HEAD 的新 CI。21 文件边界保持不变。
 
+版本矩阵再补布尔/浮点/字符串/NULL/未知整数：真实红灯显示 Python True==1、3.0==3 会使参考 GET 接受非整数版本。仅新研究 _view 强制 type(version) is int，旧正式恢复合同不改；跨三种存储版本补 15 项反例。最终数量与 CI 仍按最新 HEAD 报告。
+
+最终版本矩阵修正后本机 G3：243 passed / 50.82s（152 真实 PostgreSQL、91 纯解析）；TypeScript/bridge 93 项不变。原生账户只读观测 ordinaryUsageAllowed=true、五小时已用4%、周已用7%，只是该时刻快照；未消费任何重置额度或更改预算，自动恢复仍关闭。
+
 真实非保障反例：正常适配器拒绝计划当 completed；受限 SQL 身份直接构造完整图并填写 validator label 可 COMMIT。测试以“数据库没有证明语言校验执行”为预期风险证据，未绕过 owner/ACL 伪造语义安全。
 
 已重新执行未改动的 G2/G0 Python：declaration_read 43、clarification 9、typed_journey fixtures 2、goal_recovery 33，均通过，无新增 skip/xfail。G3 workflow 还执行完整 FastAPI、隔离迁移、12/48、质量/Mock、React build、真实 Chromium/PG 与原 G2 Chromium；结果必须等到终态。

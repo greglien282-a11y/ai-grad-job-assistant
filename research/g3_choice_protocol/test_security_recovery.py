@@ -87,7 +87,7 @@ def test_real_process_kill_and_readonly_recovery(model, scheme, point):
 
 
 @pytest.mark.parametrize("stored", [1, 2, 3])
-@pytest.mark.parametrize("requested", [1, 2, 3])
+@pytest.mark.parametrize("requested", [1, 2, 3, True, 3.0, "3", None, 4])
 def test_real_reference_collision_domain_with_opaque_old_versions(
     model, stored, requested
 ):
@@ -123,7 +123,7 @@ def test_real_reference_collision_domain_with_opaque_old_versions(
         )
     before = m.snapshot()
     scheme = "A" if requested == 3 else "opaque"
-    if stored == requested:
+    if type(requested) is int and stored == requested:
         with m.connect("reader", True) as db:
             result = recover(
                 db, b.sid, b.token, "collision", version=requested, scheme=scheme

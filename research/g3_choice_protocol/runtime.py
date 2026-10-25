@@ -216,7 +216,11 @@ def _view(db, row, version, scheme):
         "SELECT clock_timestamp()>%s AS expired", (row["expires_at"],)
     ).fetchone()["expired"]:
         raise Refused("expired")
-    if row["contract_version"] != version or row["scheme"] != scheme:
+    if (
+        type(version) is not int
+        or row["contract_version"] != version
+        or row["scheme"] != scheme
+    ):
         raise Refused("contract_mismatch")
     db.execute("SELECT ref_validate(%s)", (row["id"],))
     choices = db.execute(
