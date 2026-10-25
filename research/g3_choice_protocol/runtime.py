@@ -107,11 +107,12 @@ def admit(db, *, mode="writer"):
         "ref_revision",
         "ref_erase",
         "ref_immutable",
+        "ref_lock_operation",
     }
     executable = {"ref_authorize", "ref_validate"} | (
-        {"ref_record_auth"} if mode == "writer" else set()
+        {"ref_record_auth", "ref_lock_operation"} if mode == "writer" else set()
     )
-    if {f["proname"] for f in functions} != expected_functions or len(functions) != 7:
+    if {f["proname"] for f in functions} != expected_functions or len(functions) != 8:
         raise Refused("reference_schema_unavailable")
     for f in functions:
         if (
@@ -275,7 +276,7 @@ def apply(db, sid, token, key, body, *, fault=None):
     authorized(db, sid, token)  # no version/history detail before authentication
     db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))", (digest(key),))
     row = db.execute(
-        "SELECT * FROM ref_operations WHERE key_digest=%s", (digest(key),)
+        "SELECT * FROM ref_lock_operation(%s) WHERE id IS NOT NULL", (digest(key),)
     ).fetchone()
     if row:
         if row["state"] == "deleted":
@@ -463,7 +464,11 @@ def apply(db, sid, token, key, body, *, fault=None):
                 "finite_rule_match",
                 tid if fault == "choice_turn" and ctid else ctid,
                 choice_cursor if ctid else None,
-                choice_end,
+                (
+                    choice_end + 1
+                    if fault == "choice_end" and slot == len(items)
+                    else choice_end
+                ),
                 choice_quote,
             ),
         )

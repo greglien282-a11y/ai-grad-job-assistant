@@ -206,6 +206,23 @@ def test_real_B_wrong_choice_turn_is_not_original_source(model):
     assert m.snapshot() == before
 
 
+@pytest.mark.parametrize("n", [1, 3, 5])
+def test_real_B_choice_end_past_saved_turn_is_not_a_valid_exact_quote(model, n):
+    m = model
+    b = m.seed()
+    before = m.snapshot()
+    with pytest.raises(psycopg.errors.CheckViolation), m.connect() as db:
+        apply(
+            db,
+            b.sid,
+            b.token,
+            "overlong-choice",
+            command(b.sid, b.pid, TEXTS[:n], scheme="B"),
+            fault="choice_end",
+        )
+    assert m.snapshot() == before
+
+
 @pytest.mark.parametrize("scheme", ["A", "B"])
 def test_real_duplicate_selection_and_actor_forgery_not_accepted(model, scheme):
     m = model

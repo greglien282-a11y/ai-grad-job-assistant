@@ -156,6 +156,7 @@ def model():
                 )
         for kind, fn in (
             ("writer", "ref_record_auth(uuid,uuid,text)"),
+            ("writer", "ref_lock_operation(text)"),
             ("eraser", "ref_erase(uuid,text)"),
         ):
             admin.execute(

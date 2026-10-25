@@ -50,6 +50,12 @@ npm test
 
 真实红灯：B 的后续独立事实重复相同标签时触发 ref_turns_session_id_purpose_content_key。补测先得到 A 通过/B 失败；仅修改新参考 SQL 为正文专用唯一索引后 A/B 都通过。未放宽事件 ID、selection ID、slot 或原话重复限制。
 
+提交后自审新增 B 选择区间尾部越界负例，N=1/3/5 均先红灯：substring 截短越界导致错误区间可以提交。新参考 SQL 补充 end<=保存正文长度、区间长度等于 quote code-point 长度；未修改正式来源约束。最终专项数量以修正后的 PR HEAD 为准，不复用前一 HEAD 的 CI。
+
+另一真实两连接红灯：同键 POST 缓存原回执后，删除能在图读取前提交，导致 effects=[]。修正为鉴权后通过新私有 definer 锁函数读取 operation，保护整份 replay；不授予 writer UPDATE、不允许 reader 执行、不改变 GET 只读合同。直接 SELECT FOR UPDATE 因原最小权限被拒绝的证据保留在回归中，未以扩大表权限解决。
+
+上述修正后完整 G3 本机重新执行：228 passed / 39.15s（137 真实 PostgreSQL、91 纯解析），TS 93/typecheck 通过。最初 88a315d 的 CI 40215280792/40215280494 是修正前源 HEAD 的证据，不能替代最终修正 HEAD 的新 CI。21 文件边界保持不变。
+
 真实非保障反例：正常适配器拒绝计划当 completed；受限 SQL 身份直接构造完整图并填写 validator label 可 COMMIT。测试以“数据库没有证明语言校验执行”为预期风险证据，未绕过 owner/ACL 伪造语义安全。
 
 已重新执行未改动的 G2/G0 Python：declaration_read 43、clarification 9、typed_journey fixtures 2、goal_recovery 33，均通过，无新增 skip/xfail。G3 workflow 还执行完整 FastAPI、隔离迁移、12/48、质量/Mock、React build、真实 Chromium/PG 与原 G2 Chromium；结果必须等到终态。

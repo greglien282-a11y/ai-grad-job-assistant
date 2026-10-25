@@ -224,6 +224,12 @@ def test_real_role_boundaries_readonly_owner_and_credential_not_client_actor(mod
         recover(db, b.sid, b.token, "synthetic-key")
     with pytest.raises(psycopg.errors.InsufficientPrivilege), m.connect("reader") as db:
         db.execute("SELECT ref_record_auth(%s,%s,%s)", (uuid4(), b.sid, b.token))
+    with pytest.raises(psycopg.errors.InsufficientPrivilege), m.connect(
+        "reader", True
+    ) as db:
+        db.execute("SELECT ref_lock_operation(%s)", (digest("synthetic-key"),))
+    with pytest.raises(psycopg.errors.InsufficientPrivilege), m.connect() as db:
+        db.execute("SELECT * FROM ref_operations FOR UPDATE")
     with pytest.raises(psycopg.errors.InsufficientPrivilege), m.connect() as db:
         db.execute(sql.SQL("SET ROLE {}").format(sql.Identifier(m.roles["owner"])))
     with pytest.raises(psycopg.errors.InsufficientPrivilege), m.connect() as db:

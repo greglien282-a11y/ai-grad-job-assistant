@@ -56,6 +56,8 @@ flowchart TD
 
 选择 Turn 是 UI 点选的序列化，**不是用户手写原话**。正式采用 B 必须新批准 purpose、显示方式以及对 Mining/导出/恢复的影响，不能让旧 transcript 把它当自然语言输入。这里并未向正式 Turn 加字段。
 
+选择行引用检查 end 不超过保存正文、区间 code-point 长度精确等于 quote 长度，不能只检查 substring 相等；PostgreSQL 会截短越界 substring。N=1/3/5 尾区间越界负例先实际红灯，再补参考数据库谓词。
+
 G2.1 当前要求每条声明引用独立且完整的选择 Turn。B 的 N>1 单 Turn 多行也不能直接通过它；A/B 都需要显式新读取合同。另一种 N 个选择 Turn（共 N+1）未在本轮实现，不能宣称被当前比较证明。
 
 ### 身份、版本和不可变性
@@ -73,6 +75,8 @@ UPDATE/DELETE/TRUNCATE 被禁止；即使故障测试给专门 mutator LOGIN 这
 ## G3.2：真实 PostgreSQL 研究及边界
 
 每项数据库测试使用随机 Schema、NOLOGIN owner、独立随机 writer/reader/eraser LOGIN。另有专用 mutator 只用于攻击测试。provisioner 仅在正常请求外建夹具、授予临时权限或注入故障；正常读写不使用 owner。finally 删除本次 Schema 和角色，不复用生产对象或读取真实凭据。
+
+参考模型每个 Session 仅配置一个 Project ID；没有模拟正式的多 Project 图、完整账户系统、审核状态变化或 worker。这些简化不能变成生产唯一性政策。
 
 writer 仅能 SELECT 所需表/列、INSERT 图的允许列、UPDATE Session.revision，不能改历史、DDL、成为 owner 或直接生成认证上下文。reader 只有 SELECT/白名单只读函数，无 issuer/erase 执行权限。eraser 只有单独删除函数执行权限。均无 superuser/createdb/createrole/bypass/replication/成员身份。
 
@@ -101,6 +105,8 @@ Python 复用 G2.1 的基础字段/quote 校验，不复用其声明投影；TS 
 ## G3.4：事务、恢复与威胁模型
 
 研究新命令顺序：身份/权限与 Session 鉴权 → 同键 advisory lock → 查既有结果 → 同合同合法 replay 优先 → 仅新请求检查 Session 行锁/Project/revision/review marker → unchanged c3a 与精确复用检查 → 全图与回执 → revision +1 → 延迟约束 COMMIT。未 COMMIT 的返回固定叫 uncommitted_reference_graph，不能显示为保存成功。
+
+POST 查原结果时通过私有 ref_lock_operation 锁住 operation 行，直到完整图投影和事务结束；它只授予行锁能力，不授予 operation UPDATE。删除持 Session 锁后等待该行锁，重放不会组装出半份图。该函数仅研究 writer 可执行，reader 无权限；GET 不调用它。实际竞争补测先复现删除已提交而 replay 返回空 effects，再修正；Session 鉴权仍在 key lookup 之前，旧正式 writer 及 ACL 不变。
 
 GET 研究恢复使用 SELECT-only LOGIN、一个 RR/READ ONLY 快照，无 key 注册/认证上下文新建/advisory lock/清理/修复。校验完整图后返回旧结果；后续 revision 或新命令审核 marker 不得重执行原操作。错误凭证先于合同/历史信息披露；外会话不透露删除状态。
 

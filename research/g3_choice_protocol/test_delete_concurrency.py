@@ -83,3 +83,58 @@ def test_real_different_key_does_not_recreate_exact_original_source(model):
             db, b.sid, b.token, "new-key", command(b.sid, b.pid, TEXTS[:1], revision=2)
         )
     assert m.snapshot() == before
+
+
+def test_real_post_replay_never_returns_partial_graph_during_authorized_delete(model):
+    m = model
+    b = m.seed()
+    body, prior = saved(m, b, n=3)
+    paused, release, erase_started = Event(), Event(), Event()
+    pids = []
+
+    class PauseBeforeValidation:
+        def __init__(self, db):
+            self.db = db
+
+        def execute(self, query, *args, **kwargs):
+            if query == "SELECT ref_validate(%s)":
+                paused.set()
+                assert release.wait(timeout=10)
+            return self.db.execute(query, *args, **kwargs)
+
+    def replay():
+        with m.connect() as db:
+            return apply(
+                PauseBeforeValidation(db), b.sid, b.token, "synthetic-key", body
+            )
+
+    def erase():
+        with m.connect("eraser") as db:
+            pids.append(db.info.backend_pid)
+            erase_started.set()
+            db.execute("SELECT ref_erase(%s,%s)", (b.sid, b.token))
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        result = pool.submit(replay)
+        try:
+            assert paused.wait(timeout=10)
+            deletion = pool.submit(erase)
+            assert erase_started.wait(timeout=10)
+            # Before the fix deletion COMMITs between the cached receipt and
+            # graph queries. With a receipt row lock it observably waits.
+            deadline = monotonic() + 5
+            while not deletion.done():
+                row = m.admin.execute(
+                    "SELECT wait_event_type FROM pg_stat_activity WHERE pid=%s",
+                    (pids[0],),
+                ).fetchone()
+                if row and row["wait_event_type"] == "Lock":
+                    break
+                assert monotonic() < deadline
+        finally:
+            release.set()
+        replayed, tag = result.result(timeout=10)
+        deletion.result(timeout=10)
+    assert tag == "replayed" and replayed == prior
+    state = m.snapshot()
+    assert all(not rows for name, rows in state.items() if name != "ref_operations")

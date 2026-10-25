@@ -116,6 +116,16 @@ CREATE FUNCTION __S__.ref_authorize(sid uuid, token text) RETURNS boolean
  LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
  SELECT EXISTS(SELECT 1 FROM __S__.ref_sessions s WHERE s.id=sid
  AND s.credential_hash=encode(sha256(convert_to(token,'UTF8')),'hex')) $$;
+-- Row locking otherwise requires UPDATE privilege. Keep the writer INSERT-only
+-- on receipts: this private function grants locking, never arbitrary mutation.
+-- Caller already authenticates before key lookup; the role can SELECT receipts.
+CREATE FUNCTION __S__.ref_lock_operation(key_hash text) RETURNS __S__.ref_operations
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+ DECLARE o __S__.ref_operations%ROWTYPE;
+ BEGIN
+ SELECT * INTO o FROM __S__.ref_operations WHERE key_digest=key_hash FOR UPDATE;
+ RETURN o;
+ END $$;
 CREATE FUNCTION __S__.ref_record_auth(oid uuid, sid uuid, token text) RETURNS uuid
  LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
  DECLARE aid uuid; s __S__.ref_sessions%ROWTYPE;
@@ -187,6 +197,7 @@ CREATE FUNCTION __S__.ref_validate(oid uuid) RETURNS void
  OR (o.scheme='B' AND (r.source_kind<>'conversation_turn' OR r.choice_turn_id IS DISTINCT FROM o.choice_turn_id
  OR r.choice_quote IS DISTINCT FROM expected_choice OR NOT EXISTS(SELECT 1 FROM __S__.ref_turns ct WHERE ct.id=o.choice_turn_id
  AND ct.operation_id=oid AND ct.session_id=s.id AND ct.purpose='choice' AND ct.created_xid=o.created_xid
+ AND r.choice_end_cp<=length(ct.content) AND r.choice_end_cp-r.choice_start_cp=length(r.choice_quote)
  AND substring(ct.content FROM r.choice_start_cp+1 FOR r.choice_end_cp-r.choice_start_cp)=r.choice_quote))) THEN
  RAISE EXCEPTION 'ref_binding_invalid' USING ERRCODE='23514'; END IF;
  END LOOP;
