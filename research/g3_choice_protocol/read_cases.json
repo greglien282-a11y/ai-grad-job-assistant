@@ -1,0 +1,709 @@
+{
+  "base": {
+    "read_contract": "g3-choice-basis-read-candidate-v1",
+    "scope": "synthetic_or_disposable_reference_only",
+    "subject": {
+      "fact_id": "00000000-0000-0000-0000-000000000003",
+      "session_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "00000000-0000-0000-0000-000000000002",
+      "fact_version": 1,
+      "statement": "我整理了27条缺失记录。",
+      "status": "pending",
+      "fact_kind": "personal_action",
+      "progress_stage": "completed",
+      "classification_contract": "explicit-typed-v1"
+    },
+    "turns": [
+      {
+        "source_kind": "conversation_turn",
+        "id": "00000000-0000-0000-0000-000000000004",
+        "session_id": "00000000-0000-0000-0000-000000000001",
+        "project_id": "00000000-0000-0000-0000-000000000002",
+        "role": "user",
+        "content": "前缀👩‍💻é\r\n我整理了27条缺失记录。\r\n"
+      }
+    ],
+    "text_provenance": {
+      "original": [
+        {
+          "turn_id": "00000000-0000-0000-0000-000000000004",
+          "start": 9,
+          "end": 21,
+          "quote": "我整理了27条缺失记录。"
+        }
+      ],
+      "current": [
+        {
+          "turn_id": "00000000-0000-0000-0000-000000000004",
+          "start": 9,
+          "end": 21,
+          "quote": "我整理了27条缺失记录。"
+        }
+      ]
+    },
+    "basis": {
+      "status": "event_recorded",
+      "event": {
+        "event_contract": "g3-choice-event-ref-v1",
+        "source_kind": "immutable_user_choice_event",
+        "id": "00000000-0000-0000-0000-000000000007",
+        "session_id": "00000000-0000-0000-0000-000000000001",
+        "project_id": "00000000-0000-0000-0000-000000000002",
+        "fact_id": "00000000-0000-0000-0000-000000000003",
+        "fact_version": 1,
+        "operation_id": "00000000-0000-0000-0000-000000000005",
+        "effect_slot": 1,
+        "change_id": "00000000-0000-0000-0000-000000000006",
+        "classification": {
+          "fact_kind": "personal_action",
+          "progress_stage": "completed",
+          "classification_contract": "explicit-typed-v1"
+        },
+        "statement_citations": [
+          {
+            "turn_id": "00000000-0000-0000-0000-000000000004",
+            "start": 9,
+            "end": 21,
+            "quote": "我整理了27条缺失记录。"
+          }
+        ],
+        "selection": {
+          "id": "00000000-0000-0000-0000-00000000000a",
+          "source_kind": "explicit_ui_selection",
+          "classification": {
+            "fact_kind": "personal_action",
+            "progress_stage": "completed",
+            "classification_contract": "explicit-typed-v1"
+          }
+        },
+        "authentication_context": {
+          "id": "00000000-0000-0000-0000-000000000008",
+          "source_kind": "server_authenticated_session",
+          "session_id": "00000000-0000-0000-0000-000000000001",
+          "project_id": "00000000-0000-0000-0000-000000000002",
+          "operation_id": "00000000-0000-0000-0000-000000000005",
+          "authenticated_subject": "00000000-0000-0000-0000-000000000009",
+          "issuer": "synthetic-server-auth-v1",
+          "db_login": "g3_writer_synthetic",
+          "recorded_at": "2026-10-26T00:00:00.000001Z"
+        },
+        "recorded_validation": {
+          "contract": "typed-semantic-spike-v1",
+          "status": "eligible_candidate",
+          "code": "finite_rule_match"
+        },
+        "recorded_at": "2026-10-26T00:00:00.000002Z"
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "unknown_read",
+      "patches": [
+        [
+          [
+            "read_contract"
+          ],
+          "v999"
+        ]
+      ],
+      "code": "candidate_version_unsupported"
+    },
+    {
+      "name": "wrong_scope",
+      "patches": [
+        [
+          [
+            "scope"
+          ],
+          "production"
+        ]
+      ],
+      "code": "candidate_scope_required"
+    },
+    {
+      "name": "unknown_event",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "event_contract"
+          ],
+          "v999"
+        ]
+      ],
+      "code": "candidate_event_version_unsupported"
+    },
+    {
+      "name": "turn_masquerading_as_event",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "source_kind"
+          ],
+          "conversation_turn"
+        ]
+      ],
+      "code": "candidate_event_source_invalid"
+    },
+    {
+      "name": "event_masquerading_as_turn",
+      "patches": [
+        [
+          [
+            "turns",
+            "0",
+            "source_kind"
+          ],
+          "immutable_user_choice_event"
+        ]
+      ],
+      "code": "candidate_source_invalid"
+    },
+    {
+      "name": "assistant_source",
+      "patches": [
+        [
+          [
+            "turns",
+            "0",
+            "role"
+          ],
+          "assistant"
+        ]
+      ],
+      "code": "candidate_source_invalid"
+    },
+    {
+      "name": "foreign_source",
+      "patches": [
+        [
+          [
+            "turns",
+            "0",
+            "session_id"
+          ],
+          "00000000-0000-0000-0000-000000000063"
+        ]
+      ],
+      "code": "candidate_session_mismatch"
+    },
+    {
+      "name": "foreign_project",
+      "patches": [
+        [
+          [
+            "turns",
+            "0",
+            "project_id"
+          ],
+          "00000000-0000-0000-0000-000000000063"
+        ]
+      ],
+      "code": "candidate_session_mismatch"
+    },
+    {
+      "name": "missing_quote",
+      "patches": [
+        [
+          [
+            "text_provenance",
+            "current"
+          ],
+          []
+        ]
+      ],
+      "code": "candidate_source_invalid"
+    },
+    {
+      "name": "wrong_offset",
+      "patches": [
+        [
+          [
+            "text_provenance",
+            "current",
+            "0",
+            "start"
+          ],
+          10
+        ]
+      ],
+      "code": "candidate_quote_mismatch"
+    },
+    {
+      "name": "number_substitution",
+      "patches": [
+        [
+          [
+            "text_provenance",
+            "current",
+            "0",
+            "quote"
+          ],
+          "我整理了28条缺失记录。"
+        ]
+      ],
+      "code": "candidate_quote_mismatch"
+    },
+    {
+      "name": "boolean_version",
+      "patches": [
+        [
+          [
+            "subject",
+            "fact_version"
+          ],
+          true
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "event_wrong_fact",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "fact_id"
+          ],
+          "00000000-0000-0000-0000-000000000063"
+        ]
+      ],
+      "code": "candidate_event_subject_mismatch"
+    },
+    {
+      "name": "event_old_version",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "fact_version"
+          ],
+          2
+        ]
+      ],
+      "code": "candidate_event_subject_mismatch"
+    },
+    {
+      "name": "stale_current_labels",
+      "patches": [
+        [
+          [
+            "subject",
+            "progress_stage"
+          ],
+          "in_progress"
+        ]
+      ],
+      "code": "candidate_event_classification_mismatch"
+    },
+    {
+      "name": "selection_different_stage",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "selection",
+            "classification",
+            "progress_stage"
+          ],
+          "in_progress"
+        ]
+      ],
+      "code": "candidate_choice_mismatch"
+    },
+    {
+      "name": "unsupported_selection_origin",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "selection",
+            "source_kind"
+          ],
+          "automatic_model"
+        ]
+      ],
+      "code": "candidate_choice_source_invalid"
+    },
+    {
+      "name": "actor_is_not_auth",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "actor"
+          ],
+          "user"
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "missing_auth",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "authentication_context"
+          ],
+          null
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "untrusted_auth_issuer",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "authentication_context",
+            "issuer"
+          ],
+          "client-actor-user"
+        ]
+      ],
+      "code": "candidate_auth_context_invalid"
+    },
+    {
+      "name": "auth_other_operation",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "authentication_context",
+            "operation_id"
+          ],
+          "00000000-0000-0000-0000-000000000063"
+        ]
+      ],
+      "code": "candidate_auth_context_mismatch"
+    },
+    {
+      "name": "unknown_validator",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "recorded_validation",
+            "contract"
+          ],
+          "v999"
+        ]
+      ],
+      "code": "candidate_validation_record_unsupported"
+    },
+    {
+      "name": "truth_claim",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "truth_verified"
+          ],
+          true
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "bad_calendar",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "recorded_at"
+          ],
+          "2026-02-30T00:00:00Z"
+        ]
+      ],
+      "code": "candidate_timestamp_invalid"
+    },
+    {
+      "name": "auth_after_event_microsecond",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "authentication_context",
+            "recorded_at"
+          ],
+          "2026-10-26T00:00:00.000003Z"
+        ]
+      ],
+      "code": "candidate_timestamp_invalid"
+    },
+    {
+      "name": "unknown_basis_status",
+      "patches": [
+        [
+          [
+            "basis",
+            "status"
+          ],
+          "verified"
+        ]
+      ],
+      "code": "candidate_basis_status_mismatch"
+    },
+    {
+      "name": "invalid_stage",
+      "patches": [
+        [
+          [
+            "subject",
+            "progress_stage"
+          ],
+          "planned"
+        ]
+      ],
+      "code": "candidate_classification_invalid"
+    },
+    {
+      "name": "no_event_as_null",
+      "patches": [
+        [
+          [
+            "basis",
+            "event"
+          ],
+          null
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "empty_turns",
+      "patches": [
+        [
+          [
+            "turns"
+          ],
+          []
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "utf16_not_codepoint",
+      "patches": [
+        [
+          [
+            "text_provenance",
+            "current",
+            "0",
+            "start"
+          ],
+          11
+        ]
+      ],
+      "code": "candidate_quote_mismatch"
+    },
+    {
+      "name": "client_timestamp_number",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "recorded_at"
+          ],
+          1792945633
+        ]
+      ],
+      "code": "candidate_timestamp_invalid"
+    },
+    {
+      "name": "no_recorded_basis",
+      "patches": [
+        [
+          [
+            "basis"
+          ],
+          {
+            "status": "not_recorded",
+            "event": null
+          }
+        ]
+      ],
+      "code": "candidate_internally_consistent"
+    },
+    {
+      "name": "legacy_no_invented_event",
+      "patches": [
+        [
+          [
+            "basis"
+          ],
+          {
+            "status": "legacy_unclassified",
+            "event": null
+          }
+        ],
+        [
+          [
+            "subject",
+            "fact_kind"
+          ],
+          "legacy_unspecified"
+        ],
+        [
+          [
+            "subject",
+            "progress_stage"
+          ],
+          "legacy_unknown"
+        ],
+        [
+          [
+            "subject",
+            "classification_contract"
+          ],
+          "legacy-v0"
+        ]
+      ],
+      "code": "candidate_internally_consistent"
+    },
+    {
+      "name": "legacy_cannot_reuse_typed_event",
+      "patches": [
+        [
+          [
+            "subject",
+            "fact_kind"
+          ],
+          "legacy_unspecified"
+        ],
+        [
+          [
+            "subject",
+            "progress_stage"
+          ],
+          "legacy_unknown"
+        ],
+        [
+          [
+            "subject",
+            "classification_contract"
+          ],
+          "legacy-v0"
+        ]
+      ],
+      "code": "candidate_basis_status_mismatch"
+    },
+    {
+      "name": "boolean_event_version",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "fact_version"
+          ],
+          true
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "empty_original",
+      "patches": [
+        [
+          [
+            "text_provenance",
+            "original"
+          ],
+          []
+        ]
+      ],
+      "code": "candidate_source_invalid"
+    },
+    {
+      "name": "choice_not_user_turn",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "selection",
+            "turn_id"
+          ],
+          "00000000-0000-0000-0000-000000000004"
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "auth_has_client_actor",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "authentication_context",
+            "actor"
+          ],
+          "user"
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "large_integer",
+      "patches": [
+        [
+          [
+            "subject",
+            "fact_version"
+          ],
+          9007199254740992
+        ]
+      ],
+      "code": "candidate_shape_invalid"
+    },
+    {
+      "name": "uuid_trailing_linefeed",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "id"
+          ],
+          "00000000-0000-0000-0000-000000000007\n"
+        ]
+      ],
+      "code": "candidate_identifier_invalid"
+    },
+    {
+      "name": "timestamp_trailing_linefeed",
+      "patches": [
+        [
+          [
+            "basis",
+            "event",
+            "recorded_at"
+          ],
+          "2026-10-26T00:00:00.000002Z\n"
+        ]
+      ],
+      "code": "candidate_timestamp_invalid"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+name: G3 disposable classification choice research
+on:
+  pull_request:
+    paths:
+      - "research/g3_choice_protocol/**"
+      - "docs/goal/G3_*"
+      - ".github/workflows/g3-choice-protocol.yml"
+permissions:
+  contents: read
+jobs:
+  reference:
+    name: Real restricted PostgreSQL A/B and Python-TS bridge
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pathwise_g3
+          POSTGRES_USER: pathwise_test
+          POSTGRES_PASSWORD: synthetic-g3-service-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pathwise_test -d pathwise_g3"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      G3_TEST_DATABASE_URL: postgresql://pathwise_test:synthetic-g3-service-password@127.0.0.1:5432/pathwise_g3
+      G3_PG_CANDIDATE_FILE: ${{ github.workspace }}/.e2e/g3-db-candidate.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install 'psycopg[binary]>=3.2,<4' 'pytest>=8,<10'
+      - run: python -B -m pytest research/g3_choice_protocol -q -ra
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/g3_choice_protocol/web
+      - run: npm run typecheck
+        working-directory: research/g3_choice_protocol/web
+      - run: npm test
+        working-directory: research/g3_choice_protocol/web
+      - name: Existing G2 pure Python candidates, unchanged
+        run: |
+          python -B -m unittest discover -s research/declaration_read -p "test_*.py" -v
+          python -B -m unittest discover -s research/clarification -p "test_*.py" -v
+          python -B -m unittest discover -s research/typed_journey -p "test_*.py" -v
+  windows:
+    name: Windows pure candidate parsing (not PostgreSQL evidence)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install 'psycopg[binary]>=3.2,<4' 'pytest>=8,<10'
+      - run: python -B -m pytest research/g3_choice_protocol/test_read_candidate.py -k 'not real_' -q
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/g3_choice_protocol/web
+      - run: npm run typecheck
+        working-directory: research/g3_choice_protocol/web
+      - run: npm test -- contract.test.ts
+        working-directory: research/g3_choice_protocol/web
+  api-regression:
+    name: Existing FastAPI, migrations, offline and Mock contracts
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pathwise_test
+          POSTGRES_USER: pathwise_test
+          POSTGRES_PASSWORD: synthetic-ci-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pathwise_test -d pathwise_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://pathwise_test:synthetic-ci-password@localhost:5432/pathwise_test
+      TEST_DATABASE_URL: postgresql+psycopg://pathwise_test:synthetic-ci-password@localhost:5432/pathwise_test
+    defaults:
+      run: { working-directory: apps/api }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r requirements.txt
+      - run: python ../../scripts/check_isolated_migrations.py
+      - run: python -B -m pytest -q -ra
+      - run: python ../../scripts/check_m12c2_contracts.py
+      - run: python ../../scripts/check_s03b_output_contract.py
+      - run: python ../../scripts/evaluate_mining_quality.py --outputs ../../docs/evaluation/quality-v1/oracle.outputs.json --output-dir "${{ runner.temp }}/pathwise-quality-v1"
+      - run: python ../../scripts/run_offline_evaluation.py --profile 0 --output "${{ runner.temp }}/mock-evaluation-report.json"
+  web-regression:
+    name: Existing React and TypeScript build
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: apps/web }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --global npm@11
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+  e2e-regression:
+    name: Existing real Chromium, FastAPI and PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-e2e-service-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      E2E_ADMIN_PASSWORD: synthetic-e2e-service-password
+      PATHWISE_E2E_PYTHON: python
+    defaults:
+      run: { working-directory: apps/web }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: python -m pip install -r ../api/requirements.txt
+      - run: npm install --global npm@11
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: python e2e/ci_database.py
+      - run: npm run e2e:preflight
+      - run: npm run test:e2e:types
+      - run: npm run test:e2e
+  g2-regression:
+    name: Existing G2 parsers and synthetic Chromium prototype
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/declaration_read/web
+      - run: npm run typecheck && npm test
+        working-directory: research/declaration_read/web
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: research/typed_journey
+      - run: npm test && npm run build
+        working-directory: research/typed_journey
+      - run: npx playwright install --with-deps chromium --only-shell
+        working-directory: research/typed_journey
+      - run: npm run test:browser
+        working-directory: research/typed_journey
