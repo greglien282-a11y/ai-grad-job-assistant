@@ -271,6 +271,63 @@ def test_real_auth_function_qualified_against_temporary_table_shadow(model):
     assert m.snapshot() == before
 
 
+def test_real_readonly_runtime_rejects_preexisting_temporary_receipt_spoof(model):
+    m = model
+    b = m.seed()
+    saved(m, b)
+    before = m.snapshot()
+    fake = uuid4()
+    with m.connect("reader") as db:
+        # The ordinary restricted LOGIN prepares TEMP data before the request;
+        # no owner corruption and no DML on any real graph relation.
+        for table in ("ref_operations", "ref_choices"):
+            db.execute(
+                sql.SQL("CREATE TEMP TABLE {} AS SELECT * FROM {}").format(
+                    sql.Identifier(table), sql.Identifier(m.schema, table)
+                )
+            )
+        db.execute("UPDATE pg_temp.ref_operations SET id=%s", (fake,))
+        db.execute("UPDATE pg_temp.ref_choices SET operation_id=%s", (fake,))
+        db.commit()
+        db.execute("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        with pytest.raises(Refused, match="reference_runtime_unapproved"):
+            recover(db, b.sid, b.token, "synthetic-key")
+    assert m.snapshot() == before
+
+
+@pytest.mark.parametrize("name", ["pg_class", "pg_roles", "pg_auth_members"])
+def test_real_admission_catalogs_cannot_be_shadowed_by_temp_metadata(model, name):
+    m = model
+    b = m.seed()
+    saved(m, b)
+    before = m.snapshot()
+    with m.connect("reader") as db:
+        db.execute(
+            sql.SQL("CREATE TEMP TABLE {}(dummy integer)").format(sql.Identifier(name))
+        )
+        db.commit()
+        db.execute("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        with pytest.raises(Refused, match="reference_runtime_unapproved"):
+            recover(db, b.sid, b.token, "synthetic-key")
+    assert m.snapshot() == before
+
+
+def test_real_runtime_does_not_admit_extra_search_path(model):
+    m = model
+    b = m.seed()
+    saved(m, b)
+    before = m.snapshot()
+    with m.connect("reader", True) as db:
+        db.execute(
+            sql.SQL("SET LOCAL search_path TO {},public").format(
+                sql.Identifier(m.schema)
+            )
+        )
+        with pytest.raises(Refused, match="reference_runtime_unapproved"):
+            recover(db, b.sid, b.token, "synthetic-key")
+    assert m.snapshot() == before
+
+
 def test_real_tombstone_not_deletable_and_foreign_session_post_cannot_probe(model):
     m = model
     b = m.seed()

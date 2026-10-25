@@ -33,14 +33,26 @@ def digest(text):
 
 
 def admit(db, *, mode="writer"):
+    # TEMP may have been populated before READ ONLY begins. Reject contaminated
+    # connections before any unqualified reference-table query; no DB-wide ACL
+    # change is needed. All admission metadata is pg_catalog-qualified as well.
+    if db.execute(
+        "SELECT 1 FROM pg_catalog.pg_class WHERE relnamespace=pg_catalog.pg_my_temp_schema() UNION ALL SELECT 1 FROM pg_catalog.pg_proc WHERE pronamespace=pg_catalog.pg_my_temp_schema() LIMIT 1"
+    ).fetchone():
+        raise Refused("reference_runtime_unapproved")
     meta = db.execute(
-        "SELECT current_schema() AS schema,current_user AS role,session_user AS login"
+        "SELECT pg_catalog.current_schema() AS schema,current_user AS role,session_user AS login"
     ).fetchone()
     role = db.execute(
-        "SELECT rolcanlogin,rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls FROM pg_roles WHERE rolname=current_user"
+        "SELECT rolcanlogin,rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls FROM pg_catalog.pg_roles WHERE rolname=current_user"
     ).fetchone()
     if not meta["schema"]:
         raise Refused("reference_schema_unavailable")
+    path = db.execute("SELECT pg_catalog.current_schemas(false) AS path").fetchone()[
+        "path"
+    ]
+    if path != [meta["schema"]]:
+        raise Refused("reference_runtime_unapproved")
     if (
         not meta["schema"].startswith("g3_ref_")
         or meta["role"] != meta["login"]
@@ -49,29 +61,29 @@ def admit(db, *, mode="writer"):
     ):
         raise Refused("reference_runtime_unapproved")
     if db.execute(
-        "SELECT 1 FROM pg_auth_members WHERE member=(SELECT oid FROM pg_roles WHERE rolname=current_user)"
+        "SELECT 1 FROM pg_catalog.pg_auth_members WHERE member=(SELECT oid FROM pg_catalog.pg_roles WHERE rolname=current_user)"
     ).fetchone():
         raise Refused("reference_runtime_unapproved")
     names = db.execute(
-        "SELECT tablename FROM pg_tables WHERE schemaname=current_schema()"
+        "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname=pg_catalog.current_schema()"
     ).fetchall()
     if {r["tablename"] for r in names} != set(TABLES):
         raise Refused("reference_schema_unavailable")
     if db.execute(
-        "SELECT 1 FROM pg_class WHERE relnamespace=current_schema()::regnamespace AND relowner=(SELECT oid FROM pg_roles WHERE rolname=current_user)"
+        "SELECT 1 FROM pg_catalog.pg_class WHERE relnamespace=pg_catalog.current_schema()::regnamespace AND relowner=(SELECT oid FROM pg_catalog.pg_roles WHERE rolname=current_user)"
     ).fetchone():
         raise Refused("reference_runtime_unapproved")
     if db.execute(
-        "SELECT has_schema_privilege(current_schema(),'CREATE') AS bad"
+        "SELECT pg_catalog.has_schema_privilege(pg_catalog.current_schema(),'CREATE') AS bad"
     ).fetchone()["bad"]:
         raise Refused("reference_acl_unapproved")
     columns = db.execute("""SELECT c.relname,a.attname,
-      has_column_privilege(c.oid,a.attnum,'SELECT') AS sel,
-      has_column_privilege(c.oid,a.attnum,'INSERT') AS ins,
-      has_column_privilege(c.oid,a.attnum,'UPDATE') AS upd,
-      has_column_privilege(c.oid,a.attnum,'REFERENCES') AS refs
-      FROM pg_class c JOIN pg_attribute a ON a.attrelid=c.oid
-      WHERE c.relnamespace=current_schema()::regnamespace AND c.relkind='r'
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'SELECT') AS sel,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'INSERT') AS ins,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'UPDATE') AS upd,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'REFERENCES') AS refs
+      FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid
+      WHERE c.relnamespace=pg_catalog.current_schema()::regnamespace AND c.relkind='r'
       AND a.attnum>0 AND NOT a.attisdropped""").fetchall()
     for c in columns:
         session = c["relname"] == "ref_sessions"
@@ -87,18 +99,18 @@ def admit(db, *, mode="writer"):
         if tuple(c[k] for k in ("sel", "ins", "upd", "refs")) != expected:
             raise Refused("reference_acl_unapproved")
     if db.execute(
-        """SELECT 1 FROM pg_tables WHERE schemaname=current_schema()
-      AND (has_table_privilege(quote_ident(schemaname)||'.'||quote_ident(tablename),'DELETE')
-      OR has_table_privilege(quote_ident(schemaname)||'.'||quote_ident(tablename),'TRUNCATE')
-      OR has_table_privilege(quote_ident(schemaname)||'.'||quote_ident(tablename),'TRIGGER'))"""
+        """SELECT 1 FROM pg_catalog.pg_tables WHERE schemaname=pg_catalog.current_schema()
+      AND (pg_catalog.has_table_privilege(pg_catalog.quote_ident(schemaname)||'.'||pg_catalog.quote_ident(tablename),'DELETE')
+      OR pg_catalog.has_table_privilege(pg_catalog.quote_ident(schemaname)||'.'||pg_catalog.quote_ident(tablename),'TRUNCATE')
+      OR pg_catalog.has_table_privilege(pg_catalog.quote_ident(schemaname)||'.'||pg_catalog.quote_ident(tablename),'TRIGGER'))"""
     ).fetchone():
         raise Refused("reference_acl_unapproved")
     functions = db.execute("""SELECT p.proname,p.prosecdef,p.proconfig,
-      has_function_privilege(p.oid,'EXECUTE') AS executable,r.rolcanlogin,r.rolsuper,
-      EXISTS(SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) x
+      pg_catalog.has_function_privilege(p.oid,'EXECUTE') AS executable,r.rolcanlogin,r.rolsuper,
+      EXISTS(SELECT 1 FROM pg_catalog.aclexplode(coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) x
       WHERE x.grantee=0 AND x.privilege_type='EXECUTE') AS public_exec
-      FROM pg_proc p JOIN pg_roles r ON r.oid=p.proowner
-      WHERE p.pronamespace=current_schema()::regnamespace""").fetchall()
+      FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_roles r ON r.oid=p.proowner
+      WHERE p.pronamespace=pg_catalog.current_schema()::regnamespace""").fetchall()
     expected_functions = {
         "ref_authorize",
         "ref_record_auth",
@@ -126,9 +138,9 @@ def admit(db, *, mode="writer"):
             raise Refused("reference_function_unapproved")
     triggers = db.execute(
         """SELECT t.tgname,t.tgenabled,t.tgdeferrable,t.tginitdeferred,
-      c.relname,p.proname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
-      JOIN pg_proc p ON p.oid=t.tgfoid
-      WHERE c.relnamespace=current_schema()::regnamespace AND NOT t.tgisinternal"""
+      c.relname,p.proname FROM pg_catalog.pg_trigger t JOIN pg_catalog.pg_class c ON c.oid=t.tgrelid
+      JOIN pg_catalog.pg_proc p ON p.oid=t.tgfoid
+      WHERE c.relnamespace=pg_catalog.current_schema()::regnamespace AND NOT t.tgisinternal"""
     ).fetchall()
     expected_triggers = {
         ("ref_sessions", "ref_revision_guard", "ref_revision", True, True)

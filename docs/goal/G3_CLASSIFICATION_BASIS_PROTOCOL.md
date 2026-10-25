@@ -82,6 +82,8 @@ writer 仅能 SELECT 所需表/列、INSERT 图的允许列、UPDATE Session.rev
 
 admit 核验有效列 ACL（缺少和过大均拒绝）、无 Schema CREATE、无业务对象 owner、函数 NOLOGIN owner/SECURITY DEFINER/search_path/PUBLIC EXECUTE 和触发器配置。**不是函数体指纹/所有默认 ACL/数据库全局权限的完整正式 D8 审计**。测试库继承已有 TEMP 权限；用临时同名表攻击不能改变 fully qualified 认证函数，不能宣称角色在整个数据库没有任何 DDL 能力。服务器角色是受信应用身份，不是 RLS 多租户隔离证明。
 
+admit 的系统元数据也使用 pg_catalog 全限定名，并拒绝残留 TEMP 对象与额外 search_path。只在 READ ONLY 前建立 TEMP 假回执就能欺骗未加此门禁的读取器：受限 reader 的真实红灯证明了这点；修正后同一请求拒绝，九张真实表不变。没有撤销数据库全局 TEMP ACL，也没有授予角色新权限。
+
 真实测试覆盖两方案 N=1/3/5、六种 typed 单项组合、错误区间/项目/版本/认证关系/选择/快照、缺失与重复事件、非法矩阵、assistant 来源、JSON null before、零写回滚、并发、进程终止、历史结果读取和删除。完整全表摘要比较覆盖本研究九张表；没有连接正式生产业务表。既有正式合同另跑原应用回归，不能混称同一个模型。
 
 **限制的可重复反例：**`test_real_db_does_not_prove_validator_executed_or_declared_completed_is_true` 首先证明正常适配器拒绝“我计划部署服务”声明 completed；然后同一受限 LOGIN 直接 INSERT 关系完整的图并填写 finite_rule_match，数据库允许 COMMIT。未使用 owner 改数据、临时禁用约束或强行变绿。这证明数据库没有运行 c3a，也不能信任被攻破 writer 填的校验标签。未来必须明确受信服务边界，评估数据库受控写函数/独立校验凭证等方案；本轮没有批准或实现这些方案。

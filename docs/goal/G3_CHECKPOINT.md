@@ -60,6 +60,10 @@ npm test
 
 最终版本矩阵修正后本机 G3：243 passed / 50.82s（152 真实 PostgreSQL、91 纯解析）；TypeScript/bridge 93 项不变。原生账户只读观测 ordinaryUsageAllowed=true、五小时已用4%、周已用7%，只是该时刻快照；未消费任何重置额度或更改预算，自动恢复仍关闭。
 
+连接污染负例：同一受限 reader 在请求前建立 TEMP 假 ref_operations/ref_choices，再进入 RR READ ONLY，原参考读取器能返回不存在的 operation。没有 owner 修改真实表，确有红灯。现 admission 元数据全限定 pg_catalog，拒绝残留 TEMP 对象和额外 search_path；增加假回执、三种系统表名影射及路径反例。数据库全局 TEMP ACL 和正式 reader 未改。
+
+最终连接污染修正后本机完整 G3 为248 passed / 50.73s（157真实PG、91纯解析）；TS/bridge仍93/typecheck。此前HEAD的CI均保留作历史证据，最后修正HEAD须重新核验workflow终态。完整后端已另外在本机运行，未结束前不记为成功。
+
 真实非保障反例：正常适配器拒绝计划当 completed；受限 SQL 身份直接构造完整图并填写 validator label 可 COMMIT。测试以“数据库没有证明语言校验执行”为预期风险证据，未绕过 owner/ACL 伪造语义安全。
 
 已重新执行未改动的 G2/G0 Python：declaration_read 43、clarification 9、typed_journey fixtures 2、goal_recovery 33，均通过，无新增 skip/xfail。G3 workflow 还执行完整 FastAPI、隔离迁移、12/48、质量/Mock、React build、真实 Chromium/PG 与原 G2 Chromium；结果必须等到终态。
