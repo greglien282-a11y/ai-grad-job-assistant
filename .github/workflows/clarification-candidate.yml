@@ -1,0 +1,21 @@
+name: R03 clarification simulation
+on:
+  pull_request:
+    paths:
+      - 'research/clarification/**'
+      - 'docs/goal/G2_2_R03_CLARIFICATION.md'
+      - '.github/workflows/clarification-candidate.yml'
+permissions:
+  contents: read
+jobs:
+  protocol:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -B -m unittest discover -s research/clarification -p "test_*.py" -v
