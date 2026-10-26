@@ -21,7 +21,7 @@ const test = base.extend<{
       [
         "-B",
         "-m",
-        "research.g4_disposable_demo.server",
+        process.env.G4_DEMO_MODULE || "research.g4_0f_demo.server",
         "--synthetic-disposable",
         "--port",
         "0",
@@ -255,3 +255,24 @@ test("simulated service503 is labelled not saved without a database effect", asy
   await expect(page.getByRole("article")).toHaveCount(0);
   expect(await demo.evidence()).toEqual(before);
 });
+
+test('integrated source audit is actually returned over HTTP, with pending and all production blocks',async({page,demo},info)=>{
+  await page.goto(demo.url); await declare(page)
+  await page.getByRole('button',{name:'校验并保存到一次性数据库'}).click()
+  const receipt=page.getByLabel('来源绑定审计')
+  await expect(receipt).toContainText('选择事件数：1')
+  await expect(receipt).toContainText('NOT_PROVEN')
+  await expect(page.getByText('事务期限严格 COMMIT 检查仍 BLOCK',{exact:false})).toBeVisible()
+  await expect(page.getByRole('article')).toContainText('pending · 用户声明 · 未核实')
+  await page.screenshot({path:info.outputPath('integrated_source_audit.png'),fullPage:true})
+})
+
+test('mismatched source receipt clears all facts and never falls back to old contracts',async({page,demo})=>{
+  await page.goto(demo.url); await declare(page)
+  await page.getByRole('button',{name:'校验并保存到一次性数据库'}).click()
+  await expect(page.getByRole('article')).toBeVisible(); const saved=await demo.evidence()
+  await page.route('**/recover',async route=>{const r=await route.fetch(); const value=await r.json(); value.source_receipt.selection_ids=['00000000-0000-4000-8000-000000000999']; await route.fulfill({response:r,json:value})})
+  await page.getByRole('button',{name:'只读恢复结果'}).click()
+  await expect(page.getByRole('article')).toHaveCount(0); await expect(page.getByLabel('来源绑定审计')).toHaveCount(0)
+  await expect(page.getByRole('status')).toContainText('读取合同不可用'); expect(await demo.evidence()).toEqual(saved)
+})

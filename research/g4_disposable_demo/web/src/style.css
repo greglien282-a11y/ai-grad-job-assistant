@@ -63,6 +63,7 @@ textarea {
   gap: 16px;
   flex-wrap: wrap;
 }
+div[aria-label="来源绑定审计"] { overflow-wrap:anywhere; border:1px solid #b8ccbe; padding:18px; background:#eef6ed; border-radius:8px; margin-bottom:20px; }
 .row label {
   flex: 1;
   min-width: 220px;
