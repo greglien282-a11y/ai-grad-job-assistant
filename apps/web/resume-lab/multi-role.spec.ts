@@ -32,7 +32,7 @@ test('two roles retain independent sources, edits, templates and review through 
   await page.getByLabel('当前岗位').selectOption(saved.roles[0].id)
   await expect(page.getByLabel('我的复习回答')).toHaveValue('A：课程练习，不是生产部署。'); await expect(page.getByLabel('简历版式')).toHaveValue('classic'); await expect(page.getByLabel('排版密度')).toHaveValue('compact'); await expect(paper).toContainText('整理课程说明'); await expect(paper).not.toContainText('我会逐项核对')
   await page.getByLabel('当前岗位').selectOption(saved.roles[1].id); await expect(page.getByLabel('我的复习回答')).toHaveValue('B：仅有课程基础，部署是学习准备。')
-  await page.emulateMedia({ media: 'print' }); await paper.screenshot({ path: info.outputPath('resume_multi_role_print.png') }); await page.pdf({ path: info.outputPath('resume_multi_role_native.pdf'), format: 'A4', preferCSSPageSize: true }); await page.emulateMedia({ media: 'screen' })
+  await page.emulateMedia({ media: 'print' }); await paper.screenshot({ path: info.outputPath('resume_multi_role_print.png') }); const pdf = await page.pdf({ path: info.outputPath('resume_multi_role_native.pdf'), format: 'A4', preferCSSPageSize: true }); expect((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length).toBe(1); await page.emulateMedia({ media: 'screen' })
   expect(effects).toEqual([]); expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0])
 })
 test('legacy file migrates explicitly; corrupt multi-role graph and unknown versions clear all old views', async ({ page }) => {

@@ -35,6 +35,8 @@ From apps/web:
 
 New actual browser journeys: independent2-role creation/edit/selection/template/questions→download→refresh→restore→both roles verified→nativePDF; explicit old-v1 migration/corrupt-v3 refusal; shared rejection across roles/suggestions/undo; long CJK/English paragraph preserved across multiple native print pages and mobile width. Existing unsafe rewrite/duplicate/admission tests remain. The old downloaded-shape assertions now explicitly inspect v3 shared source and per-role content; original v1 parser tests remain, plus migration tests. Oversized-v3 refusal now tests2MiB+1 (the old512KiB cap still applies to migrated v1/v2). No deleted/skip/xfail/timeout relaxation. Browser screenshots use public synthetic materials only. Complete backend/formalChromium/migrations/offline12/48/quality/Mock are required by exact-HEAD application CI; final run URLs/results attached to Draft PR.
 
+Native PDF inspection also exposed a blank trailing page on short resumes caused by screen min-height entering print. Scoped print min-height reset fixes it; real PDF assertions now require the short draft to be exactly one page and long content to span multiple pages without clipping. Whitespace-normalized text extraction of the long PDF retained all140 repeated synthetic course phrases.
+
 Development caught and fixed a source-input remount that cleared pasted text, and a test selector ambiguity introduced by an extra note role. Both are recorded honestly; no failing result relabeled passed. Existing Zod/build warnings and inherited development dependency audit advisories remain as documented in F.
 
 ## Still blocked / unavailable
