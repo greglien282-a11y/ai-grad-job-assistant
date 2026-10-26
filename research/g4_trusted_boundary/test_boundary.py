@@ -631,8 +631,17 @@ def test_permit_immutable_even_with_extra_synthetic_mutator_privileges(
     ).format(sql.Identifier(x.gate.schema, "permits"))
     if attack == "UPDATE":
         query += sql.SQL(" SET mode='broker'")
-    with pytest.raises(
-        psycopg.errors.CheckViolation, match="g4_permit_immutable"
-    ), m.connect("mutator") as db:
+    # PostgreSQL rejects standalone TRUNCATE at FK topology validation, before
+    # any trigger. Record that existing guarantee instead of claiming the
+    # trigger ran (or removing the FK to manufacture that claim).
+    expected = (
+        psycopg.errors.FeatureNotSupported
+        if attack == "TRUNCATE"
+        else psycopg.errors.CheckViolation
+    )
+    diagnostic = (
+        "foreign key constraint" if attack == "TRUNCATE" else "g4_permit_immutable"
+    )
+    with pytest.raises(expected, match=diagnostic), m.connect("mutator") as db:
         db.execute(query)
     assert m.snapshot() == before
