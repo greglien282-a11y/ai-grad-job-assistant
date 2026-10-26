@@ -34,10 +34,20 @@ export function qualify(input: LabInput): Evidence {
   return { fact: f, declaration: d, bucket: 'usable', reason: '合成已审核个人完成动作，原文及独立分类声明可核对；不代表平台独立认证。' }
 }
 export function deduplicate(inputs: LabInput[]): Evidence[] {
+  const rows = inputs.map(qualify)
+  const identities = new Map<string, string>(), conflicts = new Set<string>(), rejectedText = new Set<string>()
+  for (const e of rows) {
+    if (!e.fact) continue
+    const f = e.fact, record = JSON.stringify(f)
+    if (identities.has(f.id) && identities.get(f.id) !== record) conflicts.add(f.id)
+    identities.set(f.id, record)
+    if (f.status === 'rejected') rejectedText.add(f.statement)
+  }
   const seen = new Set<string>(), statements = new Set<string>()
-  return inputs.map(input => {
-    const e = qualify(input), f = e.fact
+  return rows.map(e => {
+    const f = e.fact
     if (!f) return e
+    if (conflicts.has(f.id) || rejectedText.has(f.statement)) return { ...e, declaration: null, bucket: 'excluded', reason: '事实身份状态冲突或原句存在拒绝记录；停止用于预览，不按输入顺序放行。' }
     if (seen.has(f.id) || statements.has(f.statement)) return { ...e, bucket: 'excluded', reason: '重复经历，只展示一次，不能重复计算。' }
     seen.add(f.id); statements.add(f.statement); return e
   })

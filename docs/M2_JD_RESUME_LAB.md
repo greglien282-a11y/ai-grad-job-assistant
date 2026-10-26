@@ -41,7 +41,7 @@ npx tsc -p tsconfig.jd-lab.json --noEmit
 npx playwright test --config jd-lab/playwright.config.ts
 ```
 
-Python 1 项（9 个 typed 样本逐一重跑原 c3a，另有 legacy 样本不推断）；React/Vitest 196 项（旧158 + 新38）；TypeScript/build 成功；真实 Chromium 5 项/7.8s，含实际开发 HTTP、生产静态预览、无 API/非 GET 请求、无外站请求、无 storage、移动宽度、打印媒体和故障草稿验证。截图位于 `apps/web/test-results/jd-lab`，专项 CI 上传合成界面证据。
+Python 1 项（9 个 typed 样本逐一重跑原 c3a，另有 legacy 样本不推断）；初轮 React/Vitest 196 项（旧158 + 新38），后续发现同ID冲突状态/不同ID的精确拒绝正文按输入顺序可能保留前项，先新增2项得到真实红灯，再对整组输入保守拒绝，最终 **198项（旧158+新40）**。这仅保护本地候选的精确冲突，不是R03语义解决。TypeScript/build成功；真实Chromium5项，含实际开发HTTP、生产静态预览、无API/非GET、无外站、无storage、移动宽度、打印媒体和故障草稿验证。截图位于 `apps/web/test-results/jd-lab`，专项CI上传合成界面证据。
 
 这些测试不证明真实资料真实性、真实账户身份、历史 R03 独立性、服务端语义判定或正式保存。没有修改冻结规则/评测/旧测试。最终精确 HEAD、完整正式应用回归和 CI 见 Draft PR 与统一交付报告；未完成不能称成功。
 

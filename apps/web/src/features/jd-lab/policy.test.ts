@@ -33,6 +33,14 @@ it('deduplicates by identity and exact text without modifying source inputs', ()
   const before = JSON.stringify(samples); const all = deduplicate([...samples, structuredClone(samples[0]), sample(77, '我测试了3个导出按钮。')])
   expect(all.filter(e => e.bucket === 'usable')).toHaveLength(2); expect(JSON.stringify(samples)).toBe(before)
 })
+it('fails closed for conflicting current rows with the same Fact identity in either input order', () => {
+  const rejected = structuredClone(samples[0]); (rejected.fact as Record<string, unknown>).status = 'rejected'
+  for (const order of [[samples[0], rejected], [rejected, samples[0]]]) expect(deduplicate(order).some(e => e.bucket === 'usable')).toBe(false)
+})
+it('does not resurrect an exactly rejected statement by giving it another Fact ID', () => {
+  const rejected = sample(99, '我测试了3个导出按钮。', 'personal_action', 'completed', 'rejected')
+  for (const order of [[samples[0], rejected], [rejected, samples[0]]]) expect(deduplicate(order).some(e => e.bucket === 'usable')).toBe(false)
+})
 it('reports an evidence gap, never claims Python experience from a script or a match percentage', () => {
   const matches = matchRequirements(analyzeJD('必须掌握Python。测试经验优先。').requirements, deduplicate(samples))
   expect(matches[0].usable).toHaveLength(0); expect(matches[0].conclusion).toContain('缺少可展示证据')
