@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { useState } from 'react'
 import { expect, it, vi } from 'vitest'
 import LocalResumeLab from './LocalResumeLab'
@@ -16,7 +16,7 @@ it('lets a graduate import, inspect and manually structure source without a Fact
   expect(screen.getByLabelText('段落标题 1')).toHaveValue('个人边界')
   fireEvent.change(screen.getByLabelText('手工声明'), { target: { value: '团队负责，我未参与部署。' } })
   fireEvent.click(screen.getByRole('button', { name: '添加未审核声明' }))
-  expect(screen.getByText('团队负责，我未参与部署。')).toBeVisible()
+  expect(within(screen.getByRole('region', { name: '用户手工声明' })).getByText('团队负责，我未参与部署。')).toBeVisible()
   expect(fetcher).not.toHaveBeenCalled(); fetcher.mockRestore()
   expect(sessionStorage.length).toBe(0); expect(localStorage.length).toBe(0)
   fireEvent.change(screen.getByLabelText('简历原文'), { target: { value: '新材料' } })
