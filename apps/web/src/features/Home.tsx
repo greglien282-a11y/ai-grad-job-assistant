@@ -1,4 +1,5 @@
 import './Home.css'
+import { jdLabEnabled } from './jd-lab/gate'
 
 export default function Home() {
   return <div className="home">
@@ -12,7 +13,7 @@ export default function Home() {
         <div className="home-grid">
           <article className="home-entry"><span className="home-step">01 · 路径 A</span><h3>我已经有简历</h3><p>从已有简历开始整理。</p><span className="home-unavailable">简历导入 · 开发中</span></article>
           <a className="home-entry home-primary" href="/discovery"><span className="home-step">02 · 路径 B</span><h3>我还没有一份像样的简历</h3><p>先说一段经历，再逐条核对事实。</p><span className="home-action">开始整理经历 →</span></a>
-          <article className="home-entry"><span className="home-step">03 · 路径 C</span><h3>我找到了一份目标岗位</h3><p>从目标岗位开始准备。</p><span className="home-unavailable">岗位分析 · 开发中</span></article>
+          {jdLabEnabled() ? <a className="home-entry home-primary" href="/jd-lab"><span className="home-step">03 · 路径 C</span><h3>我找到了一份目标岗位</h3><p>岗位要求 → 原话匹配 → 简历预览 → 三题复习</p><span className="home-action">打开本地合成预览 →</span></a> : <article className="home-entry"><span className="home-step">03 · 路径 C</span><h3>我找到了一份目标岗位</h3><p>从目标岗位开始准备。</p><span className="home-unavailable">岗位分析 · 开发中</span></article>}
         </div>
       </section>
       <p className="home-mode">当前路径 B 使用零费用合成测试模式，固定追问不代表真实 AI 自适应能力。请仅使用合成资料体验。</p>
