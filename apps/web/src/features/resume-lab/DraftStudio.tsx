@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { validate, adjustRequirement, admission, emptyReview, printable, provenance, questions, setJob, strategies, type Draft, type Entry } from './draft'
 import { visionJD } from './fixtures'
 
 const priorities = { must: '必备', bonus: '加分', uncertain: '待核实' }
-export default function DraftStudio({ value: d, onChange, onUndo, canUndo }: { value: Draft; onChange: (d: Draft) => void; onUndo: () => void; canUndo: boolean }) {
+export default function DraftStudio({ value: d, onChange, onUndo, canUndo, paper }: { value: Draft; onChange: (d: Draft) => void; onUndo: () => void; canUndo: boolean; paper?: ReactNode }) {
   const [rawJD, setRawJD] = useState(d.job?.raw ?? ''), [error, setError] = useState('')
   const revise = (patch: Partial<Draft>) => { onChange(validate({ ...d, ...patch, review: emptyReview() })); setError('') }
   function adjust(id: string, patch: Parameters<typeof adjustRequirement>[2]) { try { onChange({ ...adjustRequirement(d, id, patch), review: emptyReview() }); setError('') } catch { setError('条件调整包含不受支持的内容，未应用。') } }
@@ -40,10 +40,10 @@ export default function DraftStudio({ value: d, onChange, onUndo, canUndo }: { v
     </section>
     <section className="resume-panel" aria-label="用户草稿打印"><div className="resume-actions"><label>排版密度<select value={d.layout} onChange={e => revise({ layout: e.target.value as Draft['layout'] })}><option value="comfortable">舒展</option><option value="compact">紧凑</option></select></label><button disabled={!shown.length} onClick={() => window.print()}>打印用户草稿 / 保存 PDF</button></div>
       <p>打印的是用户自述草稿，不是认证报告或技术备份。未核实的用户改写在此明确标注；原可信打印入口规则不变。</p>
-      <article className={`local-resume-paper ${d.layout}`} aria-label="用户自述简历草稿"><p className="paper-label">PATHWISE · 用户自述草稿 / 未经平台核实</p><h2>{d.job?.title ?? '岗位简历草稿'}</h2>
+      {paper ?? <article className={`local-resume-paper ${d.layout}`} aria-label="用户自述简历草稿"><p className="paper-label">PATHWISE · 用户自述草稿 / 未经平台核实</p><h2>{d.job?.title ?? '岗位简历草稿'}</h2>
         {(['draft', 'context'] as const).map(kind => { const list = shown.filter(e => admission(d, e).kind === kind); return list.length > 0 && <section key={kind}><h3>{kind === 'draft' ? '经历与技能 · 用户自述' : '背景、计划与限制 · 不是已完成个人贡献'}</h3>{list.map(e => <div className="paper-entry" key={e.id}><p>{e.text}</p><small>{e.state === 'user_edited' ? `用户改写；原文：${e.original}` : '保留原文；用户自述未核实'}</small><small>{provenance(d, e)}</small></div>)}</section> })}
         {!shown.length && <p>没有选用且可安全展示的条目，保持空白。</p>}<footer>本地材料由用户提供并负责核对。无平台真实性认证、正式事实保存或G4准入。计划和背景不等同于个人完成成果。</footer>
-      </article>
+      </article>}
     </section>
     <section className="resume-panel" aria-label="岗位三题复习"><p className="resume-kicker">04 / BE READY TO EXPLAIN</p><h2>准备解释你写下的每一句</h2><p>问题只绑定本次可打印条目和岗位引文；回答是用户回忆草稿，不是证据或标准答案。</p>
       {d.review.step === 0 && <button disabled={qs.length !== 3} onClick={() => onChange({ ...d, review: { ...emptyReview(), step: 1 } })}>开始岗位三题</button>}
