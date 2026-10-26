@@ -68,8 +68,8 @@ function decode(value: unknown): Views {
 
 function App() {
   const [content, setContent] = useState(samples[0]);
-  const [kind, setKind] = useState("personal_action");
-  const [stage, setStage] = useState("completed");
+  const [kind, setKind] = useState("");
+  const [stage, setStage] = useState("");
   const [lose, setLose] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const [phase, setPhase] = useState("idle");
@@ -78,6 +78,11 @@ function App() {
   );
   const [views, setViews] = useState<Views>([]);
   const locked = ["submitting", "unknown", "saved", "unsafe"].includes(phase);
+  function editContent(value: string) {
+    setContent(value);
+    setKind("");
+    setStage("");
+  }
   async function recover() {
     setViews([]);
     setPhase("submitting");
@@ -100,7 +105,7 @@ function App() {
     }
   }
   async function save() {
-    if (locked) return;
+    if (locked || !kind || !stage) return;
     setViews([]);
     setPhase("submitting");
     setMessage("受信校验与数据库事务处理中。");
@@ -169,7 +174,7 @@ function App() {
             aria-label="合成样例"
             disabled={locked}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => editContent(e.target.value)}
           >
             {samples.map((x) => (
               <option key={x}>{x}</option>
@@ -182,7 +187,7 @@ function App() {
             aria-label="原话"
             disabled={locked}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => editContent(e.target.value)}
           />
         </label>
         <small>
@@ -200,9 +205,10 @@ function App() {
               disabled={locked}
               onChange={(e) => {
                 setKind(e.target.value);
-                setStage(stages[e.target.value][0]);
+                setStage("");
               }}
             >
+              <option value="">请选择事实类型</option>
               {kinds.map((x) => (
                 <option key={x}>{x}</option>
               ))}
@@ -213,10 +219,11 @@ function App() {
             <select
               aria-label="进度"
               value={stage}
-              disabled={locked}
+              disabled={locked || !kind}
               onChange={(e) => setStage(e.target.value)}
             >
-              {stages[kind].map((x) => (
+              <option value="">请选择进度</option>
+              {(stages[kind] || []).map((x) => (
                 <option key={x}>{x}</option>
               ))}
             </select>
@@ -233,7 +240,7 @@ function App() {
           模拟提交成功后响应丢失
         </label>
         <div className="row">
-          <button disabled={locked} onClick={save}>
+          <button disabled={locked || !kind || !stage} onClick={save}>
             校验并保存到一次性数据库
           </button>
           <button

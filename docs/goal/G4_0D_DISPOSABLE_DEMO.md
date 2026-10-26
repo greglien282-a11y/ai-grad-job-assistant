@@ -8,7 +8,7 @@ main 基线 `e1eff78fd43e424ab22996b182e0e5f4d6bd609c`。本候选依赖 #56（�
 
 这次不是 G2 的内存保存。每次启动创建随机 PostgreSQL Schema、随机 owner/LOGIN 和合成签名密钥，实际图进入该测试库；关闭演示清理本次数据与角色。浏览器不持有数据库密码、Bearer 或签名密钥；没有正式账户、CO3、Provider 或真实招聘数据。
 
-页面在启动时就明确上述范围；plan/planned、in_progress、background、boundary 始终显示原分类和 pending，不冒充完成贡献或平台认证。只有公开列出的合成样例可进入演示，不做自由经历表单。UI 没有批准 R03、confirm、force、classify、related_plan 或正式导出按钮。
+页面在启动时就明确上述范围；plan/planned、in_progress、background、boundary 始终显示原分类和 pending，不冒充完成贡献或平台认证。只有公开列出的合成样例可进入演示，不做自由经历表单。类型和阶段初始均为空，用户必须分别选择；改变原话会清空此前选择，不能把默认completed当成明确声明。UI 没有批准 R03、confirm、force、classify、related_plan 或正式导出按钮。
 
 ## 启动（本机测试库已准备时）
 
