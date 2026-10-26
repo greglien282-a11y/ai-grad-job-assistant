@@ -29,7 +29,7 @@ HMAC-SHA256 采用 PostgreSQL 内置 sha256(bytea) 实现 RFC2104，没有安装
 
 permit BEFORE INSERT 与 deferred COMMIT 再检查受信身份、模式、批准 validator hash、期限（未来不超过 300 秒）、完整图 hash、签名；伪造 finite_rule_match 不能替代凭证。旧操作 replay 不重新签名、不依赖签发服务在线。新请求服务不可用则整个事务回滚。
 
-G4 admission 额外校验预先配置的四个函数体指纹、owner、安全 search_path、PUBLIC EXECUTE 和必须存在的 validated deferred FK。原 G3 的全部角色、列权限、触发器、TEMP 污染检查仍执行；没有为了新表绕过原检查，新对象在独立 Schema。所有 SQL 函数限定真实对象和 pg_catalog，普通身份不能替换函数或读取 policy。
+G4 admission 额外校验预先配置的四个函数体指纹、owner、安全 search_path、PUBLIC/角色 EXECUTE、密钥表与permit的逐列ACL、private Schema CREATE、必须存在且精确绑定列的 validated deferred FK，以及permit全部触发器定义/启用状态。原 G3 的全部角色、列权限、触发器、TEMP 污染检查仍执行；没有为了新表绕过原检查，新对象在独立 Schema。所有 SQL 函数限定真实对象和 pg_catalog，普通身份不能替换函数或读取 policy。
 
 ## 身份与信任假设
 

@@ -90,7 +90,7 @@ class Issuer:
         return Proof(seal, nonce, expires, self.approved_hash, mac)
 
 
-def admit_gate(db, gate):
+def admit_gate(db, gate, *, mode="writer"):
     """Additional fail-closed admission; unchanged G3 admission still runs.
 
     Manifest is provisioned out of request, not learned from live changed code.
@@ -99,7 +99,7 @@ def admit_gate(db, gate):
     rows = db.execute(
         """SELECT p.oid,p.proname,p.prosecdef,p.proconfig,
       pg_catalog.pg_get_functiondef(p.oid) AS definition,
-      r.rolcanlogin,r.rolsuper,
+      r.rolcanlogin,r.rolsuper,pg_catalog.has_function_privilege(p.oid,'EXECUTE') AS executable,
       EXISTS(SELECT 1 FROM pg_catalog.aclexplode(coalesce(p.proacl,pg_catalog.acldefault('f',p.proowner))) a
              WHERE a.grantee=0 AND a.privilege_type='EXECUTE') AS public_exec
       FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_roles r ON r.oid=p.proowner
@@ -115,16 +115,67 @@ def admit_gate(db, gate):
         or r["rolsuper"]
         or r["proconfig"] != ["search_path=pg_catalog"]
         or r["prosecdef"] != (r["proname"] != "hmac256")
+        or r["executable"] != (mode == "writer" and r["proname"] == "seal")
         for r in rows
     ):
         raise Refused("trusted_boundary_unavailable")
     fk = db.execute(
-        """SELECT condeferrable,condeferred,convalidated,confrelid=%s::regclass AS target
+        """SELECT condeferrable,condeferred,convalidated,confrelid=%s::regclass AS target,pg_catalog.pg_get_constraintdef(oid) AS definition
       FROM pg_catalog.pg_constraint WHERE conrelid=%s::regclass AND conname='g4_permit_required'
       AND contype='f'""",
         (gate.schema + ".permits", gate.graph_schema + ".ref_operations"),
     ).fetchone()
-    if fk != dict(condeferrable=True, condeferred=True, convalidated=True, target=True):
+    if fk != dict(
+        condeferrable=True,
+        condeferred=True,
+        convalidated=True,
+        target=True,
+        definition=gate.fk,
+    ):
+        raise Refused("trusted_boundary_unavailable")
+    triggers = db.execute(
+        """SELECT tgname,tgenabled,pg_catalog.pg_get_triggerdef(oid) AS definition
+       FROM pg_catalog.pg_trigger WHERE tgrelid=%s::regclass AND NOT tgisinternal""",
+        (gate.schema + ".permits",),
+    ).fetchall()
+    if (
+        any(r["tgenabled"] != "O" for r in triggers)
+        or {r["tgname"]: r["definition"] for r in triggers} != gate.triggers
+    ):
+        raise Refused("trusted_boundary_unavailable")
+    columns = db.execute(
+        """SELECT c.relname,a.attname,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'SELECT') AS sel,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'INSERT') AS ins,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'UPDATE') AS upd,
+      pg_catalog.has_column_privilege(c.oid,a.attnum,'REFERENCES') AS refs
+      FROM pg_catalog.pg_class c JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid
+      WHERE c.relnamespace=%s::regnamespace AND c.relkind='r' AND a.attnum>0 AND NOT a.attisdropped""",
+        (gate.schema,),
+    ).fetchall()
+    if {r["relname"] for r in columns} != {"policy", "permits"} or any(
+        tuple(r[k] for k in ("sel", "ins", "upd", "refs"))
+        != (
+            False,
+            mode == "writer"
+            and r["relname"] == "permits"
+            and r["attname"] != "created_at",
+            False,
+            False,
+        )
+        for r in columns
+    ):
+        raise Refused("trusted_boundary_unavailable")
+    if (
+        db.execute(
+            """SELECT 1 FROM pg_catalog.pg_class WHERE relnamespace=%s::regnamespace AND relkind='r'
+      AND pg_catalog.has_table_privilege(oid,'DELETE,TRUNCATE,TRIGGER')""",
+            (gate.schema,),
+        ).fetchone()
+        or db.execute(
+            "SELECT pg_catalog.has_schema_privilege(%s,'CREATE') AS bad", (gate.schema,)
+        ).fetchone()["bad"]
+    ):
         raise Refused("trusted_boundary_unavailable")
 
 
@@ -192,5 +243,5 @@ def submit(db, gate, b, key, body, *, issuer=None):
 
 
 def read(db, gate, b, key):
-    admit_gate(db, gate)
+    admit_gate(db, gate, mode="reader")
     return recover(db, b.sid, b.token, key)
