@@ -19,9 +19,9 @@
 }
 ```
 
-G4-0A：两个信任边界已在真实限权 PostgreSQL 执行，最终专项74项；#56 HEAD 01f38f93097f8958a1c506859cdb7bedc9ed560c。G4-0B：真实旧合同17项，保留future-first碰撞反例，#57 HEAD 686636e28ec0dca440afaad77c64f88ecb6bca4f。G4-0C：新增真实24项、原M2 42项，#58 HEAD affefb384f9496bc8b0a920b3f5504b1745efd84。按56→57→58→D的分支依赖分别Draft，不重写历史或强推。
+G4-0A：两个信任边界已在真实限权 PostgreSQL 执行，补齐新gate元数据准入后最终专项84项；#56 HEAD a75a8bc754ff7b5eb4a14c92dcbc4451740d93ac。G4-0B：真实旧合同17项，保留future-first碰撞反例，#57 HEAD 35b93a4a61362a6e65037f8ce155ff83750f152c。G4-0C：新增真实24项、原M2 42项，#58 HEAD b53dea3f59db7192611dba958543c014f53b06d2。按56→57→58→D的分支依赖分别Draft，不重写历史或强推。
 
-G4-0D：独立React/HTTP/签发进程/真实PG闭环，Python4项，真实Chromium7项和TypeScript/Vite build通过。全链真实执行409 passed/145.54s（A/B/C/D、原G3与原M2），1既有依赖警告，无skip。完整本地后端2340 passed/1595.66s，无skip；隔离迁移upgrade/check/cleanup成功。前一次未给显式测试URL的迁移命令如实拒绝，补显式专用合成URL后通过，未改脚本。精确D Commit/PR/CI在最终外部handoff记录，避免SHA循环。
+G4-0D：独立React/HTTP/签发进程/真实PG闭环，Python4项，真实Chromium7项和TypeScript/Vite build通过。初次全链真实执行409 passed/145.54s；新增10项gate故障测试后正在执行最终全链（A/B/C/D、原G3与原M2），1既有依赖警告，无skip。完整本地后端2340 passed/1595.66s，无skip；隔离迁移upgrade/check/cleanup成功。前一次未给显式测试URL的迁移命令如实拒绝，补显式专用合成URL后通过，未改脚本。精确D Commit/PR/CI在最终外部handoff记录，避免SHA循环。
 
 CI仍需按各PR最终HEAD核验。早期源SHA的成功不替代最终源。Windows缺管理headless浏览器的首轮失败保留；本机改用已安装Chrome，CI安装匹配Chromium。共享运行时历史失败没有改写成成功。
 
