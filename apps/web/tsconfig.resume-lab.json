@@ -1,0 +1,1 @@
+{ "extends": "./tsconfig.json", "include": ["src", "resume-lab/**/*.ts"], "compilerOptions": { "types": ["vite/client", "node", "vitest/globals"] } }
