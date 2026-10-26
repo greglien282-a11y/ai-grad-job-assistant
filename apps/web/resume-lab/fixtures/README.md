@@ -1,0 +1,1 @@
+Public synthetic fixture: encrypted blank A4 PDF, no personal data. Reproduce with pypdf 6.10.0: PdfWriter(); add_blank_page(width=595,height=842); encrypt("synthetic-only"); write(path). Other fixtures are generated in documents.spec.ts with docx 9.14.0 and Chromium. No external resume is used.

@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { adjustRequirement, admission, emptyReview, printable, provenance, questions, setJob, strategies, type Draft, type Entry } from './draft'
+import { validate, adjustRequirement, admission, emptyReview, printable, provenance, questions, setJob, strategies, type Draft, type Entry } from './draft'
 import { visionJD } from './fixtures'
 
 const priorities = { must: '必备', bonus: '加分', uncertain: '待核实' }
 export default function DraftStudio({ value: d, onChange, onUndo, canUndo }: { value: Draft; onChange: (d: Draft) => void; onUndo: () => void; canUndo: boolean }) {
   const [rawJD, setRawJD] = useState(d.job?.raw ?? ''), [error, setError] = useState('')
-  const revise = (patch: Partial<Draft>) => { onChange({ ...d, ...patch, review: emptyReview() }); setError('') }
+  const revise = (patch: Partial<Draft>) => { onChange(validate({ ...d, ...patch, review: emptyReview() })); setError('') }
   function adjust(id: string, patch: Parameters<typeof adjustRequirement>[2]) { try { onChange({ ...adjustRequirement(d, id, patch), review: emptyReview() }); setError('') } catch { setError('条件调整包含不受支持的内容，未应用。') } }
   function edit(id: string, patch: Partial<Entry>) {
     revise({ entries: d.entries.map(e => { if (e.id !== id) return e; const next = { ...e, ...patch }; return { ...next, state: next.text === next.original ? 'original' : 'user_edited' } }) })

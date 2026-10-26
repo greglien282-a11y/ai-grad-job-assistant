@@ -6,6 +6,7 @@ const e2e = env.PATHWISE_E2E === '1'
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: { include: ['mammoth', 'fflate', 'pdfjs-dist'] },
   server: {
     host: '127.0.0.1',
     port: e2e ? 15173 : 5173,

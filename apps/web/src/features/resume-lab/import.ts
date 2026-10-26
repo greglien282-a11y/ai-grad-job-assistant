@@ -16,16 +16,32 @@ export function checkText(text: string): string {
 export const privacyWarnings = (text: string) => /[\w.+-]+@[\w.-]+\.[a-z]{2,}|\b1[3-9]\d{9}\b/i.test(text)
   ? ['含疑似邮箱或电话。请检查隐私；仅在当前内存处理，不上传。'] : []
 const filename = (name: string) => name.length <= 120 && !/[\\/]/.test(name) && !unsafe.test(name) && !secret.test(name) && /\.(txt|md)$/i.test(name)
-const safeText = z.string().superRefine((value, ctx) => { try { checkText(value) } catch { ctx.addIssue({ code: 'custom', message: 'Invalid local text' }) } })
+export const safeText = z.string().superRefine((value, ctx) => { try { checkText(value) } catch { ctx.addIssue({ code: 'custom', message: 'Invalid local text' }) } })
 const sourceSchema = z.strictObject({ id: z.string().uuid(), origin: z.enum(['paste', 'file']), name: z.string().nullable(), text: safeText, trust: z.literal('local_unverified') })
   .refine(s => s.origin === 'file' ? s.name !== null && filename(s.name) : s.name === null)
 export const excerptSchema = z.strictObject({ id: z.string().uuid(), kind: z.literal('resume_excerpt'), source_id: z.string().uuid(), section: z.enum(['education', 'project', 'skill', 'internship', 'other']), label: z.string().min(1).max(100), start: z.number().int().nonnegative(), end: z.number().int().positive(), quote: safeText })
 const manualSchema = z.strictObject({ id: z.string().uuid(), kind: z.literal('user_manual_statement'), text: safeText, trust: z.literal('local_unverified') })
-export const workbenchSchema = z.strictObject({ contract: z.literal('local-resume-workbench-v1'), source: sourceSchema, excerpts: z.array(excerptSchema).max(100), manual: z.array(manualSchema).max(50) })
+export const legacyWorkbenchSchema = z.strictObject({ contract: z.literal('local-resume-workbench-v1'), source: sourceSchema, excerpts: z.array(excerptSchema).max(100), manual: z.array(manualSchema).max(50) })
   .superRefine((w, ctx) => {
     const points = Array.from(w.source.text), ids = [...w.excerpts, ...w.manual].map(e => e.id)
     if (new Set(ids).size !== ids.length || w.excerpts.some(e => e.source_id !== w.source.id || e.end <= e.start || e.end > points.length || points.slice(e.start, e.end).join('') !== e.quote)) ctx.addIssue({ code: 'custom', message: 'Broken local source relation' })
   })
+export const extractionSchema = z.strictObject({
+  contract: z.literal('extracted-text-snapshot-v1'), format: z.enum(['pdf', 'docx']),
+  file_bytes: z.number().int().positive().max(5 * 1024 * 1024), file_sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  text_sha256: z.string().regex(/^[a-f0-9]{64}$/), parser: z.enum(['pdfjs-dist@6.4.299', 'mammoth@1.13.0']),
+  pages: z.number().int().positive().max(12).nullable(), warnings: z.array(z.enum(['layout', 'columns', 'tables', 'omissions', 'duplicates', 'parser_warning'])).min(1).max(6),
+}).refine(m => m.format === 'pdf' ? m.parser === 'pdfjs-dist@6.4.299' && m.pages !== null : m.parser === 'mammoth@1.13.0' && m.pages === null)
+export const extractedWorkbenchSchema = z.strictObject({ contract: z.literal('local-resume-workbench-v2'),
+  source: z.strictObject({ id: z.string().uuid(), origin: z.literal('extracted_file'), name: z.string().max(120).refine(n => !/[\\/\x00-\x1f]/.test(n) && /\.(pdf|docx)$/i.test(n)), text: safeText, trust: z.literal('local_unverified'), extraction: extractionSchema, review: z.enum(['needs_review', 'user_checked_text']) }),
+  excerpts: z.array(excerptSchema).max(100), manual: z.array(manualSchema).max(50),
+}).superRefine((w, ctx) => {
+  const points = Array.from(w.source.text), ids = [...w.excerpts, ...w.manual].map(e => e.id)
+  if (new Set(ids).size !== ids.length || w.excerpts.some(e => e.source_id !== w.source.id || e.end <= e.start || e.end > points.length || points.slice(e.start, e.end).join('') !== e.quote) || !w.source.name.toLowerCase().endsWith('.' + w.source.extraction.format)) ctx.addIssue({ code: 'custom', message: 'Broken extracted source relation' })
+})
+export const workbenchSchema = z.union([legacyWorkbenchSchema, extractedWorkbenchSchema])
+export const isReviewed = (w: Workbench) => w.contract === 'local-resume-workbench-v1' || w.source.review === 'user_checked_text'
+export function requireReview(w: Workbench): Workbench { return w.contract === 'local-resume-workbench-v1' ? w : { ...w, source: { ...w.source, review: 'needs_review' } } }
 export type Workbench = z.infer<typeof workbenchSchema>
 export type Excerpt = z.infer<typeof excerptSchema>
 
@@ -34,7 +50,7 @@ export function excerpt(w: Workbench, start: number, end: number, section: Secti
   workbenchSchema.parse({ ...w, excerpts: [out], manual: [] })
   return out
 }
-function segment(w: Workbench): Excerpt[] {
+export function segment(w: Workbench): Excerpt[] {
   const points = Array.from(w.source.text), out: Excerpt[] = []
   let line = 0, begin: number | null = null, end = 0, section: Section = 'other'
   const flush = () => { if (begin !== null) out.push(excerpt(w, begin, end, section)); begin = null }

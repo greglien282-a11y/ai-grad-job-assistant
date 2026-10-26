@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { analyzeJD, type Job, type Requirement } from '../jd-lab/jd'
-import { checkText, workbenchSchema, type Workbench } from './import'
+import { checkText, workbenchSchema, legacyWorkbenchSchema, extractedWorkbenchSchema, type Workbench } from './import'
 
 export const DRAFT_CONTRACT = 'local-job-resume-draft-v1'
 export const MAX_DRAFT_BYTES = 512 * 1024
@@ -9,11 +9,12 @@ const optionalText = z.union([z.literal(''), text])
 const requirement = z.strictObject({ id: z.string(), text: optionalText, quote: text, start: z.number().int().nonnegative(), end: z.number().int().positive(), category: z.enum(['technical', 'education', 'experience', 'other']), priority: z.enum(['must', 'bonus', 'uncertain']), adjusted: z.boolean(), conflict: z.boolean() })
 const entry = z.strictObject({ id: z.string().uuid(), source_kind: z.enum(['resume_excerpt', 'user_manual_statement']), original: text, text: optionalText, state: z.enum(['original', 'user_edited']), selected: z.boolean() })
 const assessment = z.strictObject({ requirement_id: z.string(), state: z.enum(['needs_evidence', 'can_explain', 'gap']) })
-const schema = z.strictObject({ contract: z.literal(DRAFT_CONTRACT), trust: z.literal('user_draft_not_verified'), workbench: workbenchSchema,
+export const draftBodySchema = z.strictObject({ trust: z.literal('user_draft_not_verified'), workbench: workbenchSchema,
   job: z.strictObject({ title: text, raw: text, requirements: z.array(requirement).max(200) }).nullable(),
   entries: z.array(entry).max(150), assessments: z.array(assessment).max(200), rejected_statements: z.array(text).max(100),
   layout: z.enum(['comfortable', 'compact']), review: z.strictObject({ step: z.number().int().min(0).max(3), complete: z.boolean(), answers: z.tuple([optionalText, optionalText, optionalText]) }),
 })
+const schema = z.union([draftBodySchema.extend({ contract: z.literal(DRAFT_CONTRACT), workbench: legacyWorkbenchSchema }), draftBodySchema.extend({ contract: z.literal('local-job-resume-draft-v2'), workbench: extractedWorkbenchSchema })])
 export type Draft = z.infer<typeof schema>
 export type Entry = Draft['entries'][number]
 export const emptyReview = (): Draft['review'] => ({ step: 0, complete: false, answers: ['', '', ''] })
@@ -21,7 +22,7 @@ export function originals(w: Workbench) {
   return [...w.excerpts.map(e => ({ id: e.id, source_kind: e.kind, original: e.quote })), ...w.manual.map(m => ({ id: m.id, source_kind: m.kind, original: m.text }))]
 }
 export function newDraft(workbench: Workbench, rejected_statements: string[] = []): Draft {
-  return validate({ contract: DRAFT_CONTRACT, trust: 'user_draft_not_verified', workbench, job: null,
+  return validate({ contract: workbench.contract === 'local-resume-workbench-v1' ? DRAFT_CONTRACT : 'local-job-resume-draft-v2', trust: 'user_draft_not_verified', workbench, job: null,
     entries: originals(workbench).map(e => ({ ...e, text: e.original, state: 'original', selected: false })),
     assessments: [], rejected_statements: [...new Set(rejected_statements)], layout: 'comfortable', review: emptyReview() })
 }
@@ -59,7 +60,7 @@ export const terms = (s: string) => vocabulary.filter(t => /^[a-z]+$/.test(t) ? 
 export const caution = (s: string) => /计划|正在|尚未|没有|不确定|未参与|不知道|团队|我们|只|暂无|未做|未掌握|并非|不是|不具备|尚无|不熟悉|未完成|不会|非本人|被拒绝|已拒绝/.test(s)
 export function provenance(d: Draft, e: Entry): string {
   const q = d.workbench.excerpts.find(x => x.id === e.id)
-  return q ? `导入原文 [${q.start}, ${q.end}) · ${d.workbench.source.name ?? '本地粘贴'}` : '用户手工声明 · 无导入原文引用'
+  return q ? `${d.workbench.contract === 'local-resume-workbench-v2' ? '解析文本快照 CP' : '导入原文'} [${q.start}, ${q.end}) · ${d.workbench.source.name ?? '本地粘贴'}` : '用户手工声明 · 无导入原文引用'
 }
 export function admission(d: Draft, e: Entry): { kind: 'draft' | 'context' | 'blocked'; reason: string } {
   if (!e.text.trim()) return { kind: 'blocked', reason: '空白草稿不打印，也不作为复习来源。' }
@@ -93,7 +94,7 @@ export function questions(d: Draft) {
     return { prompt, entry: e, requirement: linked?.requirement ?? d.job!.requirements[i % d.job!.requirements.length], provenance: provenance(d, e) }
   }) : []
 }
-function noDuplicateKeys(raw: string): unknown {
+export function noDuplicateKeys(raw: string): unknown {
   const value: unknown = JSON.parse(raw), stack: (Set<string> | null)[] = []
   const token = /"(?:\\[\s\S]|[^"\\])*"|[{}\[\]]/g
   for (const match of raw.matchAll(token)) {
@@ -121,7 +122,12 @@ export function saveDraft(d: Draft): string {
 export async function readDraft(file: File, rejected: string[]): Promise<Draft> {
   if (!/^[^\\/\u0000-\u001F]{1,120}\.json$/i.test(file.name) || !file.size || file.size > MAX_DRAFT_BYTES) throw new Error('Invalid file')
   const raw = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer())
-  return restoreDraft(raw, rejected)
+  const d = restoreDraft(raw, rejected)
+  if (d.workbench.contract === 'local-resume-workbench-v2') {
+    const { sha256 } = await import('./document-import')
+    if (await sha256(new TextEncoder().encode(d.workbench.source.text)) !== d.workbench.source.extraction.text_sha256) throw new Error('Snapshot mismatch')
+  }
+  return d
 }
 export function adjustRequirement(d: Draft, id: string, patch: Partial<Pick<Requirement, 'text' | 'priority'>>): Draft {
   return validate({ ...d, job: { ...d.job, requirements: d.job!.requirements.map(r => r.id === id ? { ...r, ...patch, priority: r.conflict ? 'uncertain' : patch.priority ?? r.priority, adjusted: true } : r) } })

@@ -9,7 +9,7 @@ export default defineConfig({
     { name: 'production-closed', testMatch: 'production.spec.ts', use: { baseURL: 'http://127.0.0.1:15192' } },
   ],
   webServer: [
-    { command: 'npm run dev -- --host 127.0.0.1 --port 15191 --strictPort', url: 'http://127.0.0.1:15191', reuseExistingServer: false, env: { VITE_PATHWISE_JD_LAB: 'synthetic-v1' } },
+    { command: 'npm run dev -- --force --host 127.0.0.1 --port 15191 --strictPort', url: 'http://127.0.0.1:15191', reuseExistingServer: false, env: { VITE_PATHWISE_JD_LAB: 'synthetic-v1' } },
     { command: 'npm run preview -- --host 127.0.0.1 --port 15192 --strictPort', url: 'http://127.0.0.1:15192', reuseExistingServer: false, env: { VITE_PATHWISE_JD_LAB: 'synthetic-v1' } },
   ],
 })
