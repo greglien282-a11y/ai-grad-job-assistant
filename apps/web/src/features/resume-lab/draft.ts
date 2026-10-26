@@ -91,7 +91,8 @@ export function questions(d: Draft) {
   const selected = printable(d)
   return selected.length ? ['你实际做了什么？请区分个人、团队及尚未完成的部分。', '有哪些结果能回到原始记录？没有数字时请明确说没有。', '这个岗位还缺什么证据或能力？哪些内容尚需核对？'].map((prompt, i) => {
     const e = selected[i % selected.length], linked = strategies(d).find(s => s.matches.some(x => x.id === e.id))
-    return { prompt, entry: e, requirement: linked?.requirement ?? d.job!.requirements[i % d.job!.requirements.length], provenance: provenance(d, e) }
+    const gap = i === 2 ? strategies(d).find(s => d.assessments.find(a => a.requirement_id === s.requirement.id)?.state === 'gap') : undefined
+    return { prompt: gap ? `尚未掌握或未做过“${gap.requirement.quote}”时，你计划如何学习与补证？不要把学习准备讲成已完成项目。` : prompt, entry: e, requirement: gap?.requirement ?? linked?.requirement ?? d.job!.requirements[i % d.job!.requirements.length], provenance: provenance(d, e) }
   }) : []
 }
 export function noDuplicateKeys(raw: string): unknown {

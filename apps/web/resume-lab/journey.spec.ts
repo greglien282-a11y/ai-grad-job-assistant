@@ -25,8 +25,8 @@ test('complete graduate journey: real file, JD, draft edits, download, refresh, 
   await expect(paper).toContainText('背景、计划与限制 · 不是已完成个人贡献'); await expect(paper).not.toContainText('99%')
   const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: '下载本地草稿 JSON' }).click(); const download = await downloadPromise
   const bytes = await readFile((await download.path())!), saved = JSON.parse(bytes.toString('utf8'))
-  expect(saved.contract).toBe('local-job-resume-draft-v1'); expect(saved.trust).toBe('user_draft_not_verified'); expect(saved.workbench.source.text).toBe(resume)
-  expect(saved.entries[0].state).toBe('user_edited'); expect(saved).not.toHaveProperty('operation_key'); expect(saved).not.toHaveProperty('token')
+  expect(saved.contract).toBe('local-job-resume-draft-v3'); expect(saved.roles).toHaveLength(1); expect(saved.trust).toBe('user_draft_not_verified'); expect(saved.workbench.source.text).toBe(resume)
+  expect(saved.roles[0].content.entries[0].state).toBe('user_edited'); expect(saved).not.toHaveProperty('operation_key'); expect(saved).not.toHaveProperty('token')
   await page.reload(); await expect(page.getByRole('article', { name: '用户自述简历草稿' })).toHaveCount(0)
   await page.getByLabel('恢复本地草稿 JSON').setInputFiles({ name: download.suggestedFilename(), mimeType: 'application/json', buffer: bytes })
   await expect(paper).toContainText('整理了使用说明'); await expect(page.getByLabel('排版密度')).toHaveValue('compact')
@@ -64,14 +64,14 @@ test('strict restoration rejects versions, damaged references, duplicate keys, i
   await start(page); await page.getByLabel('选用条目 1', { exact: true }).check()
   const event = page.waitForEvent('download'); await page.getByRole('button', { name: '下载本地草稿 JSON' }).click(); const download = await event, bytes = await readFile((await download.path())!), good = bytes.toString('utf8'), d = JSON.parse(good)
   const badQuote = structuredClone(d); badQuote.workbench.excerpts[0].quote = '伪造原话'
-  const fakeFact = structuredClone(d); fakeFact.entries[0].status = 'user_confirmed'
-  const badState = structuredClone(d); badState.entries[0].text = '28条' // still claims original
+  const fakeFact = structuredClone(d); fakeFact.roles[0].content.entries[0].status = 'user_confirmed'
+  const badState = structuredClone(d); badState.roles[0].content.entries[0].text = '28条' // still claims original
   const invalid = [JSON.stringify({ ...d, contract: 'future-v99' }), JSON.stringify(badQuote), JSON.stringify(fakeFact), JSON.stringify(badState), good.replace('"contract":', '"contract":"future", "contract":')]
   for (const raw of invalid) {
     await page.getByLabel('恢复本地草稿 JSON').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(raw) })
     await expect(page.getByRole('alert')).toContainText('草稿未恢复'); await expect(page.getByRole('article', { name: '用户自述简历草稿' })).toHaveCount(0)
   }
-  for (const buffer of [Buffer.from([0xff, 0xfe]), Buffer.alloc(512 * 1024 + 1), Buffer.alloc(0)]) {
+  for (const buffer of [Buffer.from([0xff, 0xfe]), Buffer.alloc(2 * 1024 * 1024 + 1), Buffer.alloc(0)]) {
     await page.getByLabel('恢复本地草稿 JSON').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer }); await expect(page.getByRole('alert')).toContainText('草稿未恢复')
   }
 })
