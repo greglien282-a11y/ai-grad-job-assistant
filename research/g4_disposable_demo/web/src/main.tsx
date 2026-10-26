@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { parseBatch } from "../../../g3_choice_protocol/web/contract";
+import { decodeSource, type SourceReceipt } from './source-contract';
 import "./style.css";
 
 const kinds = ["personal_action", "plan", "background", "boundary"] as const;
@@ -25,45 +26,7 @@ type Parsed = ReturnType<typeof parseBatch>;
 type Views = NonNullable<Parsed["view"]>;
 
 function decode(value: unknown): Views {
-  const v = value as Record<string, unknown>;
-  if (
-    !v ||
-    typeof v !== "object" ||
-    Object.keys(v).sort().join("|") !==
-      [
-        "demo_contract",
-        "scope",
-        "operation_id",
-        "result",
-        "truth_verified",
-        "persistence_authorized",
-        "facts",
-      ]
-        .sort()
-        .join("|") ||
-    v.demo_contract !== "g4-disposable-read-v1" ||
-    v.scope !== "DISPOSABLE_RESEARCH_DATABASE" ||
-    v.result !== "committed_pending_review" ||
-    v.truth_verified !== false ||
-    v.persistence_authorized !== false
-  )
-    throw Error("unsafe_contract");
-  const parsed = parseBatch(v.facts);
-  if (parsed.status !== "parsed_candidate" || !parsed.view)
-    throw Error("unsafe_contract");
-  if (
-    parsed.view.some(
-      (f) =>
-        f.subject.status !== "pending" ||
-        f.subject.fact_version !== 1 ||
-        f.subject.classification_contract !== "explicit-typed-v1" ||
-        f.basis.status !== "event_recorded" ||
-        !f.basis.event ||
-        f.basis.event.operation_id !== v.operation_id,
-    )
-  )
-    throw Error("unsafe_contract");
-  return parsed.view;
+  return decodeSource(value).views;
 }
 
 function App() {
@@ -77,6 +40,7 @@ function App() {
     "尚未保存。先核对合成原话，再明确选择类型和进度。",
   );
   const [views, setViews] = useState<Views>([]);
+  const [receipt, setReceipt] = useState<SourceReceipt | null>(null);
   const locked = ["submitting", "unknown", "saved", "unsafe"].includes(phase);
   function editContent(value: string) {
     setContent(value);
@@ -85,6 +49,7 @@ function App() {
   }
   async function recover() {
     setViews([]);
+    setReceipt(null);
     setPhase("submitting");
     setMessage("只读恢复中，不重新提交。");
     try {
@@ -97,6 +62,7 @@ function App() {
       const data = await r.json();
       const parsed = decode(data);
       setViews(parsed);
+      setReceipt(decodeSource(data).receipt);
       setPhase("saved");
       setMessage("已从一次性 PostgreSQL 只读恢复。事实仍待审核。");
     } catch {
@@ -107,6 +73,7 @@ function App() {
   async function save() {
     if (locked || !kind || !stage) return;
     setViews([]);
+    setReceipt(null);
     setPhase("submitting");
     setMessage("受信校验与数据库事务处理中。");
     try {
@@ -114,7 +81,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Research-Key": key },
         body: JSON.stringify({
-          demo_contract: "g4-disposable-submit-v1",
+          demo_contract: "g4-source-bound-disposable-submit-v1",
           synthetic: true,
           content,
           kind,
@@ -140,6 +107,7 @@ function App() {
       const data = await r.json();
       try {
         setViews(decode(data));
+        setReceipt(decodeSource(data).receipt);
         setPhase("saved");
         setMessage("已提交到一次性 PostgreSQL；这是用户声明，事实仍待审核。");
       } catch {
@@ -157,7 +125,7 @@ function App() {
   return (
     <main>
       <header>
-        <p className="eyebrow">PATHWISE · G4-0D · 研究演示</p>
+        <p className="eyebrow">PATHWISE · G4-0F · 来源绑定整合研究</p>
         <h1>原话与选择，分别留证</h1>
         <p>真实一次性 PostgreSQL · 独立校验进程 · 仅限公开合成样例</p>
       </header>
@@ -165,6 +133,7 @@ function App() {
         <strong>不是真实 Pathwise 数据，没有正式 CO3。</strong>{" "}
         不使用生产登录、正式账户或真实招聘资料。关闭演示将清理测试数据。用户声明不等于平台核实；R03
         尚未解决。
+        <p>事务期限严格 COMMIT 检查仍 BLOCK；旧 CO 跨存储同 key 仍 BLOCK。没有正式安全准入，未证明自然人操作、语义独立或事实真实性。</p>
       </aside>
       <section>
         <h2>1 · 核对合成原话</h2>
@@ -259,6 +228,7 @@ function App() {
       </section>
       <section>
         <h2>3 · 待审核与来源追溯</h2>
+        {receipt && <div aria-label="来源绑定审计"><h3>已记录合成来源凭证</h3><p>真实独立来源进程 → 独立签名进程 → 一次性 PostgreSQL；与当前 operation / 选择事件绑定。</p><p>source body SHA256：{receipt.source_body_sha256}</p><p>选择事件数：{receipt.selection_ids.length} · 保留/撤销政策未批准，只限一次性研究。</p><p>语义独立性：NOT_PROVEN · 用户声明待审核，不是平台核实。</p></div>}
         {views.length === 0 ? (
           <p>没有可安全展示的已提交结果。</p>
         ) : (
