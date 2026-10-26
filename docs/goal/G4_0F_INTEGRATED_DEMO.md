@@ -16,7 +16,7 @@
 4. 普通研究writer LOGIN在一个事务内建立原G3图和不可变来源receipt。另一实际签名子进程核对来源MAC、请求/身份/版本、图与receipt相等，再运行未改c3a。它不持数据库身份。
 5. 最终MAC覆盖原完整图**以及实际来源receipt**。不是未经签名的旁挂记录：临时seal包装原seal，加上receipt；operation与receipt的双向FK要求存在且同事务，receipt的server xid与operation对应。旧signer版本不能直接降级通过新policy。
 6. 临时PG检查permit、图约束和来源关系，正常程序自己拥有事务并立即COMMIT，不向HTTP暴露SQL/约束时序控制。
-7. 一个RR READ ONLY快照恢复原operation、Fact/选择事件和来源receipt；服务失效、来源签名过期后已提交回执仍可只读恢复。新POST同键合法replay使用原body/selection IDs，不重新签发或创建第二份资料。
+7. 一个RR READ ONLY快照恢复原operation、Fact/选择事件和来源receipt；服务失效、来源签名过期后已提交回执仍可只读恢复。新POST同键合法replay优先读取数据库中的原body/selection IDs，不依赖临时请求缓存、不重新签发或创建第二份资料。研究key为UUID，不冒充正式CO1/2的签名key或未来CO3共享域。
 
 两个子进程使用不同PID和私有JSON管道，启动/响应有有限等待、EOF/死亡安全拒绝。测试确实创建进程并执行真实SQL，不用同进程两个类冒充进程隔离。独立进程不等于不同OS账户/沙箱/HSM：provisioner/受信HTTP宿主仍持测试生命周期和bootstrap能力（包括fixture中的合成秘密），同用户恶意代码/主机管理员不在已证明防御范围。未证明密钥安全擦除、托管、轮换或部署供应链。
 
@@ -32,9 +32,9 @@
 
 实际PG/HTTP/PID验证：N1/3/5提交与完整来源；整体换正文被真实bound signer拒绝；两服务死亡/pipe失联零效果503；来源实际过期拒绝；同键并发/合法replay；响应实际丢失后两服务都死亡仍GET恢复；跨cookie、旧正式路由、未知合同、JSON重复键；audit不可写/读取权限丢失无部分响应；reference erase的保留缺口。
 
-本机新增Python14项/18.64s；新严格TS17项；TypeScript/Vite构建成功；真实Chromium9项/16.2s（原7项完整保留+新2项来源UI/坏receipt）。新源TTL测试由可信子进程启动配置合法短TTL，HTTP无TTL/bypass参数。
+本机初轮新增Python14项；随后先用“临时请求缓存丢失且双服务关闭”的同键重放得到真实红灯（误报503未保存），再改为数据库回执优先/核对原body，最终新增 **15项/19.98s**。缓存仅为辅助，不能作为已保存依据；仍不提供关闭整套演示后的自动重启恢复。新严格TS17项；TypeScript/Vite构建成功；真实Chromium9项（原7项完整保留+新2项来源UI/坏receipt）。新源TTL测试由可信子进程启动配置合法短TTL，HTTP无TTL/bypass参数。
 
-原共同研究全链+来源14+新集成14一起实际运行：**447 passed /152.89s**，1条既有Starlette/httpx警告，无skip；其中326项实际PG、121项纯函数/结构测试。最终精确HEAD/CI见PR和统一报告；不得把别的SHA绿灯当作本分支证据。它保留 #57 future-first 旧CO同key仍能实际提交、#58旧入口语义复活和无关贡献保守阻断的反例，绝不称全部安全已解决。
+原共同研究全链+来源14+初轮集成14曾实际运行447 passed/152.89s。缓存修正后的最终集成为 **448项（327实际PG、121纯函数/结构）**，最终执行结果/精确HEAD/CI见PR和统一报告，不把旧447证据代替新版本。它保留 #57 future-first 旧CO同key仍能实际提交、#58旧入口语义复活和无关贡献保守阻断的反例，绝不称全部安全已解决。
 
 首次TS正例用了带未引用前缀的旧单条fixture，parseBatch完整覆盖检查正确拒绝。仅将新fixture改为完整原句及一致CP区间，未削弱parser或旧断言；红灯记录不掩盖。实际浏览器仍从真实HTTP/PG取完整图，不以静态JSON替代。
 

@@ -76,6 +76,16 @@ def test_actual_lost_response_recovers_with_both_services_dead_and_same_key_repl
     assert x.model.snapshot()==saved
 
 
+def test_same_key_replay_uses_database_receipt_when_transient_request_cache_is_lost(live):
+    x,demo,request=live; key=str(uuid4())
+    status,saved_result=request('POST',key=key,body=body()); assert status==201
+    before=x.model.snapshot(); del demo.request
+    for service in (demo.ingress,demo.signer): service.process.kill(); service.process.wait(timeout=10)
+    assert request('POST',key=key,body=body())==(201,saved_result)
+    assert request('POST',key=str(uuid4()),body=body())[0]==409
+    assert x.model.snapshot()==before
+
+
 @pytest.mark.parametrize('service',['ingress','signer'])
 def test_private_service_death_is_real_http503_and_full_rollback(live,service):
     x,demo,request=live; before=x.model.snapshot(); process=getattr(demo,service).process

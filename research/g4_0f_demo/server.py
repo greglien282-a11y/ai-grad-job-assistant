@@ -56,21 +56,25 @@ class SourceBoundDemo(Demo):
             raise Refused('demo_request_invalid')
         texts=payload['content'].split('\r\n')
         if not 1<=len(texts)<=5 or any(t not in SAMPLES for t in texts): raise Refused('demo_synthetic_samples_only')
+        normalized={k:v for k,v in payload.items() if k!='lose_response'}
+        # The database receipt, NOT a transient Python request cache, is the
+        # authority. Read/replay before minting any fresh source or revision.
+        try:
+            saved,original=self._read(key)
+        except Refused as exc:
+            if str(exc)!='not_found': raise
+        else:
+            if original['content']!=payload['content'] or any(i['fact_kind']!=payload['kind'] or i['progress_stage']!=payload['stage'] for i in original['items']):
+                raise Refused('demo_single_operation_or_payload_conflict')
+            self.request=(key,normalized,original)
+            return saved
         self.pin.verify()
         if self.approved != manifest(): raise Refused('execution_chain_unapproved')
-        normalized={k:v for k,v in payload.items() if k!='lose_response'}
-        old=getattr(self,'request',None)
-        if old:
-            if old[0]!=key or old[1]!=normalized: raise Refused('demo_single_operation_or_payload_conflict')
-            body=old[2]
-            # Replay ORIGINAL committed result first, even if either service is
-            # dead. Never mint a replacement source or selection ID.
-            with self.x.model.connect() as db:
-                verify_guard(db,self.x); admit_gate(db,self.x.gate); audit.admit(db,self.x,'writer')
-                _,state=apply(db,self.b.sid,self.b.token,key,body)
-                if state!='replayed': raise Refused('demo_receipt_unavailable')
-            return self.recover(key)
         with self.x.model.connect('reader',True) as db:
+            # Enforce this demo's one committed operation even if the in-memory
+            # cache was lost. The HTTP command lock serializes local requests.
+            if db.execute('SELECT 1 FROM ref_operations WHERE session_id=%s',(self.b.sid,)).fetchone():
+                raise Refused('demo_single_operation_or_payload_conflict')
             revision=db.execute('SELECT revision FROM ref_sessions WHERE id=%s',(self.b.sid,)).fetchone()['revision']
         body=command(self.b.sid,self.b.pid,texts,revision=revision,kind=payload['kind'],stage=payload['stage'])
         try:
@@ -91,11 +95,15 @@ class SourceBoundDemo(Demo):
         return self.recover(key)
 
     def recover(self,key):
+        return self._read(key)[0]
+
+    def _read(self,key):
         with self.x.model.connect('reader',True) as db:
             result=read(db,self.x.gate,self.b,key)
             projected=project(db,self.b.sid,self.b.token,key)
             source=audit.read(db,self.x,self.b,key,result['operation_id'])
-        return dict(demo_contract=READ,scope='DISPOSABLE_RESEARCH_DATABASE',operation_id=result['operation_id'],result='committed_pending_review',truth_verified=False,persistence_authorized=False,facts=projected.view,source_receipt=source,blocks=BLOCKS)
+            original=db.execute(sql.SQL('SELECT source_record FROM {} WHERE operation_id=%s').format(sql.Identifier(self.x.audit_schema,'receipts')),(result['operation_id'],)).fetchone()['source_record']['body']
+        return dict(demo_contract=READ,scope='DISPOSABLE_RESEARCH_DATABASE',operation_id=result['operation_id'],result='committed_pending_review',truth_verified=False,persistence_authorized=False,facts=projected.view,source_receipt=source,blocks=BLOCKS),original
 
     def close(self):
         self.ingress.close(); self.signer.close()
