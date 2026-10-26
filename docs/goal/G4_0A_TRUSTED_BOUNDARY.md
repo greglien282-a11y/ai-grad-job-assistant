@@ -19,7 +19,7 @@ G3 已证明：关系完整不等于分类声明可靠。写入身份能直接�
 
 `research/g4_trusted_boundary/` 复用未改动的 G3 `schema.sql`、`runtime.apply/recover`、原 c3a 验证器和随机 Schema/LOGIN 夹具。不复制语言模板，不修改 apps/ 或正式 0001–0015。
 
-每项测试另建随机 `g4_gate_<uuid>` Schema，所有权归临时 NOLOGIN owner。额外对象仅包括 policy、permits 和三个私有函数。**不是 Alembic migration**，没有生产函数或 ACL 变更。
+每项测试另建随机 `g4_gate_<uuid>` Schema，所有权归临时 NOLOGIN owner。额外对象仅包括 policy、permits 和四个私有函数。**不是 Alembic migration**，没有生产函数或 ACL 变更。
 
 图中 operation 到 permit 的循环 deferred FK 强制每次 COMMIT 都有一个授权 permit。permit 的反向 FK、主键、nonce UNIQUE 防止悬空、多凭证和已提交重放。既有 G3 延迟约束继续验证 N=1/3/5 的 Fact/FC/FS/FCS/选择事件和服务端认证上下文，没有绕开它们。permit 不可 UPDATE/DELETE/TRUNCATE。
 
@@ -29,7 +29,7 @@ HMAC-SHA256 采用 PostgreSQL 内置 sha256(bytea) 实现 RFC2104，没有安装
 
 permit BEFORE INSERT 与 deferred COMMIT 再检查受信身份、模式、批准 validator hash、期限（未来不超过 300 秒）、完整图 hash、签名；伪造 finite_rule_match 不能替代凭证。旧操作 replay 不重新签名、不依赖签发服务在线。新请求服务不可用则整个事务回滚。
 
-G4 admission 额外校验预先配置的三个函数体指纹、owner、安全 search_path、PUBLIC EXECUTE 和必须存在的 validated deferred FK。原 G3 的全部角色、列权限、触发器、TEMP 污染检查仍执行；没有为了新表绕过原检查，新对象在独立 Schema。所有 SQL 函数限定真实对象和 pg_catalog，普通身份不能替换函数或读取 policy。
+G4 admission 额外校验预先配置的四个函数体指纹、owner、安全 search_path、PUBLIC EXECUTE 和必须存在的 validated deferred FK。原 G3 的全部角色、列权限、触发器、TEMP 污染检查仍执行；没有为了新表绕过原检查，新对象在独立 Schema。所有 SQL 函数限定真实对象和 pg_catalog，普通身份不能替换函数或读取 policy。
 
 ## 身份与信任假设
 

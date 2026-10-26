@@ -181,6 +181,19 @@ def test_old_proof_cannot_bind_changed_graph_or_metadata(boundary, mutation):
             proof = replace(proof, validator_hash="f" * 64)
         if mutation == "mac":
             proof = replace(proof, mac=b"0" * 32)
+        if mutation in {"expired", "unknown_validator"}:
+            # Authentic but expired / unapproved-version proof: don't confuse
+            # signature failure with the independent time/version check.
+            proof = replace(
+                proof,
+                mac=hmac.digest(
+                    x.secret,
+                    message(
+                        proof.seal, proof.nonce, proof.expires, proof.validator_hash
+                    ),
+                    "sha256",
+                ),
+            )
         permit(db, x.gate, oid, proof)
     assert m.snapshot() == before
 
@@ -582,3 +595,44 @@ def test_independent_signer_real_process_and_unavailable_service(boundary):
         assert m.snapshot() == committed
     finally:
         service.close()
+
+
+@pytest.mark.parametrize("attack", ["UPDATE", "DELETE", "TRUNCATE"])
+def test_permit_immutable_even_with_extra_synthetic_mutator_privileges(
+    boundary, attack
+):
+    x = boundary
+    m = x.model
+    b = m.seed()
+    with m.connect() as db:
+        submit(
+            db,
+            x.gate,
+            b,
+            "immutable",
+            command(b.sid, b.pid, TEXTS[:1]),
+            issuer=x.issuer,
+        )
+    before = m.snapshot()
+    # Privilege fault arranged outside request; this mutation has a different
+    # shape than G3 rows and needs its own trigger, not OLD.session_id access.
+    m.admin.execute(
+        sql.SQL("GRANT USAGE ON SCHEMA {} TO {}").format(
+            sql.Identifier(x.gate.schema), sql.Identifier(m.roles["mutator"])
+        )
+    )
+    m.admin.execute(
+        sql.SQL("GRANT UPDATE,DELETE,TRUNCATE ON {} TO {}").format(
+            sql.Identifier(x.gate.schema, "permits"), sql.Identifier(m.roles["mutator"])
+        )
+    )
+    query = sql.SQL(
+        attack + " " + ("FROM " if attack == "DELETE" else "") + "{}"
+    ).format(sql.Identifier(x.gate.schema, "permits"))
+    if attack == "UPDATE":
+        query += sql.SQL(" SET mode='broker'")
+    with pytest.raises(
+        psycopg.errors.CheckViolation, match="g4_permit_immutable"
+    ), m.connect("mutator") as db:
+        db.execute(query)
+    assert m.snapshot() == before
