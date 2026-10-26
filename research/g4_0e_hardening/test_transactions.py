@@ -42,6 +42,7 @@ def record(name, evidence):
 
 def experiment(x, case):
     m = x.model; b = m.seed(); before = m.snapshot(); signed = {}; phase = 'connect'
+    error = None; before_commit_epoch = None
     db = m.connect()
     try:
         phase = 'admission'; admit_gate(db, x.gate)
@@ -61,22 +62,28 @@ def experiment(x, case):
             second, _ = apply(db, b.sid, b.token, 'transaction-B', command(b.sid, b.pid, ['我编写了脚本。'], revision=2))
             other = second['operation_id']; q = x.issuer.issue(seal(db, x.gate, other))
             signed[other] = hashlib.sha256(q.seal.encode()).hexdigest(); permit(db, x.gate, other, q)
+        before_commit_epoch = db.execute('SELECT extract(epoch FROM clock_timestamp())::float8 AS epoch').fetchone()['epoch']
+        if case in ('T1','T2'): assert before_commit_epoch > p.expires
         phase = 'COMMIT'; db.commit(); committed = True; state = None
     except psycopg.Error as exc:
-        state = exc.sqlstate; committed = False; db.rollback()
+        state = exc.sqlstate; error = exc.diag.message_primary; committed = False; db.rollback()
     finally:
         db.close()
     after = m.snapshot()
     with m.connect('reader', True) as reader:
         revision = reader.execute('SELECT revision FROM ref_sessions WHERE id=%s', (b.sid,)).fetchone()['revision']
-    matches = []
+    matches = []; final_hashes = []
     if committed:
         with m.connect() as writer:
-            matches = [hashlib.sha256(seal(writer, x.gate, oid).encode()).hexdigest() == digest for oid, digest in signed.items()]
+            final_hashes = [hashlib.sha256(seal(writer, x.gate, oid).encode()).hexdigest() for oid in signed]
+            matches = [actual == expected for actual,expected in zip(final_hashes,signed.values())]
     triggers = m.admin.execute('SELECT tgname,tgdeferrable,tginitdeferred,tgenabled FROM pg_trigger WHERE tgrelid=%s::regclass AND NOT tgisinternal ORDER BY tgname', (x.gate.schema+'.permits',)).fetchall()
     counts = {k: len(after[k]) - len(before[k]) for k in ('ref_facts','ref_operations','g4_permits')}
-    result = dict(committed=committed, sqlstate=state, phase=phase, session_revision=revision,
+    result = dict(committed=committed, sqlstate=state, error=error, phase=phase, session_revision=revision,
         counts=counts, signed_seals_match_final=matches, zero_effect=after == before, role=role, triggers=triggers,
+        permit_expires_epoch=p.expires, server_epoch_before_commit=before_commit_epoch,
+        expired_before_commit=before_commit_epoch > p.expires,
+        signed_hashes=list(signed.values()), final_hashes=final_hashes,
         strict_commit_deadline_guaranteed=False)
     record(case, result)
     return result
@@ -97,6 +104,7 @@ def test_actual_transaction_matrix_preserves_unsafe_commit_evidence(boundary, ca
     assert r['signed_seals_match_final'] == matches
     assert r['zero_effect'] is (not commits)
     if not commits: assert r['sqlstate'] == '23514' and r['phase'] == 'COMMIT'
+    if case in ('T1','T2'): assert r['expired_before_commit'] is True
 
 
 @pytest.mark.parametrize('boundary', ['credential'], indirect=True)

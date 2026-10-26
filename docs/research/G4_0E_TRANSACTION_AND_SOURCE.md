@@ -17,7 +17,7 @@
 - T3，合法 A 及 permit 提前检查，再暂存不同 key/原话 B：**COMMIT 成功**，revision=3，新增各2；A 最终重算 seal 不匹配，B 匹配。
 - T4，不提前检查的 A/B 对照：COMMIT 拒绝，23514，revision=1，新增各0，全表零效果。
 
-每次执行可将 SQLSTATE/失败阶段、身份能力、触发器启用/延迟模式、计数、revision、seal 对比和零效果写入 `G4_0E_EVIDENCE_FILE`，不得包含密码、密钥或真实资料。CI 上传自己的记录；本机原始记录另存 `.e2e/handoff/g4_0e_transactions.jsonl`。
+每次执行可将SQLSTATE/固定错误名/失败阶段、身份能力、触发器启用/延迟模式、计数、revision、签名/最终重算hash及零效果写入 `G4_0E_EVIDENCE_FILE`，不得包含密码、密钥或真实资料。T1/T2额外记录服务端COMMIT前时钟与实际期限，并断言确已过期；不只凭测试名称推断到期。CI上传自己的记录；本机初始记录 `.e2e/handoff/g4_0e_transactions.jsonl`，最终增强记录另存 `g4_0e_final_transactions.jsonl`。
 
 PostgreSQL 的 [SET CONSTRAINTS 官方说明](https://www.postgresql.org/docs/16/sql-set-constraints.html) 明确允许事务内改变约束检查时间，constraint trigger 也受其控制。这里的结论首先来自真实 COMMIT，对照文档解释机制；不是只凭静态猜测。
 
@@ -49,6 +49,6 @@ $env:G4_0E_EVIDENCE_FILE='<本次忽略的合成 evidence.jsonl>'
 python -B -m pytest research/g4_0e_hardening research/g4_source_binding research/g4_trusted_boundary -q -ra --tb=short
 ```
 
-本机 **122 passed /44.43s**：本轮24 + 原来源14 + 原边界84。全部使用实际一次性PG，不是122个已修漏洞；T2/T3 等测试是特意保留的风险证据。无新增skip/xfail/timeout变化，原测试未删除/放宽。最终准确 HEAD/CI 见 PR，不能把底座 CI 冒称本 HEAD。
+本机最终 **122 passed /50.98s**（初轮44.43s）：本轮24 + 原来源14 + 原边界84。全部使用实际一次性PG，不是122个已修漏洞；T2/T3等测试是特意保留的风险证据。无新增skip/xfail/timeout变化，原测试未删除/放宽。最终准确HEAD/CI见PR，不能把底座CI冒称本HEAD。
 
 `STRICT_COMMIT_DEADLINE_BLOCK`、完整来源审计/执行隔离、共享 CO1/2/未来3 原子域、R03、D4/D5、D6剩余、D8、正式writer/migration/部署/付费均保留。C可做标明限制的研究演示，不能借演示关闭以上准入项。
