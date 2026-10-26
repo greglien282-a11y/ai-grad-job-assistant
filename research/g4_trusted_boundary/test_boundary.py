@@ -645,3 +645,62 @@ def test_permit_immutable_even_with_extra_synthetic_mutator_privileges(
     with pytest.raises(expected, match=diagnostic), m.connect("mutator") as db:
         db.execute(query)
     assert m.snapshot() == before
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "trigger_disabled",
+        "trigger_missing",
+        "private_key_readable",
+        "extra_function_execute",
+        "wrong_fk_column",
+    ],
+)
+def test_gate_deployment_metadata_is_verified_not_only_its_function_bodies(
+    boundary, fault
+):
+    x = boundary
+    m = x.model
+    b = m.seed()
+    before = m.snapshot()
+    if fault == "trigger_disabled":
+        m.admin.execute(
+            sql.SQL("ALTER TABLE {} DISABLE TRIGGER verify_permit").format(
+                sql.Identifier(x.gate.schema, "permits")
+            )
+        )
+    elif fault == "trigger_missing":
+        m.admin.execute(
+            sql.SQL("DROP TRIGGER verify_at_commit ON {}").format(
+                sql.Identifier(x.gate.schema, "permits")
+            )
+        )
+    elif fault == "private_key_readable":
+        m.admin.execute(
+            sql.SQL("GRANT SELECT(secret) ON {} TO {}").format(
+                sql.Identifier(x.gate.schema, "policy"),
+                sql.Identifier(m.roles["writer"]),
+            )
+        )
+    elif fault == "extra_function_execute":
+        m.admin.execute(
+            sql.SQL("GRANT EXECUTE ON FUNCTION {}(bytea,bytea) TO {}").format(
+                sql.Identifier(x.gate.schema, "hmac256"),
+                sql.Identifier(m.roles["writer"]),
+            )
+        )
+    else:
+        m.admin.execute("ALTER TABLE ref_operations DROP CONSTRAINT g4_permit_required")
+        m.admin.execute(
+            sql.SQL(
+                "ALTER TABLE ref_operations ADD CONSTRAINT g4_permit_required FOREIGN KEY(project_id) REFERENCES {}(operation_id) DEFERRABLE INITIALLY DEFERRED"
+            ).format(sql.Identifier(x.gate.schema, "permits"))
+        )
+    with pytest.raises(
+        Refused, match="trusted_boundary_unavailable"
+    ), m.connect() as db:
+        submit(
+            db, x.gate, b, "fault", command(b.sid, b.pid, TEXTS[:1]), issuer=x.issuer
+        )
+    assert m.snapshot() == before

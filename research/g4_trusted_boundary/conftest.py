@@ -75,6 +75,17 @@ def boundary(model, request):
                 for f in functions
             },
         )
+        gate.fk = admin.execute(
+            "SELECT pg_get_constraintdef(oid) AS value FROM pg_constraint WHERE conrelid=%s::regclass AND conname='g4_permit_required'",
+            (m.schema + ".ref_operations",),
+        ).fetchone()["value"]
+        gate.triggers = {
+            r["tgname"]: r["definition"]
+            for r in admin.execute(
+                "SELECT tgname,pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgrelid=%s::regclass AND NOT tgisinternal",
+                (private + ".permits",),
+            ).fetchall()
+        }
         base_snapshot = m.snapshot
 
         def snapshot():
