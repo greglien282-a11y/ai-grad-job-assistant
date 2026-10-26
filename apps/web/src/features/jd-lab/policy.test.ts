@@ -41,6 +41,38 @@ it('does not resurrect an exactly rejected statement by giving it another Fact I
   const rejected = sample(99, '我测试了3个导出按钮。', 'personal_action', 'completed', 'rejected')
   for (const order of [[samples[0], rejected], [rejected, samples[0]]]) expect(deduplicate(order).some(e => e.bucket === 'usable')).toBe(false)
 })
+it.each(['pending', 'rejected'] as const)('excludes the entire exact-text group for %s versus confirmed in both orders', status => {
+  const confirmed = sample(80, '我测试了3个导出按钮。')
+  const other = sample(81, '我测试了3个导出按钮。', 'personal_action', 'completed', status)
+  for (const order of [[other, confirmed], [confirmed, other]]) {
+    expect(deduplicate(order).map(e => e.bucket)).toEqual(['excluded', 'excluded'])
+  }
+})
+it('excludes same-ID pending/confirmed conflicts in both orders even with different statements', () => {
+  const confirmed = sample(80, '我测试了3个导出按钮。')
+  const pending = sample(80, '我部署了服务。', 'personal_action', 'completed', 'pending')
+  for (const order of [[pending, confirmed], [confirmed, pending]]) {
+    expect(deduplicate(order).every(e => e.bucket === 'excluded')).toBe(true)
+  }
+})
+it('does not let a matching valid duplicate hide another row with missing declaration sources', () => {
+  const valid = sample(80, '我测试了3个导出按钮。')
+  const missing = sample(81, '我测试了3个导出按钮。', 'personal_action', 'completed', 'user_confirmed', false)
+  for (const order of [[valid, missing], [missing, valid]]) expect(deduplicate(order).some(e => e.bucket === 'usable')).toBe(false)
+})
+it('keeps a deterministic single qualified representative for lawful exact duplicates', () => {
+  const first = sample(80, '我测试了3个导出按钮。'), second = sample(81, '我测试了3个导出按钮。')
+  for (const order of [[second, first, structuredClone(first)], [first, structuredClone(first), second]]) {
+    const admitted = deduplicate(order).filter(e => e.bucket === 'usable')
+    expect(admitted).toHaveLength(1); expect(admitted[0].fact?.id).toBe((first.fact as { id: string }).id)
+  }
+})
+it('preserves the input array, nested facts and declaration sources while resolving mixed-state duplicates', () => {
+  const order = [sample(81, '我测试了3个导出按钮。', 'personal_action', 'completed', 'pending'), sample(80, '我测试了3个导出按钮。')]
+  const before = structuredClone(order), refs = [...order]
+  deduplicate(order)
+  expect(order).toEqual(before); expect(order[0]).toBe(refs[0]); expect(order[1]).toBe(refs[1])
+})
 it('reports an evidence gap, never claims Python experience from a script or a match percentage', () => {
   const matches = matchRequirements(analyzeJD('必须掌握Python。测试经验优先。').requirements, deduplicate(samples))
   expect(matches[0].usable).toHaveLength(0); expect(matches[0].conclusion).toContain('缺少可展示证据')

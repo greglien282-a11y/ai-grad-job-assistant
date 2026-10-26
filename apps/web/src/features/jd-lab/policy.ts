@@ -36,20 +36,28 @@ export function qualify(input: LabInput): Evidence {
 export function deduplicate(inputs: LabInput[]): Evidence[] {
   const rows = inputs.map(qualify)
   const identities = new Map<string, string>(), conflicts = new Set<string>(), rejectedText = new Set<string>()
+  const groups = new Map<string, { signature: string; representative: string }>(), ambiguousText = new Set<string>()
   for (const e of rows) {
     if (!e.fact) continue
     const f = e.fact, record = JSON.stringify(f)
     if (identities.has(f.id) && identities.get(f.id) !== record) conflicts.add(f.id)
     identities.set(f.id, record)
     if (f.status === 'rejected') rejectedText.add(f.statement)
+    // Decide admission for the whole exact-text group before choosing a duplicate.
+    // A confirmed row cannot hide pending, conflicting classification or failed provenance.
+    const signature = JSON.stringify([f.status, f.fact_kind, f.progress_stage, f.classification_contract, e.bucket])
+    const group = groups.get(f.statement)
+    if (group && group.signature !== signature) ambiguousText.add(f.statement)
+    groups.set(f.statement, { signature, representative: group && group.representative < f.id ? group.representative : f.id })
   }
-  const seen = new Set<string>(), statements = new Set<string>()
+  for (const e of rows) if (e.fact && (conflicts.has(e.fact.id) || rejectedText.has(e.fact.statement))) ambiguousText.add(e.fact.statement)
+  const seen = new Set<string>()
   return rows.map(e => {
     const f = e.fact
     if (!f) return e
-    if (conflicts.has(f.id) || rejectedText.has(f.statement)) return { ...e, declaration: null, bucket: 'excluded', reason: '事实身份状态冲突或原句存在拒绝记录；停止用于预览，不按输入顺序放行。' }
-    if (seen.has(f.id) || statements.has(f.statement)) return { ...e, bucket: 'excluded', reason: '重复经历，只展示一次，不能重复计算。' }
-    seen.add(f.id); statements.add(f.statement); return e
+    if (ambiguousText.has(f.statement)) return { ...e, declaration: null, bucket: 'excluded', reason: '事实身份、状态、分类或来源准入冲突，或原句存在拒绝记录；整组停止用于预览，不按输入顺序放行。' }
+    if (seen.has(f.id) || groups.get(f.statement)!.representative !== f.id) return { ...e, bucket: 'excluded', reason: '重复经历，只展示一次，不能重复计算。' }
+    seen.add(f.id); return e
   })
 }
 export function matchRequirements(requirements: Requirement[], evidence: Evidence[]) {
