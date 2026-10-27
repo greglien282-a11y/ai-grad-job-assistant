@@ -1,0 +1,45 @@
+name: M2 JD to resume local preview
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  pull_request:
+    paths: ['apps/web/**', 'research/jd_lab/**', 'research/declaration_read/**', '.github/workflows/jd-lab.yml']
+permissions:
+  contents: read
+jobs:
+  product-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - run: python -m pytest research/jd_lab -q
+        # The pure semantic module has no third-party dependencies.
+        shell: bash
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global npm@11
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: apps/web
+      - run: npm test
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+      - run: npx tsc -p tsconfig.jd-lab.json --noEmit
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium --only-shell
+        working-directory: apps/web
+      - run: npx playwright test --config jd-lab/playwright.config.ts
+        working-directory: apps/web
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-jd-resume-evidence
+          path: |
+            apps/web/test-results/jd-lab/**/jd_*.png
+            apps/web/test-results/jd-lab/**/resume_originals.png
+          if-no-files-found: ignore
