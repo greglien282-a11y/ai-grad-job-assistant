@@ -25,7 +25,7 @@ export default function ResumeWorkbench({ value, onChange }: { value: Workbench 
       {busy && <p role="status">正在本地读取文件…</p>}{error && <p role="alert">{error} 本次没有上传或保存。</p>}
     </section>
     {value && <>
-      <section className="resume-panel" aria-label="原文与候选结构"><h2>逐段核对，来源不变</h2><p>候选分段不等于事实分类。位置按Unicode code points计算；手工修改结构不会产生确认或认证。修改材料/结构会清除后续岗位草稿，避免沿用旧引用。</p>
+      <section className="resume-panel" aria-label="原文与候选结构"><h2>逐段核对，来源不变</h2><p>候选分段不等于事实分类。位置按Unicode code points计算；手工修改结构不会产生确认或认证。仅修改标题、分类或顺序会保留岗位草稿；引用或材料改变时先说明影响，须确认后才重置，避免沿用旧引用。</p>
         {value.contract === 'local-resume-workbench-v2' && <aside className="resume-notice" aria-label="文件解析质量"><h3>先核对提取文本，再进入岗位分析</h3><p>{value.source.extraction.format.toUpperCase()} · {value.source.extraction.file_bytes} 字节 · {value.source.extraction.pages ?? '不适用'} 页 · {value.source.extraction.parser}</p><p>文件 SHA-256：<code>{value.source.extraction.file_sha256}</code></p><p>文本快照 SHA-256：<code>{value.source.extraction.text_sha256}</code></p><p>引用只对应下方文本快照的Unicode区间，不是文件字节或PDF坐标。指纹不认证真实性；下载不包含原始二进制文件。</p>{value.source.extraction.warnings.map(w => <p key={w} role="note">{qualityLabels[w]}</p>)}<p>核对状态：{isReviewed(value) ? '用户已核对文本（不是平台核实）' : '尚未核对；岗位分析不可用'}</p><button disabled={isReviewed(value)} onClick={() => apply(workbenchSchema.parse({ ...value, source: { ...value.source, review: 'user_checked_text' } }))}>已核对文本、顺序与遗漏，进入岗位草稿</button></aside>}
         {privacyWarnings(value.source.text).map(w => <p role="note" key={w}>{w}</p>)}
         <div className="resume-columns"><div><h3>完整导入原文 · 未审核</h3><p>{value.source.name ?? '本地粘贴'} · local_unverified</p><pre aria-label="完整简历原文">{value.source.text}</pre></div>

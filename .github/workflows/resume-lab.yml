@@ -1,7 +1,10 @@
 name: M2 local resume workbench
 on:
+  push:
+    branches: [main]
+  workflow_dispatch:
   pull_request:
-    paths: ['apps/web/**', '.github/workflows/resume-lab.yml']
+    paths: ['apps/web/**', 'research/m2_acceptance/**', '.github/workflows/resume-lab.yml']
 permissions:
   contents: read
 jobs:
@@ -27,9 +30,15 @@ jobs:
         working-directory: apps/web
       - run: npx playwright test --config jd-lab/playwright.config.ts
         working-directory: apps/web
+      - run: node research/m2_acceptance/run.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: synthetic-local-resume-evidence
-          path: apps/web/test-results/resume-lab/**/resume_*.png
+          path: |
+            apps/web/test-results/resume-lab/**/resume_*.png
+            apps/web/test-results/resume-lab/**/resume_*.pdf
+            .e2e/m2-acceptance/journeys.json
+            .e2e/m2-acceptance/*-print.pdf
+            .e2e/m2-acceptance/*-source-review.png
           if-no-files-found: ignore

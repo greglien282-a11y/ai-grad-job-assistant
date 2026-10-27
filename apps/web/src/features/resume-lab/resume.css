@@ -7,3 +7,11 @@
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}.resume-lab .page-estimate{font-size:13px;color:#5a6c59}.resume-template-classic h3{border-left:4px solid #42634f;padding-left:12px;border-bottom:1px solid #d0d7cc;padding-bottom:6px}.resume-template-minimal .paper-profile{text-align:center}.resume-template-minimal .paper-profile h2{border:0;margin-bottom:0;padding-bottom:0;font-size:28px}.resume-template-minimal h3{letter-spacing:.08em;border-bottom:1px solid #9aab9c;padding-bottom:8px}.paper-profile p{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}.paper-target{font-weight:700}.paper-entry-long{break-inside:auto;orphans:3;widows:3}.local-resume-paper h3{break-after:avoid}.local-resume-paper p{line-break:auto;word-break:normal;overflow-wrap:anywhere}.local-resume-paper{min-height:297mm}.resume-template-minimal{font-family:"Microsoft YaHei",Arial,sans-serif}@media(max-width:650px){.profile-grid{grid-template-columns:1fr}.local-resume-paper{min-height:0}}@page{size:A4;margin:12mm}@media print{.local-resume-paper{position:relative;padding:0;min-height:0}.paper-entry-long{break-inside:auto}.local-resume-paper h3{break-after:avoid}.local-resume-paper p{orphans:3;widows:3}.resume-lab main>.resume-panel:not([aria-label="用户草稿打印"]),.resume-lab main>.resume-notice,.resume-lab main>.resume-hero{display:none}.resume-lab main{padding:0;max-width:none}.resume-panel[aria-label="用户草稿打印"]{margin:0;border:0;padding:0}.resume-panel[aria-label="用户草稿打印"]>p,.resume-panel[aria-label="用户草稿打印"]>.resume-actions,.page-estimate{display:none}}
 
 @media print{.resume-lab{min-height:0;background:white}.local-resume-paper{height:auto}}
+
+.resume-output.review-active { display: none; }
+@media print {
+  .resume-output.review-active { display: block; }
+  .source-review { display: none !important; }
+  .local-resume-paper section h3 { break-after: avoid; }
+  .local-resume-paper p { orphans: 3; widows: 3; }
+}

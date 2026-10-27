@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { checkText, isReviewed, workbenchSchema, type Workbench } from './import'
-import { admission, draftBodySchema, emptyReview, newDraft, noDuplicateKeys, restoreDraft, setJob, strategies, validate, type Draft } from './draft'
+import { admission, draftBodySchema, emptyReview, newDraft, noDuplicateKeys, restoreDraft, setJob, strategies, terms, validate, type Draft } from './draft'
 export const WORKSPACE_CONTRACT = 'local-job-resume-draft-v3'
 export const MAX_WORKSPACE_BYTES = 2 * 1024 * 1024
 const field = (max: number) => z.string().max(max).superRefine((v, ctx) => { if (v) try { checkText(v) } catch { ctx.addIssue({ code: 'custom', message: 'Unsafe local text' }) } })
@@ -68,11 +68,21 @@ export function saveWorkspace(w: Workspace): string {
   return raw
 }
 export function suggestions(d: Draft) {
-  return d.entries.map(e => {
-    const links = strategies(d).filter(s => s.matches.some(m => m.id === e.id)), allowed = admission(d, e).kind === 'draft'
-    return { entry: e, requirements: links.map(s => s.requirement), eligible: allowed && links.length > 0,
-      reason: !allowed ? '来源存在计划、团队、否定或冲突限制；不建议改写成个人完成。' : links.length ? '原句与以下岗位引文有字面关联；可优先展示，不证明掌握或完成。' : '未找到岗位字面关联；不代表没有能力，可由用户自行说明。' }
-  })
+  return d.entries.map((e, index) => {
+    const links = strategies(d).filter(s => s.matches.some(m => m.id === e.id)).map(s => ({
+      ...s, words: terms(s.requirement.quote).filter(t => terms(s.requirement.text).includes(t) && terms(e.original).includes(t)),
+      assessment: d.assessments.find(a => a.requirement_id === s.requirement.id)!.state,
+    })).filter(s => s.words.length > 0)
+    const allowed = admission(d, e).kind === 'draft', usable = links.filter(s => s.assessment !== 'gap')
+    const status = !allowed ? 'boundary' : links.length && !usable.length ? 'gap' : usable.length ? 'literal' : 'insufficient'
+    return { entry: e, requirements: links.map(s => s.requirement), links, status, eligible: allowed && usable.length > 0, index,
+      reason: !allowed ? '来源存在计划、团队、否定或冲突限制；不建议改写成个人完成。' : status === 'gap' ? '用户明确自评尚未掌握；词汇出现不能覆盖能力缺口。' : usable.length ? '原句与以下岗位引文有字面关联；可优先展示，不证明掌握或完成。' : '证据不足：未找到原句与JD原句的字面关联；不代表没有能力。' }
+  }).sort((a, b) => Number(b.eligible) - Number(a.eligible) || a.index - b.index)
+}
+export function applySourceSuggestions(d: Draft): Draft {
+  const ids = new Set(suggestions(d).filter(s => s.eligible).map(s => s.entry.id))
+  // Explicit application retains order and exact words; admission excludes conflicts.
+  return validate({ ...d, entries: [...d.entries.filter(e => ids.has(e.id)).map(e => ({ ...e, text: e.original, state: 'original' as const, selected: true })), ...d.entries.filter(e => !ids.has(e.id))], review: emptyReview() })
 }
 export function applySourceSuggestion(d: Draft, id: string): Draft {
   const suggestion = suggestions(d).find(s => s.entry.id === id)

@@ -1,5 +1,8 @@
 name: M2 JD to resume local preview
 on:
+  push:
+    branches: [main]
+  workflow_dispatch:
   pull_request:
     paths: ['apps/web/**', 'research/jd_lab/**', 'research/declaration_read/**', '.github/workflows/jd-lab.yml']
 permissions:

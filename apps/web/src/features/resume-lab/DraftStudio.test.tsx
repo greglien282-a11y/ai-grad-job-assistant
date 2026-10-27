@@ -9,7 +9,7 @@ function start(raw = '项目经历\n我编写了图像读取脚本。\n\n技能\
 it('makes a user-authored draft printable with original comparison, ordering, undo and three source-linked questions', () => {
   start(); fireEvent.click(screen.getByLabelText('选用条目 1')); fireEvent.click(screen.getByLabelText('选用条目 2'))
   fireEvent.change(screen.getByLabelText('岗位草稿 1'), { target: { value: '我自己补写的说明。' } })
-  const paper = screen.getByRole('article', { name: '用户自述简历草稿' }); expect(within(paper).getByText('我自己补写的说明。')).toBeVisible(); expect(paper).toHaveTextContent('用户改写；原文：我编写了图像读取脚本。')
+  const paper = screen.getByRole('article', { name: '用户自述简历草稿' }); expect(within(paper).getByText('我自己补写的说明。')).toBeVisible(); expect(paper).not.toHaveTextContent('用户改写；原文：'); fireEvent.click(screen.getByRole('button', { name: '来源审查' })); expect(screen.getByRole('region', { name: '来源审查详情' })).toHaveTextContent('用户改写；原文：我编写了图像读取脚本。'); fireEvent.click(screen.getByRole('button', { name: '简历输出' }))
   fireEvent.click(screen.getByRole('button', { name: '撤销上一步（拒绝记录保留）' })); expect(screen.getByLabelText('岗位草稿 1')).toHaveValue('我编写了图像读取脚本。')
   fireEvent.click(screen.getByRole('button', { name: '上移条目 2' })); expect(paper.querySelector('.paper-entry')?.textContent).toContain('Python课程基础')
   const print = vi.spyOn(window, 'print').mockImplementation(() => undefined); fireEvent.click(screen.getByRole('button', { name: '打印用户草稿 / 保存 PDF' })); expect(print).toHaveBeenCalledOnce(); print.mockRestore()
@@ -21,7 +21,7 @@ it('keeps rejected text blocked after undo and reimport with another source iden
   start('我编写了脚本。'); fireEvent.click(screen.getByLabelText('选用条目 1')); fireEvent.click(screen.getByRole('button', { name: '拒绝本地条目 1' }))
   fireEvent.click(screen.getByRole('button', { name: '撤销上一步（拒绝记录保留）' })); expect(screen.getByRole('button', { name: '打印用户草稿 / 保存 PDF' })).toBeDisabled()
   fireEvent.change(screen.getByRole('textbox', { name: '简历原文' }), { target: { value: '项目经历\n我编写了脚本。' } }); fireEvent.click(screen.getByRole('button', { name: '导入并核对原文' }))
-  expect(screen.getByLabelText('选用条目 1')).toBeDisabled()
+  expect(screen.queryByLabelText('选用条目 1')).toBeNull(); fireEvent.click(screen.getByRole('button', { name: '确认更换来源并重置岗位' })); expect(screen.getByLabelText('选用条目 1')).toBeDisabled()
 })
 it('keeps team and planned source visible as context, and blocks removing its boundaries by editing', () => {
   start('我计划部署服务，团队负责。'); fireEvent.click(screen.getByLabelText('选用条目 1'))

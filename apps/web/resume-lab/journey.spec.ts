@@ -21,7 +21,7 @@ test('complete graduate journey: real file, JD, draft edits, download, refresh, 
   await page.getByRole('button', { name: '上移条目 2', exact: true }).click()
   await page.getByLabel('排版密度').selectOption('compact')
   const paper = page.getByRole('article', { name: '用户自述简历草稿' })
-  await expect(paper).toContainText('用户改写；原文：课程作业：我编写了图像读取脚本。')
+  await expect(paper).not.toContainText('用户改写；原文：'); await page.getByRole('button', { name: '来源审查', exact: true }).click(); await expect(page.getByRole('region', { name: '来源审查详情' })).toContainText('用户改写；原文：课程作业：我编写了图像读取脚本。'); await page.getByRole('button', { name: '简历输出', exact: true }).click()
   await expect(paper).toContainText('背景、计划与限制 · 不是已完成个人贡献'); await expect(paper).not.toContainText('99%')
   const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: '下载本地草稿 JSON' }).click(); const download = await downloadPromise
   const bytes = await readFile((await download.path())!), saved = JSON.parse(bytes.toString('utf8'))
@@ -58,7 +58,7 @@ test('rejected exact original remains blocked after undo, local file replay, and
   await page.getByLabel('恢复本地草稿 JSON').setInputFiles({ name: 'old.json', mimeType: 'application/json', buffer: bytes })
   await expect(page.getByRole('button', { name: '打印用户草稿 / 保存 PDF' })).toBeDisabled()
   await page.getByRole('textbox', { name: '简历原文', exact: true }).fill('项目经历\n我编写了图像脚本。'); await page.getByRole('button', { name: '导入并核对原文' }).click()
-  await expect(page.getByLabel('选用条目 1', { exact: true })).toBeDisabled()
+  await expect(page.getByLabel('选用条目 1', { exact: true })).toHaveCount(0); await page.getByRole('button', { name: '确认更换来源并重置岗位' }).click(); await expect(page.getByLabel('选用条目 1', { exact: true })).toBeDisabled()
 })
 test('strict restoration rejects versions, damaged references, duplicate keys, invalid fields, encodings and file limits without partial display', async ({ page }) => {
   await start(page); await page.getByLabel('选用条目 1', { exact: true }).check()
@@ -77,7 +77,7 @@ test('strict restoration rejects versions, damaged references, duplicate keys, i
 })
 test('same original with differing local draft states is excluded as a group and no duplicate is printed', async ({ page }) => {
   await start(page, '我编写了脚本。')
-  await page.getByRole('textbox', { name: '手工声明', exact: true }).fill('我编写了脚本。'); await page.getByRole('button', { name: '添加未审核声明' }).click()
+  await page.getByRole('textbox', { name: '手工声明', exact: true }).fill('我编写了脚本。'); await page.getByRole('button', { name: '添加未审核声明' }).click(); await page.getByRole('button', { name: '确认更换来源并重置岗位' }).click()
   const available = page.getByRole('checkbox', { name: /选用条目/ }).filter({ visible: true })
   for (const box of await available.all()) if (await box.isEnabled()) await box.check()
   const paper = page.getByRole('article', { name: '用户自述简历草稿' }); await expect(paper.locator('.paper-entry')).toHaveCount(1)

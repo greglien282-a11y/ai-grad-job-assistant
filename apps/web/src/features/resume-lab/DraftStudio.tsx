@@ -4,6 +4,7 @@ import { visionJD } from './fixtures'
 
 const priorities = { must: '必备', bonus: '加分', uncertain: '待核实' }
 export default function DraftStudio({ value: d, onChange, onUndo, canUndo, paper }: { value: Draft; onChange: (d: Draft) => void; onUndo: () => void; canUndo: boolean; paper?: ReactNode }) {
+  const [view, setView] = useState<'resume' | 'review'>('resume')
   const [rawJD, setRawJD] = useState(d.job?.raw ?? ''), [error, setError] = useState('')
   const revise = (patch: Partial<Draft>) => { onChange(validate({ ...d, ...patch, review: emptyReview() })); setError('') }
   function adjust(id: string, patch: Parameters<typeof adjustRequirement>[2]) { try { onChange({ ...adjustRequirement(d, id, patch), review: emptyReview() }); setError('') } catch { setError('条件调整包含不受支持的内容，未应用。') } }
@@ -38,12 +39,15 @@ export default function DraftStudio({ value: d, onChange, onUndo, canUndo, paper
       </div></article> })}
       {d.rejected_statements.length > 0 && <details><summary>保留的本地拒绝记录（不是正式FactChange历史）</summary>{d.rejected_statements.map(s => <blockquote key={s}>{s}</blockquote>)}<p>精确原句保护不解决数字/同义/新来源的R03语义问题。刷新或篡改本地文件后无法证明历史完整。</p></details>}
     </section>
-    <section className="resume-panel" aria-label="用户草稿打印"><div className="resume-actions"><label>排版密度<select value={d.layout} onChange={e => revise({ layout: e.target.value as Draft['layout'] })}><option value="comfortable">舒展</option><option value="compact">紧凑</option></select></label><button disabled={!shown.length} onClick={() => window.print()}>打印用户草稿 / 保存 PDF</button></div>
-      <p>打印的是用户自述草稿，不是认证报告或技术备份。未核实的用户改写在此明确标注；原可信打印入口规则不变。</p>
+    <section className="resume-panel" aria-label="用户草稿打印"><div className="resume-actions"><label>排版密度<select value={d.layout} onChange={e => onChange(validate({ ...d, layout: e.target.value as Draft['layout'] }))}><option value="comfortable">舒展</option><option value="compact">紧凑</option></select></label><button disabled={!shown.length} onClick={() => window.print()}>打印用户草稿 / 保存 PDF</button></div>
+      <p>打印的是用户自述简历，由用户核对；不是平台认证。来源、修改及限制可在来源审查中逐项查看，两种视图使用相同准入规则。</p>
+      <div className="resume-actions" aria-label="输出视图"><button aria-pressed={view === 'resume'} onClick={() => setView('resume')}>简历输出</button><button aria-pressed={view === 'review'} onClick={() => setView('review')}>来源审查</button></div>
+      <div className={view === 'review' ? 'resume-output review-active' : 'resume-output'}>
       {paper ?? <article className={`local-resume-paper ${d.layout}`} aria-label="用户自述简历草稿"><p className="paper-label">PATHWISE · 用户自述草稿 / 未经平台核实</p><h2>{d.job?.title ?? '岗位简历草稿'}</h2>
-        {(['draft', 'context'] as const).map(kind => { const list = shown.filter(e => admission(d, e).kind === kind); return list.length > 0 && <section key={kind}><h3>{kind === 'draft' ? '经历与技能 · 用户自述' : '背景、计划与限制 · 不是已完成个人贡献'}</h3>{list.map(e => <div className="paper-entry" key={e.id}><p>{e.text}</p><small>{e.state === 'user_edited' ? `用户改写；原文：${e.original}` : '保留原文；用户自述未核实'}</small><small>{provenance(d, e)}</small></div>)}</section> })}
-        {!shown.length && <p>没有选用且可安全展示的条目，保持空白。</p>}<footer>本地材料由用户提供并负责核对。无平台真实性认证、正式事实保存或G4准入。计划和背景不等同于个人完成成果。</footer>
-      </article>}
+        {(['draft', 'context'] as const).map(kind => { const list = shown.filter(e => admission(d, e).kind === kind); return list.length > 0 && <section key={kind}><h3>{kind === 'draft' ? '经历与技能 · 用户自述' : '背景、计划与限制 · 不是已完成个人贡献'}</h3>{list.map(e => <div className="paper-entry" key={e.id}><p>{e.text}</p></div>)}</section> })}
+        {!shown.length && <p>没有选用且可安全展示的条目，保持空白。</p>}<footer>用户自述，内容由本人核对。</footer>
+      </article>}</div>
+      {view === 'review' && <section className="source-review" aria-label="来源审查详情"><h3>原文、用户修改与岗位依据</h3><p>全部内容均为用户自述，未核实。计划和团队责任不能因改写而消失；被阻断条目不进入简历输出。</p>{d.entries.map(e => <article className="resume-card" key={e.id}><p>{admission(d, e).reason}</p><blockquote>原始片段：{e.original}</blockquote><p>当前文字：{e.text}</p><p>{e.state === 'user_edited' ? `用户改写；原文：${e.original}` : '保留原文；用户自述未核实'}</p><small>{provenance(d, e)}</small>{strategies(d).filter(s => s.matches.some(x => x.id === e.id)).map(s => <blockquote key={s.requirement.id}>JD原句：{s.requirement.quote} [{s.requirement.start}, {s.requirement.end})</blockquote>)}</article>)}</section>}
     </section>
     <section className="resume-panel" aria-label="岗位三题复习"><p className="resume-kicker">04 / BE READY TO EXPLAIN</p><h2>准备解释你写下的每一句</h2><p>问题只绑定本次可打印条目和岗位引文；回答是用户回忆草稿，不是证据或标准答案。</p>
       {d.review.step === 0 && <button disabled={qs.length !== 3} onClick={() => onChange({ ...d, review: { ...emptyReview(), step: 1 } })}>开始岗位三题</button>}
