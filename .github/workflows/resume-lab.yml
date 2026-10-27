@@ -1,0 +1,35 @@
+name: M2 local resume workbench
+on:
+  pull_request:
+    paths: ['apps/web/**', '.github/workflows/resume-lab.yml']
+permissions:
+  contents: read
+jobs:
+  local-product:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global npm@11
+      - run: npm ci --no-audit --no-fund
+        working-directory: apps/web
+      - run: npm test
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+      - run: npx tsc -p tsconfig.resume-lab.json --noEmit
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium --only-shell
+        working-directory: apps/web
+      - run: npx playwright test --config resume-lab/playwright.config.ts
+        working-directory: apps/web
+      - run: npx playwright test --config jd-lab/playwright.config.ts
+        working-directory: apps/web
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-local-resume-evidence
+          path: apps/web/test-results/resume-lab/**/resume_*.png
+          if-no-files-found: ignore
