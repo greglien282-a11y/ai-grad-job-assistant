@@ -6,6 +6,8 @@ import DraftStudio from './DraftStudio'
 import ResumePaper from './ResumePaper'
 import RoleControls from './RoleControls'
 import RoleSuggestions from './RoleSuggestions'
+import SuggestionLab from '../ai-suggestions/SuggestionLab'
+import { aiSuggestionLabEnabled } from '../ai-suggestions/adapters'
 import { emptyReview, validate, type Draft } from './draft'
 import { mergeRejections, newWorkspace, readWorkspace, roleDraft, saveWorkspace, updateRole, validateWorkspace, type Workspace } from './workspace'
 import './resume.css'
@@ -76,6 +78,7 @@ export default function LocalResumeLab() {
     <ResumeWorkbench key={`source-${epoch}`} value={pendingSource ? pendingSource.next : workspace?.workbench ?? null} onChange={source} />
     {pendingSource && <section className="resume-panel" role="alertdialog" aria-label="来源变更确认"><h2>先确认来源变更影响</h2><p>{pendingSource.reason}。当前岗位内容暂停展示，旧数据尚未删除。</p><p>受影响段落：{pendingSource.affected.join('、') || '新增来源或声明'}。确认后将重建所有岗位，清除岗位草稿、选用顺序、撤销与复习回答；本地拒绝记录保留。</p><button onClick={confirmSource}>确认更换来源并重置岗位</button><button className="secondary" onClick={() => { setPendingSource(null); setEpoch(n => n + 1) }}>取消变更，保留原岗位</button></section>}
     {!pendingSource && workspace && d && active && isReviewed(workspace.workbench) && <><RoleControls value={workspace} onChange={update} /><RoleSuggestions value={d} onChange={commit} />
+      {aiSuggestionLabEnabled() && <SuggestionLab key={`ai-${workspace.workbench.source.id}-${workspace.active_role_id}-${epoch}`} value={d} roleId={workspace.active_role_id} onChange={commit} />}
       <DraftStudio key={`studio-${workspace.workbench.source.id}-${workspace.active_role_id}-${epoch}`} value={d} onChange={commit} canUndo={(history[workspace.active_role_id]?.length ?? 0) > 0} onUndo={undo} paper={<ResumePaper draft={d} role={active} profile={workspace.profile} />} />
     </>}
   </main></div>

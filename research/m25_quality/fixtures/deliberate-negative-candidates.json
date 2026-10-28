@@ -1,0 +1,404 @@
+{
+  "contract": "m25-candidate-batch-v1",
+  "cases": {
+    "M25-003": {
+      "role_id": "M25-003-role",
+      "source_snapshot": {
+        "id": "review:M25-003:M25-003-role",
+        "text": "我编写了 Python 图像读取脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-003-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 19,
+            "quote": "我编写了 Python 图像读取脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：Python 和图像处理，能说明实现过程。",
+        "requirements": [
+          {
+            "id": "M25-003-j1",
+            "start": 0,
+            "end": 26,
+            "quote": "视觉实习：Python 和图像处理，能说明实现过程。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-003:M25-003-role",
+            "paragraph_id": "M25-003-p1",
+            "kind": "resume_excerpt",
+            "quote": "我编写了 Python 图像读取脚本。",
+            "start": 0,
+            "end": 19
+          },
+          "jd": {
+            "requirement_id": "M25-003-j1",
+            "quote": "视觉实习：Python 和图像处理，能说明实现过程。",
+            "start": 0,
+            "end": 26
+          },
+          "priority": 1,
+          "rewrite_text": "我编写了 Python 图像读取脚本，速度提升27%。",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-004": {
+      "role_id": "M25-004-role",
+      "source_snapshot": {
+        "id": "review:M25-004:M25-004-role",
+        "text": "我们团队完成了视觉项目，我只负责资料整理。",
+        "paragraphs": [
+          {
+            "id": "M25-004-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 21,
+            "quote": "我们团队完成了视觉项目，我只负责资料整理。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：独立完成模型训练优先。",
+        "requirements": [
+          {
+            "id": "M25-004-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "视觉岗位：独立完成模型训练优先。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-004:M25-004-role",
+            "paragraph_id": "M25-004-p1",
+            "kind": "resume_excerpt",
+            "quote": "我们团队完成了视觉项目，我只负责资料整理。",
+            "start": 0,
+            "end": 21
+          },
+          "jd": {
+            "requirement_id": "M25-004-j1",
+            "quote": "视觉岗位：独立完成模型训练优先。",
+            "start": 0,
+            "end": 16
+          },
+          "priority": 1,
+          "rewrite_text": "我独立完成了视觉项目和模型训练。",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-005": {
+      "role_id": "M25-005-role",
+      "source_snapshot": {
+        "id": "review:M25-005:M25-005-role",
+        "text": "我计划部署 Python 服务。",
+        "paragraphs": [
+          {
+            "id": "M25-005-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我计划部署 Python 服务。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：有服务部署经验。",
+        "requirements": [
+          {
+            "id": "M25-005-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "后端实习：有服务部署经验。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-005:M25-005-role",
+            "paragraph_id": "M25-005-p1",
+            "kind": "resume_excerpt",
+            "quote": "我计划部署 Python 服务。",
+            "start": 0,
+            "end": 16
+          },
+          "jd": {
+            "requirement_id": "M25-005-j1",
+            "quote": "后端实习：有服务部署经验。",
+            "start": 0,
+            "end": 13
+          },
+          "priority": 1,
+          "rewrite_text": "我部署了 Python 服务。",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-007": {
+      "role_id": "M25-007-role",
+      "source_snapshot": {
+        "id": "review:M25-007:M25-007-role",
+        "text": "我没有部署过服务，只在本机运行 Python 脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-007-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 26,
+            "quote": "我没有部署过服务，只在本机运行 Python 脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：服务部署和 Python。",
+        "requirements": [
+          {
+            "id": "M25-007-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "必备：服务部署和 Python。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-007:M25-007-role",
+            "paragraph_id": "M25-007-p1",
+            "kind": "resume_excerpt",
+            "quote": "我没有部署过服务，只在本机运行 Python 脚本。",
+            "start": 0,
+            "end": 26
+          },
+          "jd": {
+            "requirement_id": "M25-007-j1",
+            "quote": "必备：服务部署和 Python。",
+            "start": 0,
+            "end": 16
+          },
+          "priority": 1,
+          "rewrite_text": "我部署了 Python 服务。",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-039": {
+      "role_id": "M25-039-role",
+      "source_snapshot": {
+        "id": "review:M25-039:M25-039-role",
+        "text": "我整理了 café 图像标签。",
+        "paragraphs": [
+          {
+            "id": "M25-039-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我整理了 café 图像标签。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：图像标注。",
+        "requirements": [
+          {
+            "id": "M25-039-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "视觉实习：图像标注。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "negative-1",
+          "source": {
+            "source_id": "review:M25-039:M25-039-role",
+            "paragraph_id": "M25-039-p1",
+            "kind": "resume_excerpt",
+            "quote": "我整理了 café 图像标签。",
+            "start": 0,
+            "end": 16
+          },
+          "jd": {
+            "requirement_id": "M25-039-j1",
+            "quote": "视觉实习：图像标注。",
+            "start": 0,
+            "end": 10
+          },
+          "priority": 1,
+          "rewrite_text": "我改写了数据清洗脚本，性能提升99%。",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": null,
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-057": {
+      "role_id": "M25-057-role",
+      "source_snapshot": {
+        "id": "review:M25-057:M25-057-role",
+        "text": "I plan to deploy a Python service next month.",
+        "paragraphs": [
+          {
+            "id": "M25-057-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 45,
+            "quote": "I plan to deploy a Python service next month."
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Backend intern: Python and deployment experience.",
+        "requirements": [
+          {
+            "id": "M25-057-j1",
+            "start": 0,
+            "end": 49,
+            "quote": "Backend intern: Python and deployment experience."
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-057:M25-057-role",
+            "paragraph_id": "M25-057-p1",
+            "kind": "resume_excerpt",
+            "quote": "I plan to deploy a Python service next month.",
+            "start": 0,
+            "end": 45
+          },
+          "jd": {
+            "requirement_id": "M25-057-j1",
+            "quote": "Backend intern: Python and deployment experience.",
+            "start": 0,
+            "end": 49
+          },
+          "priority": 1,
+          "rewrite_text": "I deployed a Python service.",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "M25-058": {
+      "role_id": "M25-058-role",
+      "source_snapshot": {
+        "id": "review:M25-058:M25-058-role",
+        "text": "Our team built a Python service; I wrote meeting notes.",
+        "paragraphs": [
+          {
+            "id": "M25-058-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 55,
+            "quote": "Our team built a Python service; I wrote meeting notes."
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Backend internship: Python service ownership.",
+        "requirements": [
+          {
+            "id": "M25-058-j1",
+            "start": 0,
+            "end": 45,
+            "quote": "Backend internship: Python service ownership."
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-058:M25-058-role",
+            "paragraph_id": "M25-058-p1",
+            "kind": "resume_excerpt",
+            "quote": "Our team built a Python service; I wrote meeting notes.",
+            "start": 0,
+            "end": 55
+          },
+          "jd": {
+            "requirement_id": "M25-058-j1",
+            "quote": "Backend internship: Python service ownership.",
+            "start": 0,
+            "end": 45
+          },
+          "priority": 1,
+          "rewrite_text": "I built a Python service.",
+          "reason": "故意保留的反例，不是可用建议；用于检查诊断盲区。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "supplied_offline",
+            "id": "deliberate-counterexample",
+            "version": "1"
+          }
+        }
+      ]
+    }
+  }
+}

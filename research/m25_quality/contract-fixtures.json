@@ -1,0 +1,1744 @@
+{
+  "valid": [
+    {
+      "role_id": "M25-001-role",
+      "source_snapshot": {
+        "id": "review:M25-001:M25-001-role",
+        "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+        "paragraphs": [
+          {
+            "id": "M25-001-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 27,
+            "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+        "requirements": [
+          {
+            "id": "M25-001-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "必备：Python 基础。"
+          },
+          {
+            "id": "M25-001-j2",
+            "start": 14,
+            "end": 27,
+            "quote": "加分：独立项目和实习经验。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-001:M25-001-role",
+            "paragraph_id": "M25-001-p1",
+            "kind": "resume_excerpt",
+            "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+            "start": 0,
+            "end": 27
+          },
+          "jd": {
+            "requirement_id": "M25-001-j1",
+            "quote": "必备：Python 基础。",
+            "start": 0,
+            "end": 13
+          },
+          "priority": 1,
+          "rewrite_text": null,
+          "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "deterministic_rule",
+            "id": "m2-keyword-vocabulary",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "M25-019-role",
+      "source_snapshot": {
+        "id": "review:M25-019:M25-019-role",
+        "text": "我用 Python 整理了 é 👩🏽‍💻 图像标签。",
+        "paragraphs": [
+          {
+            "id": "M25-019-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 27,
+            "quote": "我用 Python 整理了 é 👩🏽‍💻 图像标签。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：Python 与标注资料管理。",
+        "requirements": [
+          {
+            "id": "M25-019-j1",
+            "start": 0,
+            "end": 20,
+            "quote": "视觉实习：Python 与标注资料管理。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-019:M25-019-role",
+            "paragraph_id": "M25-019-p1",
+            "kind": "resume_excerpt",
+            "quote": "我用 Python 整理了 é 👩🏽‍💻 图像标签。",
+            "start": 0,
+            "end": 27
+          },
+          "jd": {
+            "requirement_id": "M25-019-j1",
+            "quote": "视觉实习：Python 与标注资料管理。",
+            "start": 0,
+            "end": 20
+          },
+          "priority": 1,
+          "rewrite_text": null,
+          "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "deterministic_rule",
+            "id": "m2-keyword-vocabulary",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "M25-026-role",
+      "source_snapshot": {
+        "id": "review:M25-026:M25-026-role",
+        "text": "我自述熟悉 Python，但尚未提供作品。",
+        "paragraphs": [
+          {
+            "id": "M25-026-p1",
+            "kind": "user_manual_statement",
+            "start": 0,
+            "end": 21,
+            "quote": "我自述熟悉 Python，但尚未提供作品。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python 开发能力。",
+        "requirements": [
+          {
+            "id": "M25-026-j1",
+            "start": 0,
+            "end": 15,
+            "quote": "必备：Python 开发能力。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-026:M25-026-role",
+            "paragraph_id": "M25-026-p1",
+            "kind": "user_manual_statement",
+            "quote": "我自述熟悉 Python，但尚未提供作品。",
+            "start": 0,
+            "end": 21
+          },
+          "jd": {
+            "requirement_id": "M25-026-j1",
+            "quote": "必备：Python 开发能力。",
+            "start": 0,
+            "end": 15
+          },
+          "priority": 1,
+          "rewrite_text": null,
+          "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "deterministic_rule",
+            "id": "m2-keyword-vocabulary",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "M25-038-role",
+      "source_snapshot": {
+        "id": "review:M25-038:M25-038-role",
+        "text": "我用 Python 读取数据。\r\n我没有部署服务。",
+        "paragraphs": [
+          {
+            "id": "M25-038-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 25,
+            "quote": "我用 Python 读取数据。\r\n我没有部署服务。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：Python 和部署。",
+        "requirements": [
+          {
+            "id": "M25-038-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "后端实习：Python 和部署。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-038:M25-038-role",
+            "paragraph_id": "M25-038-p1",
+            "kind": "resume_excerpt",
+            "quote": "我用 Python 读取数据。\r\n我没有部署服务。",
+            "start": 0,
+            "end": 25
+          },
+          "jd": {
+            "requirement_id": "M25-038-j1",
+            "quote": "后端实习：Python 和部署。",
+            "start": 0,
+            "end": 16
+          },
+          "priority": 1,
+          "rewrite_text": null,
+          "reason": "字面交集：python、部署；仅排序原句，不证明掌握或真实性。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "deterministic_rule",
+            "id": "m2-keyword-vocabulary",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    {
+      "role_id": "M25-001-role",
+      "source_snapshot": {
+        "id": "review:M25-001:M25-001-role",
+        "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+        "paragraphs": [
+          {
+            "id": "M25-001-p1",
+            "kind": "resume_excerpt",
+            "start": 0.0,
+            "end": 27.0,
+            "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+        "requirements": [
+          {
+            "id": "M25-001-j1",
+            "start": 0.0,
+            "end": 13.0,
+            "quote": "必备：Python 基础。"
+          },
+          {
+            "id": "M25-001-j2",
+            "start": 14.0,
+            "end": 27.0,
+            "quote": "加分：独立项目和实习经验。"
+          }
+        ]
+      },
+      "contract": "local-suggestion-candidates-v1",
+      "suggestions": [
+        {
+          "id": "baseline-1",
+          "source": {
+            "source_id": "review:M25-001:M25-001-role",
+            "paragraph_id": "M25-001-p1",
+            "kind": "resume_excerpt",
+            "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+            "start": 0.0,
+            "end": 27.0
+          },
+          "jd": {
+            "requirement_id": "M25-001-j1",
+            "quote": "必备：Python 基础。",
+            "start": 0.0,
+            "end": 13.0
+          },
+          "priority": 1.0,
+          "rewrite_text": null,
+          "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+          "new_claims": [],
+          "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+          "provenance": {
+            "kind": "deterministic_rule",
+            "id": "m2-keyword-vocabulary",
+            "version": "1"
+          }
+        }
+      ]
+    }
+  ],
+  "invalid": [
+    {
+      "name": "unknown-version",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v9",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing-reason",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-field",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ],
+        "actor": "user"
+      }
+    },
+    {
+      "name": "cross-source",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "forged",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fake-paragraph",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "missing",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "corrupt-kind",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "platform_verified",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "bad-source-quote",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "fake",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "out-of-bounds",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 99999
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial-source",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 1,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fake-jd",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "missing",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "wrong-jd-quote",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "fake",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "boolean-priority",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": true,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-suggestion",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          },
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-source-jd",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          },
+          {
+            "id": "other-id",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown-provenance",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "real_provider",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown-source-field",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ],
+          "truth_verified": true
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid-id",
+      "packet": {
+        "role_id": "role with spaces",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "control-character",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "bad‮text",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fractional-priority",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1.5,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fractional-offset",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": 0.5,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "boolean-offset",
+      "packet": {
+        "role_id": "M25-001-role",
+        "source_snapshot": {
+          "id": "review:M25-001:M25-001-role",
+          "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+          "paragraphs": [
+            {
+              "id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "start": 0,
+              "end": 27,
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+            }
+          ]
+        },
+        "jd_snapshot": {
+          "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+          "requirements": [
+            {
+              "id": "M25-001-j1",
+              "start": 0,
+              "end": 13,
+              "quote": "必备：Python 基础。"
+            },
+            {
+              "id": "M25-001-j2",
+              "start": 14,
+              "end": 27,
+              "quote": "加分：独立项目和实习经验。"
+            }
+          ]
+        },
+        "contract": "local-suggestion-candidates-v1",
+        "suggestions": [
+          {
+            "id": "baseline-1",
+            "source": {
+              "source_id": "review:M25-001:M25-001-role",
+              "paragraph_id": "M25-001-p1",
+              "kind": "resume_excerpt",
+              "quote": "本科课程作业：我用 Python 完成了列表排序练习。",
+              "start": true,
+              "end": 27
+            },
+            "jd": {
+              "requirement_id": "M25-001-j1",
+              "quote": "必备：Python 基础。",
+              "start": 0,
+              "end": 13
+            },
+            "priority": 1,
+            "rewrite_text": null,
+            "reason": "字面交集：python；仅排序原句，不证明掌握或真实性。",
+            "new_claims": [],
+            "evidence_gap": "字面关联不能证明符合岗位；请人工核对责任、状态及证据。",
+            "provenance": {
+              "kind": "deterministic_rule",
+              "id": "m2-keyword-vocabulary",
+              "version": "1"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
