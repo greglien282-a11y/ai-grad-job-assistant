@@ -1,0 +1,50 @@
+name: M2.5 offline quality and candidate contracts
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  pull_request:
+    paths: ['research/m25_quality/**', 'apps/web/**', 'docs/M25_*.md', '.github/workflows/m25-quality.yml']
+permissions:
+  contents: read
+jobs:
+  offline-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - run: python -m pytest research/m25_quality -q -ra
+      - name: Verify frozen draft-unreviewed corpus
+        run: python -m research.m25_quality.quality verify
+      - name: Record keyword core control (not model quality)
+        run: |
+          mkdir -p "$RUNNER_TEMP/m25-quality"
+          python -m research.m25_quality.quality baseline --output "$RUNNER_TEMP/m25-quality/baseline.json"
+          python -m research.m25_quality.quality evaluate --input "$RUNNER_TEMP/m25-quality/baseline.json" --output "$RUNNER_TEMP/m25-quality/diagnostics.json"
+      - name: Preserve deliberate failures and semantic blind spots
+        shell: bash
+        run: |
+          set +e
+          python -m research.m25_quality.quality evaluate --input research/m25_quality/fixtures/deliberate-negative-candidates.json --output "$RUNNER_TEMP/m25-quality/negative-diagnostics.json"
+          result=$?
+          set -e
+          test "$result" -eq 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --global npm@11
+      - run: npm ci --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx vitest run src/features/ai-suggestions
+        working-directory: apps/web
+      - run: npx tsc -p tsconfig.resume-lab.json --noEmit
+        working-directory: apps/web
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m25-synthetic-diagnostics-not-model-quality
+          path: ${{ runner.temp }}/m25-quality/*.json
+          if-no-files-found: error

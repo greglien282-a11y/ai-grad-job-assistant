@@ -1,0 +1,2263 @@
+{
+  "contract": "m25-public-synthetic-corpus-v1",
+  "label_status": "draft_unreviewed",
+  "origin": "Public synthetic examples authored by Codex; no real identities, contacts, credentials, or applicant materials.",
+  "frozen_version": "1.0.0",
+  "cases": [
+    {
+      "id": "M25-001",
+      "title": "course-only",
+      "tags": [
+        "course-only",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "课程作业不能提升为独立项目或实习。",
+      "human_review": null,
+      "role_id": "M25-001-role",
+      "source_snapshot": {
+        "id": "review:M25-001:M25-001-role",
+        "text": "本科课程作业：我用 Python 完成了列表排序练习。",
+        "paragraphs": [
+          {
+            "id": "M25-001-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 27,
+            "quote": "本科课程作业：我用 Python 完成了列表排序练习。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python 基础。\n加分：独立项目和实习经验。",
+        "requirements": [
+          {
+            "id": "M25-001-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "必备：Python 基础。"
+          },
+          {
+            "id": "M25-001-j2",
+            "start": 14,
+            "end": 27,
+            "quote": "加分：独立项目和实习经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-002",
+      "title": "no-project",
+      "tags": [
+        "no-project",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "缺少项目不能用新主张填满简历。",
+      "human_review": null,
+      "role_id": "M25-002-role",
+      "source_snapshot": {
+        "id": "review:M25-002:M25-002-role",
+        "text": "我目前没有项目和实习经历，完成了数据结构课程。",
+        "paragraphs": [
+          {
+            "id": "M25-002-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 23,
+            "quote": "我目前没有项目和实习经历，完成了数据结构课程。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "需要项目经验，熟悉 Python。",
+        "requirements": [
+          {
+            "id": "M25-002-j1",
+            "start": 0,
+            "end": 17,
+            "quote": "需要项目经验，熟悉 Python。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-003",
+      "title": "no-metrics",
+      "tags": [
+        "no-metrics",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "原句没有耗时或提升率。",
+      "human_review": null,
+      "role_id": "M25-003-role",
+      "source_snapshot": {
+        "id": "review:M25-003:M25-003-role",
+        "text": "我编写了 Python 图像读取脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-003-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 19,
+            "quote": "我编写了 Python 图像读取脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：Python 和图像处理，能说明实现过程。",
+        "requirements": [
+          {
+            "id": "M25-003-j1",
+            "start": 0,
+            "end": 26,
+            "quote": "视觉实习：Python 和图像处理，能说明实现过程。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-004",
+      "title": "team-personal",
+      "tags": [
+        "team-personal",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "团队完成不等于个人独立训练。",
+      "human_review": null,
+      "role_id": "M25-004-role",
+      "source_snapshot": {
+        "id": "review:M25-004:M25-004-role",
+        "text": "我们团队完成了视觉项目，我只负责资料整理。",
+        "paragraphs": [
+          {
+            "id": "M25-004-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 21,
+            "quote": "我们团队完成了视觉项目，我只负责资料整理。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：独立完成模型训练优先。",
+        "requirements": [
+          {
+            "id": "M25-004-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "视觉岗位：独立完成模型训练优先。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-005",
+      "title": "plan-completed",
+      "tags": [
+        "plan-completed",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "计划不能改为已经部署。",
+      "human_review": null,
+      "role_id": "M25-005-role",
+      "source_snapshot": {
+        "id": "review:M25-005:M25-005-role",
+        "text": "我计划部署 Python 服务。",
+        "paragraphs": [
+          {
+            "id": "M25-005-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我计划部署 Python 服务。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：有服务部署经验。",
+        "requirements": [
+          {
+            "id": "M25-005-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "后端实习：有服务部署经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-006",
+      "title": "ongoing",
+      "tags": [
+        "ongoing",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "进行中不能补造最终指标。",
+      "human_review": null,
+      "role_id": "M25-006-role",
+      "source_snapshot": {
+        "id": "review:M25-006:M25-006-role",
+        "text": "我正在使用 PyTorch 训练课程模型，尚未评估效果。",
+        "paragraphs": [
+          {
+            "id": "M25-006-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 28,
+            "quote": "我正在使用 PyTorch 训练课程模型，尚未评估效果。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：PyTorch，能说明评估指标。",
+        "requirements": [
+          {
+            "id": "M25-006-j1",
+            "start": 0,
+            "end": 21,
+            "quote": "视觉岗位：PyTorch，能说明评估指标。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-007",
+      "title": "negative",
+      "tags": [
+        "negative",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "否定必须完整保留。",
+      "human_review": null,
+      "role_id": "M25-007-role",
+      "source_snapshot": {
+        "id": "review:M25-007:M25-007-role",
+        "text": "我没有部署过服务，只在本机运行 Python 脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-007-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 26,
+            "quote": "我没有部署过服务，只在本机运行 Python 脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：服务部署和 Python。",
+        "requirements": [
+          {
+            "id": "M25-007-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "必备：服务部署和 Python。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-008",
+      "title": "unknown",
+      "tags": [
+        "unknown",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "未知指标应询问或保留未知。",
+      "human_review": null,
+      "role_id": "M25-008-role",
+      "source_snapshot": {
+        "id": "review:M25-008:M25-008-role",
+        "text": "我不知道团队模型的线上准确率。",
+        "paragraphs": [
+          {
+            "id": "M25-008-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 15,
+            "quote": "我不知道团队模型的线上准确率。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：能提供模型准确率。",
+        "requirements": [
+          {
+            "id": "M25-008-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "视觉岗位：能提供模型准确率。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-009",
+      "title": "exaggeration",
+      "tags": [
+        "exaggeration",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "用户原文的夸大仍未被证实。",
+      "human_review": null,
+      "role_id": "M25-009-role",
+      "source_snapshot": {
+        "id": "review:M25-009:M25-009-role",
+        "text": "用户自述：我实现了行业第一的视觉算法。",
+        "paragraphs": [
+          {
+            "id": "M25-009-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 19,
+            "quote": "用户自述：我实现了行业第一的视觉算法。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉研究实习：需要可复现评测。",
+        "requirements": [
+          {
+            "id": "M25-009-j1",
+            "start": 0,
+            "end": 15,
+            "quote": "视觉研究实习：需要可复现评测。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-010",
+      "title": "jd-required-bonus",
+      "tags": [
+        "jd-required-bonus",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "必备和加分不能混同或补造部署。",
+      "human_review": null,
+      "role_id": "M25-010-role",
+      "source_snapshot": {
+        "id": "review:M25-010:M25-010-role",
+        "text": "我用 Python 写过 CSV 清洗脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-010-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 22,
+            "quote": "我用 Python 写过 CSV 清洗脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python。\n加分：Kubernetes 部署经验。",
+        "requirements": [
+          {
+            "id": "M25-010-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "必备：Python。"
+          },
+          {
+            "id": "M25-010-j2",
+            "start": 11,
+            "end": 30,
+            "quote": "加分：Kubernetes 部署经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-011",
+      "title": "jd-conflict",
+      "tags": [
+        "jd-conflict",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "JD 时间条件冲突需要核实。",
+      "human_review": null,
+      "role_id": "M25-011-role",
+      "source_snapshot": {
+        "id": "review:M25-011:M25-011-role",
+        "text": "我在校学习 Python，每周可实习两天。",
+        "paragraphs": [
+          {
+            "id": "M25-011-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 21,
+            "quote": "我在校学习 Python，每周可实习两天。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：每周实习五天。\n岗位说明：支持每周两天。",
+        "requirements": [
+          {
+            "id": "M25-011-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "必备：每周实习五天。"
+          },
+          {
+            "id": "M25-011-j2",
+            "start": 11,
+            "end": 23,
+            "quote": "岗位说明：支持每周两天。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-012",
+      "title": "jd-vague",
+      "tags": [
+        "jd-vague",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "模糊要求无法可靠映射。",
+      "human_review": null,
+      "role_id": "M25-012-role",
+      "source_snapshot": {
+        "id": "review:M25-012:M25-012-role",
+        "text": "我完成了图像处理课程作业。",
+        "paragraphs": [
+          {
+            "id": "M25-012-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 13,
+            "quote": "我完成了图像处理课程作业。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "需要很强的综合能力和优秀潜力。",
+        "requirements": [
+          {
+            "id": "M25-012-j1",
+            "start": 0,
+            "end": 15,
+            "quote": "需要很强的综合能力和优秀潜力。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-013",
+      "title": "vision-transfer",
+      "tags": [
+        "vision-transfer",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "优先视觉片段不新增算法能力。",
+      "human_review": null,
+      "role_id": "M25-013-role",
+      "source_snapshot": {
+        "id": "review:M25-013:M25-013-role",
+        "text": "我用 OpenCV 调整图像尺寸。\n\n我使用 Python 读取 CSV。",
+        "paragraphs": [
+          {
+            "id": "M25-013-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我用 OpenCV 调整图像尺寸。"
+          },
+          {
+            "id": "M25-013-p2",
+            "kind": "resume_excerpt",
+            "start": 19,
+            "end": 37,
+            "quote": "我使用 Python 读取 CSV。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉算法实习：OpenCV 和图像处理。",
+        "requirements": [
+          {
+            "id": "M25-013-j1",
+            "start": 0,
+            "end": 20,
+            "quote": "视觉算法实习：OpenCV 和图像处理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-014",
+      "title": "backend-transfer",
+      "tags": [
+        "backend-transfer",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "同一材料可改变顺序但不能发明 API 开发。",
+      "human_review": null,
+      "role_id": "M25-014-role",
+      "source_snapshot": {
+        "id": "review:M25-014:M25-014-role",
+        "text": "我用 OpenCV 调整图像尺寸。\n\n我使用 Python 读取 CSV。",
+        "paragraphs": [
+          {
+            "id": "M25-014-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我用 OpenCV 调整图像尺寸。"
+          },
+          {
+            "id": "M25-014-p2",
+            "kind": "resume_excerpt",
+            "start": 19,
+            "end": 37,
+            "quote": "我使用 Python 读取 CSV。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Python 后端实习：数据处理基础。",
+        "requirements": [
+          {
+            "id": "M25-014-j1",
+            "start": 0,
+            "end": 19,
+            "quote": "Python 后端实习：数据处理基础。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-015",
+      "title": "testing-transfer",
+      "tags": [
+        "testing-transfer",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "测试关联不证明自动化平台经验。",
+      "human_review": null,
+      "role_id": "M25-015-role",
+      "source_snapshot": {
+        "id": "review:M25-015:M25-015-role",
+        "text": "我为 Python 排序函数编写了边界测试。",
+        "paragraphs": [
+          {
+            "id": "M25-015-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 22,
+            "quote": "我为 Python 排序函数编写了边界测试。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "软件测试实习：测试设计，Python 加分。",
+        "requirements": [
+          {
+            "id": "M25-015-j1",
+            "start": 0,
+            "end": 22,
+            "quote": "软件测试实习：测试设计，Python 加分。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-016",
+      "title": "synonym",
+      "tags": [
+        "synonym",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "关键词基线可能漏掉同义关联。",
+      "human_review": null,
+      "role_id": "M25-016-role",
+      "source_snapshot": {
+        "id": "review:M25-016:M25-016-role",
+        "text": "我把重复的表格记录合并为一份清单。",
+        "paragraphs": [
+          {
+            "id": "M25-016-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我把重复的表格记录合并为一份清单。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "岗位要求：数据去重和清洗。",
+        "requirements": [
+          {
+            "id": "M25-016-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "岗位要求：数据去重和清洗。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-017",
+      "title": "abbreviation",
+      "tags": [
+        "abbreviation",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "缩写关联需人工解释，不能编造训练成果。",
+      "human_review": null,
+      "role_id": "M25-017-role",
+      "source_snapshot": {
+        "id": "review:M25-017:M25-017-role",
+        "text": "我在课程中运行过 CNN 示例。",
+        "paragraphs": [
+          {
+            "id": "M25-017-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我在课程中运行过 CNN 示例。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：卷积神经网络基础。",
+        "requirements": [
+          {
+            "id": "M25-017-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "视觉岗位：卷积神经网络基础。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-018",
+      "title": "mixed-language",
+      "tags": [
+        "mixed-language",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "中英文共同词不能证明掌握程度。",
+      "human_review": null,
+      "role_id": "M25-018-role",
+      "source_snapshot": {
+        "id": "review:M25-018:M25-018-role",
+        "text": "我使用 Python 和 OpenCV 完成 image resize 练习。",
+        "paragraphs": [
+          {
+            "id": "M25-018-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 39,
+            "quote": "我使用 Python 和 OpenCV 完成 image resize 练习。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Computer vision intern: Python, OpenCV basics.",
+        "requirements": [
+          {
+            "id": "M25-018-j1",
+            "start": 0,
+            "end": 46,
+            "quote": "Computer vision intern: Python, OpenCV basics."
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-019",
+      "title": "unicode-emoji",
+      "tags": [
+        "unicode-emoji",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "组合字符和 ZWJ 按 code point 引用。",
+      "human_review": null,
+      "role_id": "M25-019-role",
+      "source_snapshot": {
+        "id": "review:M25-019:M25-019-role",
+        "text": "我用 Python 整理了 é 👩🏽‍💻 图像标签。",
+        "paragraphs": [
+          {
+            "id": "M25-019-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 27,
+            "quote": "我用 Python 整理了 é 👩🏽‍💻 图像标签。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：Python 与标注资料管理。",
+        "requirements": [
+          {
+            "id": "M25-019-j1",
+            "start": 0,
+            "end": 20,
+            "quote": "视觉实习：Python 与标注资料管理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-020",
+      "title": "insufficient",
+      "tags": [
+        "insufficient",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "证据不足时可以不给经历建议。",
+      "human_review": null,
+      "role_id": "M25-020-role",
+      "source_snapshot": {
+        "id": "review:M25-020:M25-020-role",
+        "text": "我参加了校园合唱活动。",
+        "paragraphs": [
+          {
+            "id": "M25-020-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 11,
+            "quote": "我参加了校园合唱活动。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：生产服务部署。",
+        "requirements": [
+          {
+            "id": "M25-020-j1",
+            "start": 0,
+            "end": 12,
+            "quote": "后端实习：生产服务部署。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-021",
+      "title": "different-order",
+      "tags": [
+        "different-order",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "相同经历按岗位排序，不虚构新经历。",
+      "human_review": null,
+      "role_id": "M25-021-role",
+      "source_snapshot": {
+        "id": "review:M25-021:M25-021-role",
+        "text": "我编写了 Python 数据脚本。\n\n我完成了 OpenCV 课程练习。",
+        "paragraphs": [
+          {
+            "id": "M25-021-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我编写了 Python 数据脚本。"
+          },
+          {
+            "id": "M25-021-p2",
+            "kind": "resume_excerpt",
+            "start": 19,
+            "end": 36,
+            "quote": "我完成了 OpenCV 课程练习。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：OpenCV 优先，Python 基础。",
+        "requirements": [
+          {
+            "id": "M25-021-j1",
+            "start": 0,
+            "end": 25,
+            "quote": "视觉实习：OpenCV 优先，Python 基础。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-022",
+      "title": "numbers-three",
+      "tags": [
+        "numbers-three",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不能把3改成其他数字或据此宣称独立。",
+      "human_review": null,
+      "role_id": "M25-022-role",
+      "source_snapshot": {
+        "id": "review:M25-022:M25-022-role",
+        "text": "我整理了3条缺失记录。",
+        "paragraphs": [
+          {
+            "id": "M25-022-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 11,
+            "quote": "我整理了3条缺失记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：记录整理与测试。",
+        "requirements": [
+          {
+            "id": "M25-022-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "数据实习：记录整理与测试。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-023",
+      "title": "numbers-chinese",
+      "tags": [
+        "numbers-chinese",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "三个和3语义归一化不能用来证明 R03 独立。",
+      "human_review": null,
+      "role_id": "M25-023-role",
+      "source_snapshot": {
+        "id": "review:M25-023:M25-023-role",
+        "text": "我整理了三个缺失记录。",
+        "paragraphs": [
+          {
+            "id": "M25-023-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 11,
+            "quote": "我整理了三个缺失记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：记录整理。",
+        "requirements": [
+          {
+            "id": "M25-023-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "数据实习：记录整理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-024",
+      "title": "rejected-new-turn",
+      "tags": [
+        "rejected-new-turn",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "新 Turn 和近义词不能解除历史审核。",
+      "human_review": null,
+      "role_id": "M25-024-role",
+      "source_snapshot": {
+        "id": "review:M25-024:M25-024-role",
+        "text": "历史拒绝原句：我独立完成了部署。\n\n新原句：我一个人上线了服务。",
+        "paragraphs": [
+          {
+            "id": "M25-024-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "历史拒绝原句：我独立完成了部署。"
+          },
+          {
+            "id": "M25-024-p2",
+            "kind": "resume_excerpt",
+            "start": 18,
+            "end": 32,
+            "quote": "新原句：我一个人上线了服务。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：部署经验。",
+        "requirements": [
+          {
+            "id": "M25-024-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "后端实习：部署经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-025",
+      "title": "rejected-unrelated",
+      "tags": [
+        "rejected-unrelated",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "整会话保守阻断会损失无关补充可用性，未批准放行。",
+      "human_review": null,
+      "role_id": "M25-025-role",
+      "source_snapshot": {
+        "id": "review:M25-025:M25-025-role",
+        "text": "历史拒绝原句：我部署了系统。\n\n我编写了课程排序测试。",
+        "paragraphs": [
+          {
+            "id": "M25-025-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 14,
+            "quote": "历史拒绝原句：我部署了系统。"
+          },
+          {
+            "id": "M25-025-p2",
+            "kind": "resume_excerpt",
+            "start": 16,
+            "end": 27,
+            "quote": "我编写了课程排序测试。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试实习：测试设计。",
+        "requirements": [
+          {
+            "id": "M25-025-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "测试实习：测试设计。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-026",
+      "title": "manual-declaration",
+      "tags": [
+        "manual-declaration",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "手工声明不是导入材料或平台认证。",
+      "human_review": null,
+      "role_id": "M25-026-role",
+      "source_snapshot": {
+        "id": "review:M25-026:M25-026-role",
+        "text": "我自述熟悉 Python，但尚未提供作品。",
+        "paragraphs": [
+          {
+            "id": "M25-026-p1",
+            "kind": "user_manual_statement",
+            "start": 0,
+            "end": 21,
+            "quote": "我自述熟悉 Python，但尚未提供作品。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python 开发能力。",
+        "requirements": [
+          {
+            "id": "M25-026-j1",
+            "start": 0,
+            "end": 15,
+            "quote": "必备：Python 开发能力。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-027",
+      "title": "team-metric",
+      "tags": [
+        "team-metric",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "团队数字不能归为个人成果。",
+      "human_review": null,
+      "role_id": "M25-027-role",
+      "source_snapshot": {
+        "id": "review:M25-027:M25-027-role",
+        "text": "团队将耗时降低了20%，我只参与会议记录。",
+        "paragraphs": [
+          {
+            "id": "M25-027-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 21,
+            "quote": "团队将耗时降低了20%，我只参与会议记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：性能优化。",
+        "requirements": [
+          {
+            "id": "M25-027-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "后端实习：性能优化。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-028",
+      "title": "conditional",
+      "tags": [
+        "conditional",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "假设不是发生过的行为。",
+      "human_review": null,
+      "role_id": "M25-028-role",
+      "source_snapshot": {
+        "id": "review:M25-028:M25-028-role",
+        "text": "如果我部署服务，我会先写测试。",
+        "paragraphs": [
+          {
+            "id": "M25-028-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 15,
+            "quote": "如果我部署服务，我会先写测试。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端岗位：部署和测试实践。",
+        "requirements": [
+          {
+            "id": "M25-028-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "后端岗位：部署和测试实践。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-029",
+      "title": "uncertain-memory",
+      "tags": [
+        "uncertain-memory",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "回忆不确定性不能删除。",
+      "human_review": null,
+      "role_id": "M25-029-role",
+      "source_snapshot": {
+        "id": "review:M25-029:M25-029-role",
+        "text": "我可能在课程里运行过 PyTorch 示例。",
+        "paragraphs": [
+          {
+            "id": "M25-029-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 22,
+            "quote": "我可能在课程里运行过 PyTorch 示例。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：PyTorch 实操。",
+        "requirements": [
+          {
+            "id": "M25-029-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "视觉岗位：PyTorch 实操。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-030",
+      "title": "compound-action",
+      "tags": [
+        "compound-action",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不能无完整来源拆成独立认定的多项成果。",
+      "human_review": null,
+      "role_id": "M25-030-role",
+      "source_snapshot": {
+        "id": "review:M25-030:M25-030-role",
+        "text": "我编写并测试了系统。",
+        "paragraphs": [
+          {
+            "id": "M25-030-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 10,
+            "quote": "我编写并测试了系统。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试实习：测试和编码。",
+        "requirements": [
+          {
+            "id": "M25-030-j1",
+            "start": 0,
+            "end": 11,
+            "quote": "测试实习：测试和编码。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-031",
+      "title": "education-missing",
+      "tags": [
+        "education-missing",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "在读不能补写已获得学历。",
+      "human_review": null,
+      "role_id": "M25-031-role",
+      "source_snapshot": {
+        "id": "review:M25-031:M25-031-role",
+        "text": "我正在修读本科课程，尚未毕业。",
+        "paragraphs": [
+          {
+            "id": "M25-031-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 15,
+            "quote": "我正在修读本科课程，尚未毕业。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：已取得本科学位。",
+        "requirements": [
+          {
+            "id": "M25-031-j1",
+            "start": 0,
+            "end": 11,
+            "quote": "必备：已取得本科学位。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-032",
+      "title": "education-unknown",
+      "tags": [
+        "education-unknown",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "缺少信息不是已满足学历要求。",
+      "human_review": null,
+      "role_id": "M25-032-role",
+      "source_snapshot": {
+        "id": "review:M25-032:M25-032-role",
+        "text": "我没有填写学历信息。",
+        "paragraphs": [
+          {
+            "id": "M25-032-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 10,
+            "quote": "我没有填写学历信息。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "岗位要求：硕士及以上。",
+        "requirements": [
+          {
+            "id": "M25-032-j1",
+            "start": 0,
+            "end": 11,
+            "quote": "岗位要求：硕士及以上。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-033",
+      "title": "no-deployment-python",
+      "tags": [
+        "no-deployment-python",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "保留能力边界而非关键词自动放行。",
+      "human_review": null,
+      "role_id": "M25-033-role",
+      "source_snapshot": {
+        "id": "review:M25-033:M25-033-role",
+        "text": "我掌握 Python 基础，但没有线上部署经验。",
+        "paragraphs": [
+          {
+            "id": "M25-033-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 24,
+            "quote": "我掌握 Python 基础，但没有线上部署经验。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：Python；加分：线上部署。",
+        "requirements": [
+          {
+            "id": "M25-033-j1",
+            "start": 0,
+            "end": 20,
+            "quote": "视觉岗位：Python；加分：线上部署。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-034",
+      "title": "responsibility-boundary",
+      "tags": [
+        "responsibility-boundary",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不同动作归属必须独立说明。",
+      "human_review": null,
+      "role_id": "M25-034-role",
+      "source_snapshot": {
+        "id": "review:M25-034:M25-034-role",
+        "text": "我未参与模型训练，只整理了标注规范。",
+        "paragraphs": [
+          {
+            "id": "M25-034-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 18,
+            "quote": "我未参与模型训练，只整理了标注规范。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：模型训练和标注。",
+        "requirements": [
+          {
+            "id": "M25-034-j1",
+            "start": 0,
+            "end": 13,
+            "quote": "视觉岗位：模型训练和标注。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-035",
+      "title": "zero-metric",
+      "tags": [
+        "zero-metric",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "无指标不能补出90%。",
+      "human_review": null,
+      "role_id": "M25-035-role",
+      "source_snapshot": {
+        "id": "review:M25-035:M25-035-role",
+        "text": "我写了测试脚本，没有统计覆盖率。",
+        "paragraphs": [
+          {
+            "id": "M25-035-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我写了测试脚本，没有统计覆盖率。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试岗位：能说明覆盖率。",
+        "requirements": [
+          {
+            "id": "M25-035-j1",
+            "start": 0,
+            "end": 12,
+            "quote": "测试岗位：能说明覆盖率。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-036",
+      "title": "table-order",
+      "tags": [
+        "table-order",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "表格提取顺序需人工核对，角色不可丢失。",
+      "human_review": null,
+      "role_id": "M25-036-role",
+      "source_snapshot": {
+        "id": "review:M25-036:M25-036-role",
+        "text": "课程：数据库；工具：Python。\n\n项目：图像分类练习；角色：记录员。",
+        "paragraphs": [
+          {
+            "id": "M25-036-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "课程：数据库；工具：Python。"
+          },
+          {
+            "id": "M25-036-p2",
+            "kind": "resume_excerpt",
+            "start": 19,
+            "end": 36,
+            "quote": "项目：图像分类练习；角色：记录员。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：Python 与图像分类。",
+        "requirements": [
+          {
+            "id": "M25-036-j1",
+            "start": 0,
+            "end": 18,
+            "quote": "视觉实习：Python 与图像分类。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-037",
+      "title": "two-column",
+      "tags": [
+        "two-column",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "双栏解析文本快照不是原文件字符坐标。",
+      "human_review": null,
+      "role_id": "M25-037-role",
+      "source_snapshot": {
+        "id": "review:M25-037:M25-037-role",
+        "text": "技能：Python、OpenCV。\n\n教育：本科在读。\n\n项目：计划做目标检测。",
+        "paragraphs": [
+          {
+            "id": "M25-037-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "技能：Python、OpenCV。"
+          },
+          {
+            "id": "M25-037-p2",
+            "kind": "resume_excerpt",
+            "start": 19,
+            "end": 27,
+            "quote": "教育：本科在读。"
+          },
+          {
+            "id": "M25-037-p3",
+            "kind": "resume_excerpt",
+            "start": 29,
+            "end": 40,
+            "quote": "项目：计划做目标检测。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：目标检测项目优先。",
+        "requirements": [
+          {
+            "id": "M25-037-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "视觉实习：目标检测项目优先。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-038",
+      "title": "crlf",
+      "tags": [
+        "crlf",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "CRLF 保留两个 code point，不能跳过否定句。",
+      "human_review": null,
+      "role_id": "M25-038-role",
+      "source_snapshot": {
+        "id": "review:M25-038:M25-038-role",
+        "text": "我用 Python 读取数据。\r\n我没有部署服务。",
+        "paragraphs": [
+          {
+            "id": "M25-038-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 25,
+            "quote": "我用 Python 读取数据。\r\n我没有部署服务。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：Python 和部署。",
+        "requirements": [
+          {
+            "id": "M25-038-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "后端实习：Python 和部署。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-039",
+      "title": "combining-offset",
+      "tags": [
+        "combining-offset",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "视觉字符和 code point 长度不同。",
+      "human_review": null,
+      "role_id": "M25-039-role",
+      "source_snapshot": {
+        "id": "review:M25-039:M25-039-role",
+        "text": "我整理了 café 图像标签。",
+        "paragraphs": [
+          {
+            "id": "M25-039-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我整理了 café 图像标签。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：图像标注。",
+        "requirements": [
+          {
+            "id": "M25-039-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "视觉实习：图像标注。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-040",
+      "title": "no-false-percentage",
+      "tags": [
+        "no-false-percentage",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不得添加提升率。",
+      "human_review": null,
+      "role_id": "M25-040-role",
+      "source_snapshot": {
+        "id": "review:M25-040:M25-040-role",
+        "text": "我改写了数据清洗脚本，但没有评估耗时。",
+        "paragraphs": [
+          {
+            "id": "M25-040-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 19,
+            "quote": "我改写了数据清洗脚本，但没有评估耗时。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：Python 和性能分析。",
+        "requirements": [
+          {
+            "id": "M25-040-j1",
+            "start": 0,
+            "end": 18,
+            "quote": "数据实习：Python 和性能分析。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-041",
+      "title": "user-overstatement",
+      "tags": [
+        "user-overstatement",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "原文自夸不等于系统认证。",
+      "human_review": null,
+      "role_id": "M25-041-role",
+      "source_snapshot": {
+        "id": "review:M25-041:M25-041-role",
+        "text": "我自述精通所有 Python 框架。",
+        "paragraphs": [
+          {
+            "id": "M25-041-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 18,
+            "quote": "我自述精通所有 Python 框架。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Python 后端：至少熟悉一个框架。",
+        "requirements": [
+          {
+            "id": "M25-041-j1",
+            "start": 0,
+            "end": 19,
+            "quote": "Python 后端：至少熟悉一个框架。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-042",
+      "title": "conflicting-responsibility",
+      "tags": [
+        "conflicting-responsibility",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不同来源冲突必须保留并澄清。",
+      "human_review": null,
+      "role_id": "M25-042-role",
+      "source_snapshot": {
+        "id": "review:M25-042:M25-042-role",
+        "text": "我的草稿写独立完成项目。\n\n原始记录：团队完成，我只写文档。",
+        "paragraphs": [
+          {
+            "id": "M25-042-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 12,
+            "quote": "我的草稿写独立完成项目。"
+          },
+          {
+            "id": "M25-042-p2",
+            "kind": "resume_excerpt",
+            "start": 14,
+            "end": 30,
+            "quote": "原始记录：团队完成，我只写文档。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：项目经历。",
+        "requirements": [
+          {
+            "id": "M25-042-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "后端实习：项目经历。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-043",
+      "title": "conflicting-state",
+      "tags": [
+        "conflicting-state",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "不能凭新声明抹去旧状态，仍需证据。",
+      "human_review": null,
+      "role_id": "M25-043-role",
+      "source_snapshot": {
+        "id": "review:M25-043:M25-043-role",
+        "text": "原始记录：我计划编写 Python 测试。\n\n新声明：我已完成全部测试。",
+        "paragraphs": [
+          {
+            "id": "M25-043-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 21,
+            "quote": "原始记录：我计划编写 Python 测试。"
+          },
+          {
+            "id": "M25-043-p2",
+            "kind": "resume_excerpt",
+            "start": 23,
+            "end": 36,
+            "quote": "新声明：我已完成全部测试。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试岗位：Python 测试。",
+        "requirements": [
+          {
+            "id": "M25-043-j1",
+            "start": 0,
+            "end": 15,
+            "quote": "测试岗位：Python 测试。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-044",
+      "title": "jd-negation",
+      "tags": [
+        "jd-negation",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "词汇出现可能来自 JD 否定，不代表适配。",
+      "human_review": null,
+      "role_id": "M25-044-role",
+      "source_snapshot": {
+        "id": "review:M25-044:M25-044-role",
+        "text": "我使用 Python 编写了脚本。",
+        "paragraphs": [
+          {
+            "id": "M25-044-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我使用 Python 编写了脚本。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "本岗位不要求 Python，主要负责线下行政。",
+        "requirements": [
+          {
+            "id": "M25-044-j1",
+            "start": 0,
+            "end": 23,
+            "quote": "本岗位不要求 Python，主要负责线下行政。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-045",
+      "title": "jd-alternative",
+      "tags": [
+        "jd-alternative",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "或条件不能当作两者都满足。",
+      "human_review": null,
+      "role_id": "M25-045-role",
+      "source_snapshot": {
+        "id": "review:M25-045:M25-045-role",
+        "text": "我完成了 Python 入门课程。",
+        "paragraphs": [
+          {
+            "id": "M25-045-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我完成了 Python 入门课程。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "可接受 Python 或 Java，二者至少一种。",
+        "requirements": [
+          {
+            "id": "M25-045-j1",
+            "start": 0,
+            "end": 25,
+            "quote": "可接受 Python 或 Java，二者至少一种。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-046",
+      "title": "jd-seniority",
+      "tags": [
+        "jd-seniority",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "基础关键词相交不能弥补资历缺口。",
+      "human_review": null,
+      "role_id": "M25-046-role",
+      "source_snapshot": {
+        "id": "review:M25-046:M25-046-role",
+        "text": "我做过课程 Python 作业。",
+        "paragraphs": [
+          {
+            "id": "M25-046-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我做过课程 Python 作业。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Python 专家：五年以上生产经验。",
+        "requirements": [
+          {
+            "id": "M25-046-j1",
+            "start": 0,
+            "end": 19,
+            "quote": "Python 专家：五年以上生产经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-047",
+      "title": "abbreviation-testing",
+      "tags": [
+        "abbreviation-testing",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "缩写和工具关联可用但基线有限。",
+      "human_review": null,
+      "role_id": "M25-047-role",
+      "source_snapshot": {
+        "id": "review:M25-047:M25-047-role",
+        "text": "我写了 unittest 用例。",
+        "paragraphs": [
+          {
+            "id": "M25-047-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 16,
+            "quote": "我写了 unittest 用例。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试实习：单元测试基础。",
+        "requirements": [
+          {
+            "id": "M25-047-j1",
+            "start": 0,
+            "end": 12,
+            "quote": "测试实习：单元测试基础。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-048",
+      "title": "backend-non-project",
+      "tags": [
+        "backend-non-project",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "阅读教程不能改为项目实践。",
+      "human_review": null,
+      "role_id": "M25-048-role",
+      "source_snapshot": {
+        "id": "review:M25-048:M25-048-role",
+        "text": "我阅读过 Python Web 教程，没有实现项目。",
+        "paragraphs": [
+          {
+            "id": "M25-048-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 26,
+            "quote": "我阅读过 Python Web 教程，没有实现项目。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：Web 项目开发。",
+        "requirements": [
+          {
+            "id": "M25-048-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "后端实习：Web 项目开发。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-049",
+      "title": "vision-no-model",
+      "tags": [
+        "vision-no-model",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "标注经验不能自动变成模型训练。",
+      "human_review": null,
+      "role_id": "M25-049-role",
+      "source_snapshot": {
+        "id": "review:M25-049:M25-049-role",
+        "text": "我整理了图像标注文件，没有训练模型。",
+        "paragraphs": [
+          {
+            "id": "M25-049-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 18,
+            "quote": "我整理了图像标注文件，没有训练模型。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉实习：模型训练优先，标注加分。",
+        "requirements": [
+          {
+            "id": "M25-049-j1",
+            "start": 0,
+            "end": 17,
+            "quote": "视觉实习：模型训练优先，标注加分。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-050",
+      "title": "testing-team",
+      "tags": [
+        "testing-team",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "团队平台不可借给个人。",
+      "human_review": null,
+      "role_id": "M25-050-role",
+      "source_snapshot": {
+        "id": "review:M25-050:M25-050-role",
+        "text": "我们完成了测试平台，我只验证了一个页面。",
+        "paragraphs": [
+          {
+            "id": "M25-050-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 20,
+            "quote": "我们完成了测试平台，我只验证了一个页面。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试实习：独立搭建测试平台。",
+        "requirements": [
+          {
+            "id": "M25-050-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "测试实习：独立搭建测试平台。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-051",
+      "title": "quantified-source",
+      "tags": [
+        "quantified-source",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "允许保留27原句，不认证正确或增加28。",
+      "human_review": null,
+      "role_id": "M25-051-role",
+      "source_snapshot": {
+        "id": "review:M25-051:M25-051-role",
+        "text": "我整理了27条缺失记录。",
+        "paragraphs": [
+          {
+            "id": "M25-051-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 12,
+            "quote": "我整理了27条缺失记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：记录整理。",
+        "requirements": [
+          {
+            "id": "M25-051-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "数据实习：记录整理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-052",
+      "title": "unquantified-source",
+      "tags": [
+        "unquantified-source",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "JD 要求数字不能产生来源中不存在的数字。",
+      "human_review": null,
+      "role_id": "M25-052-role",
+      "source_snapshot": {
+        "id": "review:M25-052:M25-052-role",
+        "text": "我整理了缺失记录。",
+        "paragraphs": [
+          {
+            "id": "M25-052-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 9,
+            "quote": "我整理了缺失记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：需要量化工作成果。",
+        "requirements": [
+          {
+            "id": "M25-052-j1",
+            "start": 0,
+            "end": 14,
+            "quote": "数据实习：需要量化工作成果。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-053",
+      "title": "source-url-text",
+      "tags": [
+        "source-url-text",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "恶意标记只能惰性显示；不能执行或去掉否定。",
+      "human_review": null,
+      "role_id": "M25-053-role",
+      "source_snapshot": {
+        "id": "review:M25-053:M25-053-role",
+        "text": "项目备注：<script>alert(1)</script>；我未部署此内容。",
+        "paragraphs": [
+          {
+            "id": "M25-053-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 39,
+            "quote": "项目备注：<script>alert(1)</script>；我未部署此内容。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端实习：部署经验。",
+        "requirements": [
+          {
+            "id": "M25-053-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "后端实习：部署经验。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-054",
+      "title": "ambiguous-subject",
+      "tags": [
+        "ambiguous-subject",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "省略主语不能自动认定个人完成。",
+      "human_review": null,
+      "role_id": "M25-054-role",
+      "source_snapshot": {
+        "id": "review:M25-054:M25-054-role",
+        "text": "完成了 Python 脚本和测试。",
+        "paragraphs": [
+          {
+            "id": "M25-054-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "完成了 Python 脚本和测试。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "测试实习：Python。",
+        "requirements": [
+          {
+            "id": "M25-054-j1",
+            "start": 0,
+            "end": 12,
+            "quote": "测试实习：Python。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-055",
+      "title": "self-gap",
+      "tags": [
+        "self-gap",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "用户自评缺口与文字相关不同。",
+      "human_review": null,
+      "role_id": "M25-055-role",
+      "source_snapshot": {
+        "id": "review:M25-055:M25-055-role",
+        "text": "我明确自评尚不掌握 Python。",
+        "paragraphs": [
+          {
+            "id": "M25-055-p1",
+            "kind": "user_manual_statement",
+            "start": 0,
+            "end": 17,
+            "quote": "我明确自评尚不掌握 Python。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "必备：Python。",
+        "requirements": [
+          {
+            "id": "M25-055-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "必备：Python。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-056",
+      "title": "review-needed",
+      "tags": [
+        "review-needed",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "缺少依据需要审查，不能直接认证。",
+      "human_review": null,
+      "role_id": "M25-056-role",
+      "source_snapshot": {
+        "id": "review:M25-056:M25-056-role",
+        "text": "我自述完成了模型训练，但日志丢失。",
+        "paragraphs": [
+          {
+            "id": "M25-056-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 17,
+            "quote": "我自述完成了模型训练，但日志丢失。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "视觉岗位：PyTorch 训练和可复现结果。",
+        "requirements": [
+          {
+            "id": "M25-056-j1",
+            "start": 0,
+            "end": 22,
+            "quote": "视觉岗位：PyTorch 训练和可复现结果。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-057",
+      "title": "english-plan",
+      "tags": [
+        "english-plan",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "英文计划并未被中文有限状态标记充分覆盖。",
+      "human_review": null,
+      "role_id": "M25-057-role",
+      "source_snapshot": {
+        "id": "review:M25-057:M25-057-role",
+        "text": "I plan to deploy a Python service next month.",
+        "paragraphs": [
+          {
+            "id": "M25-057-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 45,
+            "quote": "I plan to deploy a Python service next month."
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Backend intern: Python and deployment experience.",
+        "requirements": [
+          {
+            "id": "M25-057-j1",
+            "start": 0,
+            "end": 49,
+            "quote": "Backend intern: Python and deployment experience."
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-058",
+      "title": "english-team",
+      "tags": [
+        "english-team",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "有限中文规则不能充分判断英文责任。",
+      "human_review": null,
+      "role_id": "M25-058-role",
+      "source_snapshot": {
+        "id": "review:M25-058:M25-058-role",
+        "text": "Our team built a Python service; I wrote meeting notes.",
+        "paragraphs": [
+          {
+            "id": "M25-058-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 55,
+            "quote": "Our team built a Python service; I wrote meeting notes."
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "Backend internship: Python service ownership.",
+        "requirements": [
+          {
+            "id": "M25-058-j1",
+            "start": 0,
+            "end": 45,
+            "quote": "Backend internship: Python service ownership."
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-059",
+      "title": "unicode-numbers",
+      "tags": [
+        "unicode-numbers",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "全角数字需要保留；新写法不证明历史独立。",
+      "human_review": null,
+      "role_id": "M25-059-role",
+      "source_snapshot": {
+        "id": "review:M25-059:M25-059-role",
+        "text": "我整理了２７条记录。",
+        "paragraphs": [
+          {
+            "id": "M25-059-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 10,
+            "quote": "我整理了２７条记录。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "数据实习：记录整理。",
+        "requirements": [
+          {
+            "id": "M25-059-j1",
+            "start": 0,
+            "end": 10,
+            "quote": "数据实习：记录整理。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M25-060",
+      "title": "independent-sources",
+      "tags": [
+        "independent-sources",
+        "public_synthetic"
+      ],
+      "label_status": "draft_unreviewed",
+      "draft_observation": "计划与后来动作保留独立来源，不能合并完成部署。",
+      "human_review": null,
+      "role_id": "M25-060-role",
+      "source_snapshot": {
+        "id": "review:M25-060:M25-060-role",
+        "text": "第一段：我计划做 Python 项目。\n\n第二段：两个月后我编写了 Python 脚本，未部署。",
+        "paragraphs": [
+          {
+            "id": "M25-060-p1",
+            "kind": "resume_excerpt",
+            "start": 0,
+            "end": 19,
+            "quote": "第一段：我计划做 Python 项目。"
+          },
+          {
+            "id": "M25-060-p2",
+            "kind": "resume_excerpt",
+            "start": 21,
+            "end": 48,
+            "quote": "第二段：两个月后我编写了 Python 脚本，未部署。"
+          }
+        ]
+      },
+      "jd_snapshot": {
+        "text": "后端岗位：Python 与部署。",
+        "requirements": [
+          {
+            "id": "M25-060-j1",
+            "start": 0,
+            "end": 16,
+            "quote": "后端岗位：Python 与部署。"
+          }
+        ]
+      }
+    }
+  ]
+}
